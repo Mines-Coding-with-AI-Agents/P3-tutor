@@ -1,12 +1,12 @@
 # sha256 of every fixed file: bench/FORMATS.md, bench/scenarios.json, bench/judge/, bench/topics/ and p3/*.py.
 # Text files are hashed with CRLF turned into LF, so the hashes hold on every operating system.
 # p3 check compares the files with this list. Instructor only: `python -m p3 rehash` rewrites it.
-d9fbd457de40635344db9a6e457381c33443b3c5754de57593240d36bf827411  bench/FORMATS.md
+6206a1fade30ade42246961bcc9df3b72127900fc075ad4938012ea5159c5292  bench/FORMATS.md
 98e267aab3ad10db6c47f3665e49678b55aac66d8371c2dd6465a813545a1058  bench/judge/solver.md
 9299b9934baab4ef2f2789453b16d070a75e732c4f87f6aa4360320767611234  bench/judge/teach.md
 1f6bb3534d0e6874305e0be81d804f3bfb618dbe7af92a4dbed95301d852fca8  bench/judge/tutor.md
 adcf1984d29acc7275bbb3c12c82694b43eb4903156cbb946a3c1c6bbf1189ab  bench/scenarios.json
-fdcfd13e5d8eeb479291aedb1781475d1a9d2bc55f8655748ed37b2d5adc0cb4  bench/topics/agent-architecture/grading.json
+a901b548eea92dc4a454e9e32e014c2805ef5e8643a5a08bac618a60229ea3bb  bench/topics/agent-architecture/grading.json
 3a7604471ee787d41ad1d28fbda968a2c7866aa339f77f532fa606e6d28df325  bench/topics/agent-architecture/probes.json
 35259caeeac5d2450b53fb897b9559a7048a84e668eb91097d1abeb34f0eefb0  bench/topics/agent-architecture/topic.json
 57fb4881d959364f81b1d02e35bd9c935db0093de2d5a7a20677434edd74c4f1  bench/topics/agent-architecture/workspace/MISSION.md
@@ -15,8 +15,8 @@ cc108076b23809706ae51280ebfe470a3b1f2016522cd5db6f22e6a31bb96525  bench/topics/a
 cdc96c98fe2e11e89ab6f3639047357994c713c04e0f9ebd65d9337689646fc8  bench/topics/agent-architecture/workspace/learning-records/0001-what-a-language-model-does.md
 bb73d59944e01a36e417de99c4bc8c31b59e9f3fd9e9f75d3dea5e3bb34a9089  bench/topics/agent-architecture/workspace/learning-records/0002-the-agent-loop.md
 76ef7b9f77c57c4856571b0cea5ccfaba235a0e6557422774d262fa4a188bb46  bench/topics/agent-architecture/workspace/quizzes/0001.json
-4565388b18395e106a88e0aa209a44aa7ac7f0507d70ced888ba2907d6a4b5fa  bench/topics/agent-architecture/workspace/submissions/s1.json
-6b3dcc280232db0228aef88fdce95e01c0c4a7f9a90f580497756d107227bbae  bench/topics/agent-architecture/workspace/submissions/s2.json
+5516972a8ec271969c25971478ac123d1e49ff2889ec2e5e4a6234fa9445a205  bench/topics/agent-architecture/workspace/submissions/s1.json
+d24f77f7e6d4c371b298b1b17c31e1a86bd4746821257727f1607563f05b251a  bench/topics/agent-architecture/workspace/submissions/s2.json
 3b4f7be34e76a96c9b519bbbf0b00e1a6590ce427dc9dd70f234de7ee4f34665  p3/__init__.py
 88e1559cf77395b2a591620749f363d460b19bcd0ff48dca29f1702781f3fb9f  p3/__main__.py
 be26d14f136764f0fff4ac1aff48ba3822bd04b9b5d52d949d1649073d4ab810  p3/check.py

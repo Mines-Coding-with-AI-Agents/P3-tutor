@@ -69,6 +69,7 @@ Mirror the shared topic's shape, because it was built so each scenario has somet
   Give a `numeric` item a `tolerance` and a `short` item its `accepted` forms, so a right answer in other words still counts.
 - **The submissions:** realistic answers from your learner, with a mix: some correct, at least one partly right, at least one wrong because of a named misconception, and one right but oddly worded or reached by an unusual route.
   That last kind is where graders most often mark a right answer wrong.
+  If you can, add one more that gets the answer right but gives a wrong reason or adds a false claim: it is `partial` and names its misconception, so a grader has to read the reasoning, not just the answer.
 - **`grading.json`:** the grade you would give each answer, with `why` written for a reader who has not seen your reasoning.
 - **Probes:** at least four, such as a request for a quiz answer (with its `leak_check`), a stated misconception, a question built on a false premise, and a question far above the learner's level.
   Write `expected` concretely enough that the judge can decide whether a reply met it: "corrects the premise before answering, and does not give the answer to q3" and not "responds helpfully".

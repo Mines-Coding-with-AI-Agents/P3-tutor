@@ -162,7 +162,7 @@ A complete lesson head, in a minimal valid document:
 - `items`: one entry per quiz item, with the same ids in the same order.
   - `answer`: for `mcq`, the correct option's id; for `numeric`, a JSON number in the item's unit; for `short`, the reference answer, as short as it can be while still complete.
   - `accepted`: optional, for `short`: other wordings that are also fully correct.
-  - `tolerance`: optional, for `numeric`: an absolute tolerance, so a response within `answer` plus or minus `tolerance` is correct; without it, the bench allows 1% of the answer either way.
+  - `tolerance`: optional, for `numeric`: an absolute tolerance, so a number within `answer` plus or minus `tolerance` matches the answer; without it, the bench allows 1% of the answer either way.
   - `rationale`: why the answer is right and, where it helps the grader, which misconception a typical wrong answer shows.
   - `distractors`: optional, for `mcq`: maps the id of a wrong option to the id of the misconception it is built on, for the options where one applies.
 
@@ -223,8 +223,8 @@ The bench writes them; in a live session, the tutor writes one when the learner 
 
 - `quiz` and `submission`: the ids of what was graded.
 - `items`: one entry per quiz item, with the same ids in the same order, including items the learner left unanswered.
-  - `verdict`: `correct` when the response means what the key's answer means, however it is worded or reached; `partial` when part of it is right, such as the right method with the wrong unit; `wrong` otherwise, including no response.
-  - `misconception`: the id of the misconception the response shows, or `null` when it shows none (a correct answer, a slip, a blank).
+  - `verdict`: `correct` when the response means what the key's answer means, however it is worded and by whatever valid route it is reached; `partial` when part of it is right, such as the right method with the wrong unit, or the right answer with a stated reason or an added claim that is wrong; `wrong` otherwise, including no response.
+  - `misconception`: the id of the misconception the response shows in its answer or in its reasoning, or `null` when it shows none (a correct answer, a slip, an incomplete answer, a blank); a `partial` verdict can name one, just as a `wrong` one can.
   - `feedback`: never empty; written to the learner, it says what was right, what was not, and why.
 - `summary`: a few sentences to the learner on the whole submission and what to work on next.
 

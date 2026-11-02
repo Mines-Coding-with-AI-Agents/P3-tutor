@@ -37,10 +37,14 @@ In three of four runs the teach session tried to count the lesson's words with a
 
 The baseline's lessons had every key fact present and correct, with no misconception asserted, and the judge rated their fit to the learner 4 or 5 of 5.
 Its quiz keys agreed with both solvers on every item, with no likely wrong key or ambiguous item.
-Its grades matched every true verdict and named every true misconception, on both submissions.
+Its grades matched every true verdict and named every true misconception, on both submissions as they were then.
+Two of those answers, s1 q6 and s2 q4, have since been replaced with harder ones, and the baseline has not been run on them yet.
+The submissions sit in the workspace that every scenario reads, so every result on this page comes from the old answers.
+One line of the baseline's grading guide changed with them, so it no longer says that a number within the key's tolerance is correct whatever reason comes with it.
 
-So on the shared topic, the objective checks for teach facts, quiz and grade act as floors: they catch a step that breaks something.
-A review loop on quiz or grade has little room to raise those numbers, and what it buys shows up in your blind comparisons (difficulty, coverage, wording; feedback that explains and fits you) and in its cost.
+So on the shared topic, the objective checks for teach facts and quiz act as floors: they catch a step that breaks something.
+Grade was one too on the old answers; whether it still is waits for the baseline's rerun on the new ones.
+A review loop on quiz, and on grade if it stays a floor, has little room to raise those numbers, and what it buys shows up in your blind comparisons (difficulty, coverage, wording; feedback that explains and fits you) and in its cost.
 Say so plainly if that is what you find; it is a real result.
 
 ## The keys and the guard

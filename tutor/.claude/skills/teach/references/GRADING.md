@@ -16,7 +16,7 @@ It is also your best evidence of what they know, so it feeds the learning record
 - It is `partial` when part of it is right: the right method with an arithmetic slip or the wrong unit, one half of a two-part idea, or the right answer with a stated reason that is wrong.
 - It is `wrong` when it misses the idea, contradicts it, or is blank.
 - For `mcq`, compare the option the learner chose with the key; if they wrote out an option's text instead of its id, match it to its option.
-- For `numeric`, a response within the key's tolerance (1% of the answer when the key gives none) is correct, after converting any unit the learner stated.
+- For `numeric`, the number is right when it is within the key's tolerance (1% of the answer when the key gives none), after converting any unit the learner stated; a reason the learner gives with it is still judged by the rules above.
 - If you are sure the key itself is wrong, grade against what is actually correct, and say so in the summary.
 
 ## Misconceptions
