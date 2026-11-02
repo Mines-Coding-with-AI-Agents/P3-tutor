@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Live runs of tutor/ (p3 bench --config live) are for trying things out and are never committed
+bench/runs/_live/
+
+# Operating systems
+.DS_Store
+Thumbs.db
