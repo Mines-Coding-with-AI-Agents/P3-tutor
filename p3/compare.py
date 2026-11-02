@@ -1526,7 +1526,7 @@ def main(args) -> int:
         print(f"p3 compare: resuming {s.id} ({s.job} on {s.topic.id}, {s.answered()} of {len(s.pairs)} pairs answered)")
     else:
         if len(configs) != 2:
-            raise P3Error("give the two configs to compare and the job, such as: p3 compare c0-baseline c1-skills --job teach (or --resume, --reveal or --list)")
+            raise P3Error("give the two configs to compare and the job, such as: p3 compare c0-baseline final --job teach (or --resume, --reveal or --list)")
         job = getattr(args, "job", None)
         if not job:
             raise P3Error("--job is required: teach, quiz, grade or tutor")

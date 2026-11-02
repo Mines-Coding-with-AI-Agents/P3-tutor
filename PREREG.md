@@ -42,6 +42,7 @@ uv run p3 compare c1-skills final --job teach --teach-only --minutes 60
 ```
 
 `--teach-only` matters at 30 minutes, where the ladder's full runs of `c1-skills` and `final` hold a 30-minute lesson too; it keeps them out, so every length is paired the same way.
+These three sessions are your second blind comparison of the project, beside `c0-baseline` against `final`, and you make no other on top.
 The numbers for every cell come from one command:
 
 ```

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import unittest
 
-from p3 import report, util
+from p3 import report, reviews, util
 from p3.util import P3Error
-from tests import RepoTestCase
+from tests import RepoTestCase, review_md, write
 
 
 def summary(**values) -> dict:
@@ -166,6 +166,79 @@ class RunKindTests(RepoTestCase):
         code, out, err = self.p3("report", "--teach-only", "--configs", "final")
         self.assertEqual(code, 0, err)
         self.assertIn("Scored teach-only runs", out)
+
+
+class RatingsTests(RepoTestCase):
+    """"Your ratings": the major reviews' ratings, one row per criterion, one column per step."""
+
+    def review(self, step: str, text: str) -> None:
+        write(self.root / reviews.step_file(step), text)
+
+    def table_rows(self, text: str) -> list[list[str]]:
+        block = text.split("## Your ratings\n", 1)[1]
+        lines = [line for line in block.splitlines() if line.startswith("|")]
+        return [[c.strip() for c in line.strip("|").split("|")] for line in lines]
+
+    def test_the_table(self):
+        self.review("c1-skills", review_md("c1-skills", ratings={(reviews.LESSON, "Pedagogy"): 2, (reviews.TUTOR, "Guardrails"): "5/5"}))
+        self.review("c3-split", review_md("c3-split", ratings={(reviews.LESSON, "Pedagogy"): 5, (reviews.LESSON, "Overall quality"): 6}))
+        self.review("final", review_md("final", todo=True))
+        text = report.ratings_table()
+        self.assertTrue(text.startswith("## Your ratings\n\n"), text)
+        rows = self.table_rows(text)
+        self.assertEqual(rows[0], ["job", "criterion", "c1-skills", "c2-review", "c3-split", "final"])
+        self.assertEqual(rows[1], ["---", "---", "---:", "---:", "---:", "---:"])
+        body = rows[2:]
+        self.assertEqual(len(body), sum(len(c) for c in reviews.CRITERIA.values()))
+        self.assertEqual([r[0] for r in body], [job for job, names in reviews.CRITERIA.items() for _ in names], "grouped by job, in order")
+        by = {(r[0], r[1]): r[2:] for r in body}
+        self.assertEqual(by[(reviews.LESSON, "Technical correctness and facts")], ["4", "-", "4", "-"])
+        self.assertEqual(by[(reviews.LESSON, "Pedagogy")], ["2", "-", "5", "-"])
+        self.assertEqual(by[(reviews.LESSON, "Overall quality")], ["4", "-", "-", "-"], "a rating p3 check rejects is a dash")
+        self.assertEqual(by[(reviews.QUIZ, "Coverage of the lesson's core")], ["4", "-", "-", "-"], "c3-split reviews the lesson only")
+        self.assertEqual(by[(reviews.TUTOR, "Guardrails")], ["5", "-", "-", "-"])
+
+    def test_after_the_tables_and_alone(self):
+        ReportTests.make_run(self, "c0-baseline", "r1", "2026-11-03T10:00:00Z", teach_facts_correct=0.5)
+        self.assertNotIn("Your ratings", report.report_text(), "no rating yet, no table")
+        self.review("c1-skills", review_md("c1-skills"))
+        code, out, err = self.p3("report")
+        self.assertEqual(code, 0, err)
+        self.assertLess(out.index("Costs are per run"), out.index("## Your ratings"))
+        self.assertTrue(out.endswith("|\n"), repr(out[-40:]))
+        self.assertNotIn("Your ratings", report.report_text(ratings=False))
+        code, out, err = self.p3("report", "--reviews")
+        self.assertEqual(code, 0, err)
+        self.assertTrue(out.startswith("## Your ratings\n"), out)
+        self.assertNotIn("## Results", out)
+        self.assertEqual(len(self.table_rows(out)), 2 + 14)
+
+    def test_only_under_the_shared_topics_full_runs(self):
+        """The major reviews review full runs on the shared topic, so a report of a test topic, of quick
+        runs or of the length study's teach-only runs leaves the ratings out."""
+        ReportTests.make_run(self, "c0-baseline", "r1", "2026-11-03T10:00:00Z", teach_facts_correct=0.5)
+        ReportTests.make_run(self, "c0-baseline", "r-quick", "2026-11-03T11:00:00Z", quick=True, teach_facts_correct=0.5)
+        ReportTests.make_run(self, "c0-baseline", "r-cook", "2026-11-03T12:00:00Z", topic="cooking", teach_facts_correct=0.5)
+        teach_only = util.runs_dir("c0-baseline", self.root) / "r-teach"
+        util.write_json(teach_only / "run.json", {
+            "run_id": "r-teach", "config": "c0-baseline", "topic": "agent-architecture", "minutes": 10, "quick": False,
+            "started_at": "2026-11-03T13:00:00Z", "only": ["teach"], "scenarios": [{"id": "teach", "job": "teach"}],
+        })  # fmt: skip
+        util.write_json(teach_only / "score.json", {"run_id": "r-teach", "summary": summary(teach_facts_correct=0.5)})
+        self.review("c1-skills", review_md("c1-skills"))
+        self.assertIn("## Your ratings", report.report_text())
+        self.assertIn("## Your ratings", report.report_text(configs=["c0-baseline"]), "EVAL.md pastes p3 report --configs a,b with the ratings")
+        for kwargs in ({"topic_id": "cooking"}, {"quick": True}, {"teach_only": True}):
+            self.assertNotIn("Your ratings", report.report_text(**kwargs), kwargs)
+        self.assertIn("or a job that step does not review (Tutor in c2-review; Quiz, Feedback and Tutor in c3-split)", report.ratings_table())
+
+    def test_no_ratings_yet(self):
+        self.assertIsNone(report.ratings_table())
+        self.review("c2-review", review_md("c2-review", todo=True))
+        self.assertIsNone(report.ratings_table())
+        code, out, err = self.p3("report", "--reviews")
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("no ratings in reviews/ yet: each criterion of a major review (reviews/<step>.md) holds a line Rating: N", err)
 
 
 if __name__ == "__main__":

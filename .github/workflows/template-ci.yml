@@ -75,18 +75,19 @@ jobs:
               sys.exit('configs/c0-baseline/ differs from tutor/: run python -m p3 snapshot c0-baseline --force and commit it')
           "
 
-      - name: No em dash anywhere in the template
+      - name: No em dash or en dash anywhere in the template
         shell: bash
         run: |
           em=$(printf '\342\200\224')
-          if LC_ALL=C grep -rlI -F "$em" --exclude-dir=.git .; then
-            echo "The files above contain an em dash; write a plain hyphen or rephrase."
+          en=$(printf '\342\200\223')
+          if LC_ALL=C grep -rlI -F -e "$em" -e "$en" --exclude-dir=.git .; then
+            echo "The files above contain an em dash or an en dash; write a plain hyphen or rephrase."
             exit 1
           fi
 
   # The release gate: this job stays red until the pilot's results replace every PILOT-PENDING line
-  # (README.md's measured costs, KNOWN-GAPS.md's gaps). Students must never get the placeholders: a
-  # TODO there would also fail every student's p3 check --final on text that is not theirs.
+  # (README.md's measured costs, KNOWN-GAPS.md's gaps). Students must never get the placeholders, and
+  # a TODO in the brief would read as work of theirs.
   release-ready:
     if: github.event.repository.is_template || github.repository == 'Mines-Coding-with-AI-Agents/P3-tutor'
     runs-on: ubuntu-latest
@@ -102,6 +103,10 @@ jobs:
             exit 1
           fi
           if grep -n "TODO" README.md; then
-            echo "README.md must hold no TODO: p3 check --final fails on any TODO in it."
+            echo "README.md must hold no TODO: students read a TODO as a marker for their own words."
+            exit 1
+          fi
+          if grep -n "TODO" reviews/README.md; then
+            echo "reviews/README.md must hold no TODO: it tells students that every TODO in reviews/ marks a place for their own words."
             exit 1
           fi

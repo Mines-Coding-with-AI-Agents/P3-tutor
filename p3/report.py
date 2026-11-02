@@ -1,17 +1,26 @@
 """`p3 report`: Markdown tables of the scored runs, for pasting into EVAL.md.
 
     p3 report [--topic t] [--configs a,b,...] [--minutes M] [--quick] [--teach-only]
+    p3 report --reviews
 
 One row per config (and lesson length, when runs at several lengths exist) with each headline number
 as the mean over its scored full runs and the range in brackets, then one cost table per job. A full
 run ran every scenario: runs made with --only are left out, because a job they did not run would
 count as zero tokens and minutes. --teach-only shows only the runs of the teach scenario alone (the
 length study) instead, and --quick only the quick runs.
+
+After those tables, in a report of the shared topic's full runs (the runs the major reviews review)
+and once any review file in reviews/ holds a rating, comes "Your ratings": the 1 to 5 ratings of the
+major reviews, one row per criterion grouped by job, one column per step, and a dash where there is
+no rating. A report of a test topic, of quick runs or of teach-only runs leaves it out. --reviews
+prints only that table.
 """
 
 from __future__ import annotations
 
-from p3 import util
+from pathlib import Path
+
+from p3 import reviews, util
 from p3.claude import COST_LABEL
 from p3.util import P3Error
 
@@ -87,10 +96,29 @@ def cell(values: list, kind: str, runs: int) -> str:
     return f"{text} ({', '.join(extra)})" if extra else text
 
 
-def table(header: list[str], rows: list[list[str]]) -> str:
-    lines = ["| " + " | ".join(header) + " |", "|" + "|".join("---" if i == 0 else "---:" for i in range(len(header))) + "|"]
+def table(header: list[str], rows: list[list[str]], left: int = 1) -> str:
+    """A Markdown table: the first `left` columns aligned left, the others right."""
+    lines = ["| " + " | ".join(header) + " |", "|" + "|".join("---" if i < left else "---:" for i in range(len(header))) + "|"]
     lines += ["| " + " | ".join(r) + " |" for r in rows]
     return "\n".join(lines)
+
+
+def ratings_table(root: Path | None = None) -> str | None:
+    """The "Your ratings" section as Markdown, or None while no review file holds a rating."""
+    found = reviews.all_ratings(root)
+    if not any(found.values()):
+        return None
+    rows = []
+    for job, criteria in reviews.CRITERIA.items():
+        for name in criteria:
+            rows.append([job, name] + [str(found.get(step, {}).get((job, name), "-")) for step in reviews.STEPS])
+    out = [
+        "## Your ratings", "",
+        "Your ratings from 1 to 5 in the major reviews (reviews/<step>.md), which review full runs on the shared topic; "
+        "a dash means no rating there yet, one that p3 check does not accept, or a job that step does not review (Tutor in c2-review; Quiz, Feedback and Tutor in c3-split).", "",
+        table(["job", "criterion", *reviews.STEPS], rows, left=2), "",
+    ]  # fmt: skip
+    return "\n".join(out)
 
 
 def groups(topic_id: str, configs: list[str] | None, minutes: int | None, quick: bool, teach_only: bool = False) -> list[tuple[str, int, list]]:
@@ -114,8 +142,10 @@ def groups(topic_id: str, configs: list[str] | None, minutes: int | None, quick:
 
 def report_text(
     topic_id: str = util.SHARED_TOPIC, configs: list[str] | None = None, minutes: int | None = None, quick: bool = False, teach_only: bool = False,
+    ratings: bool = True,
 ) -> str:
-    """The report as Markdown."""
+    """The report as Markdown, ending with "Your ratings" when `ratings`, the report is of the shared
+    topic's full runs, and any review holds one."""
     rows_by = groups(topic_id, configs, minutes, quick, teach_only)
     runs_word = "teach-only runs" if teach_only else "full runs"
     what = f"quick {runs_word}" if quick else (runs_word if teach_only else "full runs (quick runs and --only runs left out)")
@@ -168,11 +198,23 @@ def report_text(
             title = "Cost: all jobs" if job == "total" else f"Cost: {job}"
             out += [f"### {title}", "", table(head + [label for _, label, _ in COST], cost_rows), ""]
     out.append(f"Costs are per run, summed over the job's scenarios; list-price $ is the {COST_LABEL}.")
+    yours = ratings_table() if ratings and topic_id == util.SHARED_TOPIC and not quick and not teach_only else None
+    if yours:
+        out += ["", yours.rstrip("\n")]
     return "\n".join(out) + "\n"
 
 
 def main(args) -> int:
     """The p3 report command."""
+    if getattr(args, "reviews", False):
+        yours = ratings_table()
+        if yours is None:
+            raise P3Error(
+                "no ratings in reviews/ yet: each criterion of a major review (reviews/<step>.md) holds a line Rating: N, "
+                f"N a whole number from {reviews.RATING_MIN} to {reviews.RATING_MAX}; p3 check says what each review still needs"
+            )
+        print(yours, end="")
+        return 0
     configs = [c.strip() for c in args.configs.split(",") if c.strip()] if args.configs else None
     print(report_text(args.topic, configs, args.minutes, args.quick, bool(getattr(args, "teach_only", False))), end="")
     return 0

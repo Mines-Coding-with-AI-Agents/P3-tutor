@@ -187,9 +187,94 @@ def make_repo(root: Path, snapshot: bool = True) -> Path:
     return root
 
 
-def git(root: Path, *args: str) -> subprocess.CompletedProcess:
-    """Run git in a test repository; raises on failure."""
-    return subprocess.run(["git", *args], cwd=root, check=True, capture_output=True, text=True)
+def review_md(
+    step: str, run: str = "TODO", *, rounds: int | None = None, optional: int = 0, kinds: dict[int, str] | None = None,
+    ratings: dict[tuple[str, str], object] | None = None, sessions: int = 3, topics: tuple[str, ...] = ("<topic-id>",), todo: bool = False,
+) -> str:
+    """A reviews/<step>.md in the format p3/reviews.py reads: complete by default (with `run` as the
+    major review's Run), or with every text TODO (`todo`), as the template ships it. `rounds` complete
+    quick rounds (default: the step's minimum), then `optional` untouched optional rounds; `kinds`
+    sets a round's Kind by number and `ratings` a criterion's rating by (job, criterion)."""
+    from p3 import reviews
+
+    def fill(text: str) -> str:
+        return "TODO" if todo else text
+
+    rounds = reviews.MIN_ROUNDS[step] if rounds is None else rounds
+    out = [f"# Reviews: {step}", "", "My notes on this step, written as I went.", "", f"## {reviews.QUICK_ROUNDS}", ""]
+    for n in range(1, rounds + optional + 1):
+        blank = todo or n > rounds
+
+        def text(value: str, blank: bool = blank) -> str:
+            return "TODO" if blank else value
+
+        out += [
+            f"### Round {n}" + (" (optional)" if n > rounds else ""), "", f"**Run:** {text(f'bench/runs/_live/round-{n}')}", "",
+            "**My thoughts:**", "", text(f"Round {n}: quiz 0002 q3 gives its answer away in the stem."), "",
+            "**What changed:**", "", f"- Kind: {text((kinds or {}).get(n, 'new skill'))}", f"- Files: {text('tutor/.claude/skills/quiz/SKILL.md')}",
+            f"- Why: {text('So that each stem asks without telling.')}", "",
+        ]  # fmt: skip
+    out += [f"## {reviews.MAJOR_REVIEW}", "", f"**Run:** {run}", "", "**Live tries:**", "", fill("I asked the tutor for q3's answer twice; it gave a hint."), ""]
+    for job in reviews.STEP_JOBS[step]:
+        out += [f"### {job}", ""]
+        for name in reviews.CRITERIA[job]:
+            rating = "TODO" if todo else (ratings or {}).get((job, name), 4)
+            out += [f"#### {name}", "", f"Rating: {rating}", "", fill(f"{name}: section 2 of lesson 0001 says \"the program runs the tool\", which is right."), ""]
+    out += [f"### {reviews.COMPARED}", "", fill("Better than the step before on quiz 0002 q2."), ""]
+    out += [f"### {reviews.closing_sections(step)[1]}", "", fill("Split the teach job so the figures get their own pass."), ""]
+    if step == "final":
+        out += [f"## {reviews.LEARNING_SESSIONS}", ""]
+        for n in range(1, sessions + 1):
+            out += [f"### Session {n}", "", f"**Date:** {fill(f'2026-11-2{n}')}", f"**Topic:** {fill('cooking')}", "", fill(f"Session {n}: forty minutes on knife skills; quiz 0003 q2 was fair."), ""]
+        out += [f"## {reviews.TEST_TOPICS}", ""]
+        for tid in topics:
+            out += [f"### {tid}", "", fill(f"On {tid}, final's lesson had a worked example where c0-baseline's had none."), ""]
+    return "\n".join(out)
+
+
+def component_md(name: str, kind: str = "skill", step: str = "c1-skills", kept: str = "yes", todo: bool = False) -> str:
+    """One entry of reviews/components.md, complete unless `todo`."""
+
+    def fill(text: str) -> str:
+        return "TODO" if todo else text
+
+    return "\n".join([
+        f"### {name}", "", f"- Kind: {fill(kind)}", f"- Step added: {fill(step)}", f"- Purpose: {fill(f'The tutor needs {name} to keep quiz stems from giving answers away.')}",
+        f"- With and without: {fill(f'reviews/{step}.md, Round 1 (without) and Round 2 (with)')}",
+        f"- Review: {fill('Without it quiz 0002 q3 gave its answer away; with it, no stem did.')}", f"- Kept in final: {fill(kept)}", "", "",
+    ])  # fmt: skip
+
+
+def components_md(*entries: str) -> str:
+    """reviews/components.md with these entries, after an example entry inside an HTML comment, as
+    the template has one."""
+    head = [
+        "# Components", "", "One entry for every skill and subagent I built.", "",
+        "<!--", "An example:", "", "### quiz-checker", "", "- Kind: subagent", "- Step added: c2-review", "- Purpose: TODO", "-->", "", "",
+    ]  # fmt: skip
+    return "\n".join(head) + "".join(entries)
+
+
+def add_agents(root: Path, *names: str) -> None:
+    """Give tutor/ exactly these subagents (.claude/agents/<name>.md, each with its name in the
+    frontmatter); none removes them all."""
+    folder = root / "tutor" / ".claude" / "agents"
+    if folder.exists():
+        shutil.rmtree(folder)
+    for name in names:
+        write(folder / f"{name}.md", f"---\nname: {name}\ndescription: Reviews one thing.\n---\n\nYou review one thing.\n")
+
+
+def git(root: Path, *args: str, when: str | None = None) -> subprocess.CompletedProcess:
+    """Run git in a test repository; raises on failure. `when` (an ISO time) sets the author and
+    committer dates of a commit it makes."""
+    env = None
+    if when is not None:
+        from datetime import datetime
+
+        stamp = f"{int(datetime.fromisoformat(when.replace('Z', '+00:00')).timestamp())} +0000"
+        env = {**os.environ, "GIT_AUTHOR_DATE": stamp, "GIT_COMMITTER_DATE": stamp}
+    return subprocess.run(["git", *args], cwd=root, check=True, capture_output=True, text=True, env=env)
 
 
 def git_init(root: Path) -> None:

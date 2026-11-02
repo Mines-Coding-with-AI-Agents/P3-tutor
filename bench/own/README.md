@@ -3,9 +3,12 @@
 This folder holds your two test topics: one from another Mines course you have taken, and one life skill.
 They are the held-out check on your tutor.
 You tune the tutor on the shared agent-architecture topic only, then freeze `final` and run it and `c0-baseline` once each on both of these topics, to see whether the architecture still pays off where you never tuned it.
+You review the two configs' outputs on each topic openly, in `reviews/final.md`, and not blind.
+You also hold your three real learning sessions with `final` on one of these topics.
 
 You write these topics yourself, so your knowledge is the ground truth, not the model's.
 Pick topics you know well enough to grade a learner's answers with confidence.
+Your learning sessions on one of them need something you do not know yet, and "Your learning sessions on one of these topics" below says how to have both.
 The agent can help with the file formats and can draft wording for you to check, but the facts, the true grades and the expected behaviors are your decisions.
 
 When you hand in, this folder holds exactly two topic folders, each in the same shape as `bench/topics/agent-architecture/`, which is the worked example to read first.
@@ -25,7 +28,8 @@ When you hand in, this folder holds exactly two topic folders, each in the same 
 5. **Commit and push the topic**, before any run on it.
    The next section says why this order matters.
 6. **Run it, once `final` is frozen:** `uv run p3 bench --config c0-baseline --topic <id>` and `uv run p3 bench --config final --topic <id>`.
-7. **Compare them blind**, for teach, grade and tutor: `uv run p3 compare c0-baseline final --job teach --topic <id>`, then the same with `--job grade` and `--job tutor`.
+7. **Review them openly**, in `reviews/final.md` under "Test topics", in the section headed with the topic's id: read both configs' outputs on the topic side by side and say, for each job, which did better and why, with evidence from both runs.
+   There are no blind comparisons on the test topics, so you know which config made which, and that is fine here.
 
 ---
 
@@ -75,8 +79,14 @@ Mirror the shared topic's shape, because it was built so each scenario has somet
   Write `expected` concretely enough that the judge can decide whether a reply met it: "corrects the premise before answering, and does not give the answer to q3" and not "responds helpfully".
 - **On the life-skill topic**, include a probe that asks for individualized financial, medical or legal advice, such as what to do with the learner's own savings or symptoms, and expect a tutor that teaches the general knowledge and points to a professional for the personal decision.
 
-The learner can be you.
-For the topic you will learn in your real sessions, it probably should be, so `MISSION.md` and `NOTES.md` describe where you really start.
+The learner can be you, as you were before you learned what your items cover.
+
+### Your learning sessions on one of these topics
+
+Your three real learning sessions with `final` are on one of these two topics, and they need something you do not know yet, while the items here need what you know well enough to grade.
+So write the items on the part of the topic you know, and in the sessions learn a part you do not: for the topic from another Mines course, the next unit after the one your items cover, or a harder corner of it; for the life skill, the part you are still working on.
+Choose the session topic with that in mind, and keep the items to what you can grade.
+The bench's `workspace/` is the bench learner's, and `reviews/README.md` ("The learning sessions") says how to set up the tutor's own learner files for your sessions; never copy this topic's `keys/` or `submissions/` into `tutor/`.
 
 ---
 
@@ -92,10 +102,10 @@ The bench enforces the order.
 If you find a real mistake after the runs, such as a true grade you got wrong, this is the one way to fix it:
 
 1. Fix the topic and commit the fix.
-2. Delete that topic's earlier run folders under `bench/runs/`, and every comparison session made from them under `bench/compare/`, both its `.json` and its `.key.json`.
-   `p3 check --final` fails on a run made from the topic as it was, and on a session whose runs are gone, so neither may stay.
-3. Run `c0-baseline` and `final` again on the fixed topic, and redo its teach, grade and tutor comparisons.
-4. In `EVAL.md` section 8, list the run ids you deleted, what you changed in the topic, and why.
+2. Delete that topic's earlier run folders under `bench/runs/`.
+   `p3 check --final` fails on a run made from the topic as it was, so none may stay.
+3. Run `c0-baseline` and `final` again on the fixed topic, and write its review in `reviews/final.md` again from the new runs.
+4. In `EVAL.md` section 9, list the run ids you deleted, what you changed in the topic, and why.
 
 A topic is not fixed because a result looked bad, only because an item was wrong.
 

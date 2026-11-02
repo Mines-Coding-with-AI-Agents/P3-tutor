@@ -31,7 +31,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, NamedTuple
+from typing import Any, Iterable, Iterator, NamedTuple
 
 ROOT_ENV = "P3_ROOT"
 JUNK_NAMES = frozenset({".DS_Store", "Thumbs.db", "desktop.ini"})
@@ -217,6 +217,23 @@ def non_utf8_files(folder: Path, rel_paths: Iterable[str]) -> list[str]:
 
 
 NON_UTF8_HINT = "save it as UTF-8 (in VS Code: Reopen with Encoding, then Save with Encoding, UTF-8)"
+
+
+def utf8_problem(path: Path) -> str | None:
+    """Why a text file a person writes is not UTF-8, in words for them, or None when it is (or cannot
+    be read): UTF-16, which Windows PowerShell 5.1 writes with > and Out-File, or another encoding,
+    such as a Windows "ANSI" code page. Either one hides headings and letters from a reader of UTF-8."""
+    try:
+        data = Path(path).read_bytes()
+    except OSError:
+        return None
+    if data.startswith((b"\xff\xfe", b"\xfe\xff")) or b"\0" in data:
+        return "it is saved as UTF-16 (as Windows PowerShell's > and Out-File write files), not UTF-8"
+    try:
+        data.decode("utf-8")
+    except UnicodeDecodeError:
+        return "it is not saved as UTF-8 (a Windows \"ANSI\" encoding, perhaps)"
+    return None
 
 
 def normalized_bytes(path: Path) -> bytes:
@@ -516,15 +533,16 @@ def parse_iso(text: str | None) -> datetime | None:
 # ---- git ----
 
 
-def _git(args: list[str], root: Path | None = None, binary: bool = False):
-    """Run git in the repo; the CompletedProcess, or None when git is missing or cannot start."""
+def _git(args: list[str], root: Path | None = None, binary: bool = False, stdin: bytes | None = None):
+    """Run git in the repo, with `stdin` as its input (binary); the CompletedProcess, or None when git
+    is missing or cannot start."""
     git = shutil.which("git")
     if not git:
         return None
     root = Path(root) if root else repo_root()
     try:
         return subprocess.run(
-            [git, "-C", str(root), *args], capture_output=True, timeout=60,
+            [git, "-C", str(root), *args], capture_output=True, timeout=60, input=stdin,
             **({} if binary else {"text": True, "encoding": "utf-8", "errors": "replace"}),
         )  # fmt: skip
     except (OSError, subprocess.SubprocessError):
@@ -576,6 +594,11 @@ def git_show_bytes(commit: str, path: str, root: Path | None = None) -> bytes | 
     file is not in that commit or git is not available."""
     if not git_available(root):
         return None
+    return _show_bytes(commit, path, root)
+
+
+def _show_bytes(commit: str, path: str, root: Path | None = None) -> bytes | None:
+    """git_show_bytes once git is known to work on the repo."""
     done = _git(["show", f"{commit}:{path}"], root, binary=True)
     if done is None or done.returncode != 0:
         return None
@@ -608,7 +631,7 @@ def hash_tree_at_commit(commit: str, folder: str, root: Path | None = None) -> s
         return None
     entries = []
     for rel in files:
-        data = git_show_bytes(commit, f"{folder.strip('/')}/{rel}", root)
+        data = _show_bytes(commit, f"{folder.strip('/')}/{rel}", root)  # git works: it listed the files
         if data is None:
             return None
         entries.append((rel, data))
@@ -657,3 +680,40 @@ def git_log_path(path: str, root: Path | None = None) -> list[tuple[str, datetim
         if commit and when:
             commits.append((commit, when.astimezone(timezone.utc)))
     return commits
+
+
+def git_file_versions(path: str, root: Path | None = None) -> Iterator[tuple[str, datetime, bytes | None]]:
+    """(commit, committer time in UTC, the file's bytes in that commit) for every commit that changed
+    `path` (POSIX, relative to the repo), oldest first; the bytes are None in a commit that deleted
+    the file. Nothing when git is not available. Every version is read by one git process (git
+    cat-file --batch), since a process per version costs tens of milliseconds each on Windows."""
+    commits = git_log_path(path, root)
+    if not commits:
+        return
+    blobs = _cat_files([f"{commit}:{path}" for commit, _ in commits], root)
+    if blobs is None:  # git could not read them in one go: one process each, as a fallback
+        blobs = [_show_bytes(commit, path, root) for commit, _ in commits]
+    for (commit, when), data in zip(commits, blobs):
+        yield commit, when, data
+
+
+def _cat_files(specs: list[str], root: Path | None = None) -> list[bytes | None] | None:
+    """The contents of each `<commit>:<path>` in `specs`, read with one git cat-file --batch (None for
+    one that does not exist, such as a file deleted in that commit); None when git fails."""
+    done = _git(["cat-file", "--batch"], root, binary=True, stdin="".join(f"{s}\n" for s in specs).encode("utf-8"))
+    if done is None or done.returncode != 0:
+        return None
+    out, data, pos = [], done.stdout, 0
+    for _ in specs:
+        end = data.find(b"\n", pos)
+        if end < 0:
+            return None
+        header = data[pos:end].split()
+        pos = end + 1
+        if len(header) == 3 and header[2].isdigit():
+            size = int(header[2])
+            out.append(data[pos:pos + size] if header[1] == b"blob" else None)
+            pos += size + 1  # the content, then a newline
+        else:
+            out.append(None)  # "<spec> missing", or "ambiguous"
+    return out

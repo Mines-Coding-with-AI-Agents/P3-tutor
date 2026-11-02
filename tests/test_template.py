@@ -17,10 +17,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from p3 import check, claude, cli, compare, config, score, topic, util
+from p3 import check, claude, cli, compare, config, reviews, score, topic, util
 from tests import ENV_KEYS, REPO, fake_command
 
-SHIPPED = ("bench", "p3", "tutor", "configs")
+SHIPPED = ("bench", "p3", "tutor", "configs", "reviews")
 QUICK = ["teach", "quiz", "grade-s1", "tutor-p01", "tutor-p02"]
 
 
@@ -171,7 +171,49 @@ class TemplateTests(unittest.TestCase):
         self.assertTrue(re.search(r"bench/runs/c0-baseline/: 1 run, each made with configs/c0-baseline/", r.text()), r.text())
         strict = check.run_checks(self.root, final=True)
         self.assertEqual(strict.exit_code(), 1, "the template is not a finished hand-in")
-        self.assertIn("compare c0-baseline / c1-skills, tutor", strict.text())
+        self.assertIn("compare c0-baseline / final, tutor on agent-architecture: no complete session yet", strict.text())
+        self.assertNotIn("compare c0-baseline / c1-skills", strict.text(), "the only required blind comparison is c0-baseline against final")
+
+    @unittest.skipUnless((REPO / reviews.REVIEWS_DIR).is_dir(), "the template's reviews/ is not in this checkout yet")
+    def test_the_shipped_review_files(self):
+        """reviews/ as it ships: every file p3 check reads is there and parses, every item it makes is
+        work to do (TODO) without --final and a FAIL with it, and reviews/README.md holds no TODO."""
+        readme = self.root / reviews.REVIEWS_DIR / "README.md"
+        self.assertTrue(readme.is_file(), "reviews/README.md tells the student how to use the files")
+        self.assertNotIn("TODO", util.read_text(readme))
+        for step in reviews.STEPS:
+            review = reviews.read_step(step, self.root)
+            self.assertIsNotNone(review, f"the template ships {reviews.step_file(step)}")
+            self.assertTrue(review.major.present, step)
+            self.assertFalse(review.major.complete or review.major.touched, f"{step}: the major review ships with every text TODO")
+            self.assertEqual(review.major.ratings(), {}, step)
+            self.assertIsNone(review.rounds_problem, step)
+            if step == "final":
+                self.assertEqual([(r.optional, r.touched) for r in review.rounds], [(True, False)], "one optional round, untouched")
+                self.assertIsNone(review.sessions_problem)
+                self.assertEqual(len(review.sessions), reviews.SESSIONS)
+                self.assertFalse(any(s.touched for s in review.sessions))
+                self.assertIsNone(review.topics_problem)
+                self.assertTrue(review.topics and all(t.problems for t in review.topics), "the test-topic sections ship as TODO placeholders")
+            else:
+                self.assertEqual([(r.optional, r.touched) for r in review.rounds], [(False, False), (False, False)], step)
+            structural = [p for p in review.major.problems if "is still TODO" not in p and "still the placeholder" not in p]
+            self.assertEqual(structural, [], f"{step}: every heading and field p3 check reads is in place")
+        entries = reviews.read_components(self.root)
+        self.assertIsNotNone(entries, "the template ships reviews/components.md")
+        self.assertEqual(len(entries), 1, "one empty entry; the example sits inside an HTML comment")
+        self.assertTrue(all("is still TODO" in p or "give the entry" in p for p in entries[0].problems), entries[0].problems)
+        loose, strict = check.run_checks(self.root), check.run_checks(self.root, final=True)
+        self.assertEqual(loose.exit_code(), 0, loose.text())
+        mine = [i for i in loose.items(check.HANDIN) if i.text.startswith(f"{reviews.REVIEWS_DIR}/")]
+        self.assertEqual(len(mine), 11, "rounds and major review of each step, final's sessions and test topics, the inventory")
+        for item in mine:
+            optional = "quick rounds (optional)" in item.text
+            self.assertEqual(item.status, check.OK if optional else check.TODO, item.text)
+        for item in strict.items(check.HANDIN):
+            if item.text.startswith(f"{reviews.REVIEWS_DIR}/"):
+                self.assertEqual(item.status, check.OK if "quick rounds (optional)" in item.text else check.FAIL, item.text)
+        self.assertEqual([i.status for i in loose.items() if "c1-skills: skills only" in i.text], [check.OK])
 
 
 if __name__ == "__main__":

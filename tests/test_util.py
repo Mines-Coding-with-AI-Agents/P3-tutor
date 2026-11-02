@@ -7,6 +7,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from p3 import util
 from p3.util import P3Error
@@ -283,6 +284,42 @@ class GitTests(RepoTestCase):
         self.assertEqual(first.utcoffset().total_seconds(), 0)
         delta = abs((util.utc_now() - first).total_seconds())
         self.assertLess(delta, 600)
+
+    def test_file_versions(self):
+        self.assertEqual(list(util.git_file_versions("notes.md", self.root)), [], "never committed")
+        for n, text in enumerate(("one\n", "two\n"), 1):
+            write(self.root / "notes.md", text)
+            git(self.root, "add", "-A")
+            git(self.root, "commit", "-q", "-m", f"version {n}", when=f"2026-11-0{n}T12:00:00Z")
+        (self.root / "notes.md").unlink()
+        git(self.root, "commit", "-q", "-am", "gone", when="2026-11-03T12:00:00Z")
+        versions = list(util.git_file_versions("notes.md", self.root))
+        self.assertEqual([(when.isoformat(), data) for _commit, when, data in versions], [
+            ("2026-11-01T12:00:00+00:00", b"one\n"), ("2026-11-02T12:00:00+00:00", b"two\n"), ("2026-11-03T12:00:00+00:00", None),
+        ])  # fmt: skip
+        self.assertEqual([c for c, _w, _d in versions], [c for c, _w in util.git_log_path("notes.md", self.root)])
+        util.remove_tree(self.root / ".git")  # git's objects are read-only on Windows
+        self.assertEqual(list(util.git_file_versions("notes.md", self.root)), [], "not a git repository")
+
+    def test_file_versions_in_one_git_process(self):
+        """A process per version costs tens of milliseconds on Windows, so they are read in one."""
+        texts = [f"version {n}\n" + "x" * (n * 1000) for n in range(1, 6)]
+        for n, text in enumerate(texts, 1):
+            write(self.root / "my notes.md", text)
+            git(self.root, "add", "-A")
+            git(self.root, "commit", "-q", "-m", f"version {n}")
+        calls: list[str] = []
+        real = util._git
+
+        def counting(args, *rest, **kwargs):
+            calls.append(args[0])
+            return real(args, *rest, **kwargs)
+
+        with mock.patch.object(util, "_git", counting):
+            versions = list(util.git_file_versions("my notes.md", self.root))
+        self.assertEqual([data for _c, _w, data in versions], [t.encode("utf-8") for t in texts])
+        self.assertEqual(calls.count("cat-file"), 1, calls)
+        self.assertNotIn("show", calls)
 
 
 class RunKindAndGitProblemTests(RepoTestCase):

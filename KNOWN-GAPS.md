@@ -52,4 +52,4 @@ Show that it works with its tests and a live trace, as the README asks, and do n
 
 ## What the baseline cost
 
-A full run averaged 1.85 million tokens (49 thousand of them output), about 6 minutes of scenario time run one after another, and $1.75 at list price, plus about 56 thousand tokens for scoring; the README's "What the runs cost" has the breakdown by scenario.
+A full run averaged 1.85 million tokens (49 thousand of them output), about 6 minutes of scenario time run one after another, and $1.75 at list price, plus about 57 thousand tokens for scoring; the README's "What the runs cost" has the breakdown by scenario.

@@ -1,8 +1,9 @@
 # p3-check: the check GitHub runs on every push and pull request of your P3 repo.
 # It runs `python -m p3 check`, the same command you run on your machine: are the course's fixed
-# files unchanged, do your snapshots, runs and comparison records still match each other, and does
-# every topic validate? Work you have not done yet is a TODO line and keeps the run green; only a
-# FAIL line turns it red, and each FAIL line names the file to look at.
+# files unchanged, do your snapshots, runs and comparison records still match each other, does
+# every topic validate, and does c1-skills stay free of subagents? Work you have not done yet, in
+# reviews/ as anywhere else, is a TODO line and keeps the run green; only a FAIL line turns it red,
+# and each FAIL line names the file to look at.
 # It never calls Claude: your runs were made on your machine and are checked as committed.
 # This file belongs to the course, so please leave it as it is.
 
