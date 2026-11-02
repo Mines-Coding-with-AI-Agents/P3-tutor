@@ -89,7 +89,7 @@ class TemplateTests(unittest.TestCase):
         self.assertEqual([s["id"] for s in run["scenarios"]], QUICK)
         self.assertTrue(all(s["status"] == "ok" for s in run["scenarios"]), run["scenarios"])
         self.assertEqual({s["entry"] for s in run["scenarios"]}, {"/teach"})
-        self.assertEqual(run["allowed_tools"], ["WebSearch", "WebFetch"])
+        self.assertEqual(run["allowed_tools"], ["Glob", "Grep", "WebSearch", "WebFetch"])
 
         prompts: list[tuple[str, str]] = []
 

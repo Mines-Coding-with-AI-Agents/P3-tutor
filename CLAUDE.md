@@ -15,7 +15,7 @@ The student directs; you build one step at a time and say what each change does,
   The bench starts each job with `/teach`, `/tutor`, `/quiz` or `/grade` when that skill exists and with `/teach` otherwise, so those four names are fixed.
 - Subagents go in `tutor/.claude/agents/<name>.md`; `tutor/.claude/agents/README.md` explains the fields and what the bench showed about them.
 - Hooks go in `tutor/.claude/settings.json`, because hooks in subagent frontmatter do not run in the bench's `claude -p` sessions; put any script a hook runs under `tutor/.claude/` so it is part of the config.
-- `permissions.allow` in `tutor/.claude/settings.json` becomes the bench's `--allowedTools`, and any other tool that would need a prompt is denied in a bench run; the key `model` sets the model (default `sonnet`).
+- `permissions.allow` in `tutor/.claude/settings.json` becomes the bench's `--allowedTools`, together with `Glob` and `Grep`, which the bench always adds; any other tool that would need a prompt is denied in a bench run; the key `model` sets the model (default `sonnet`).
 - `tutor/FORMATS.md` is a copy of `bench/FORMATS.md`, the output contract the bench reads; never change either, and `p3 check` fails if they differ.
 - This file, and any skills or subagents under a root `.claude/`, also load when the student runs `claude` inside `tutor/`, but never in a bench run, so tutor behavior belongs in `tutor/`.
 

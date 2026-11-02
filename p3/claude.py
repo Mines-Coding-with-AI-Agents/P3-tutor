@@ -4,8 +4,8 @@ Two kinds of call go through here.
 
 - **Bench scenarios** (p3 bench): `claude -p <prompt> --output-format stream-json --verbose
   --no-session-persistence --setting-sources project,local --permission-mode acceptEdits
-  --max-turns <n> --model <model>` plus `--allowedTools <tool> <tool> ...` with the tools the config
-  allows, run in the scenario's own folder. The whole stdout stream is the trace; its last `"type": "result"`
+  --max-turns <n> --model <model>` plus `--allowedTools Glob Grep <tool> ...` with the tools the config
+  allows (Glob and Grep always, see bench_tools), run in the scenario's own folder. The whole stdout stream is the trace; its last `"type": "result"`
   line is the result.
 - **Scoring calls** (p3 score): `claude -p --output-format json --no-session-persistence
   --setting-sources project,local --tools "" --model <model>` with the prompt on standard input, in an
@@ -55,6 +55,7 @@ KEEP_CLAUDE_VARS = ("CLAUDE_CONFIG_DIR", "CLAUDE_CODE_OAUTH_TOKEN", "CLAUDE_CODE
 SET_VARS = {"DISABLE_AUTOUPDATER": "1"}
 COST_LABEL = "list-price equivalent, not what you pay on a subscription"
 SUBAGENT_TOOLS = ("Task", "Agent")
+SEARCH_TOOLS = ("Glob", "Grep")
 
 _warned_keys: set[str] = set()
 _live: set[subprocess.Popen] = set()
@@ -123,8 +124,17 @@ def claude_command() -> list[str]:
     return [path]
 
 
+def bench_tools(allowed_tools: list[str]) -> list[str]:
+    """The tools a bench scenario passes with --allowedTools: Glob and Grep first, then the config's
+    allow list. On macOS, Linux and WSL, Claude Code leaves Glob and Grep out of the default tool set
+    and searches through Bash, which a bench run does not allow; naming them in --allowedTools brings
+    them back, so every config can search its workspace the same way on every system."""
+    return [*SEARCH_TOOLS, *(t for t in allowed_tools if t not in SEARCH_TOOLS)]
+
+
 def bench_command(claude: list[str], prompt: str, max_turns: int, model: str, allowed_tools: list[str]) -> list[str]:
-    """The command line of one bench scenario (spec section 5)."""
+    """The command line of one bench scenario (spec section 5); allowed_tools is the full list from
+    bench_tools()."""
     cmd = [
         *claude, "-p", prompt,
         "--output-format", "stream-json",

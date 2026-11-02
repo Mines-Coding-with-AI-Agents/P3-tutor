@@ -150,7 +150,7 @@ TODO: your ablation, its prediction, its table and your reading.
 ## 7. The guard
 
 What does your guard block, and what does it allow?
-Paste the result of running its tests, and list the cases they cover: the main conversation reading `keys/` with each of Read, Grep, Glob and Bash, the grader reading them, and the reads that must still work.
+Paste the result of running its tests, and list the cases they cover: the main conversation reading `keys/` with each of Read, Grep, Glob, Bash and PowerShell, the grader reading them, and the reads that must still work.
 Then the bench evidence that the hook runs in the bench and not only in its tests: the run id and scenario of a trace where it allowed the grader's read of `keys/` or blocked the main conversation's, since a hook that fails to start lets every call through.
 Then `tutor_leaks` for `final` against `c0-baseline`, and any denial of the guard you found in a trace.
 

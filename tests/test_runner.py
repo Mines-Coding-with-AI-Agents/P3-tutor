@@ -78,6 +78,11 @@ class CommandTests(unittest.TestCase):
     def test_no_allowed_tools_no_flag(self):
         self.assertNotIn("--allowedTools", claude.bench_command(["claude"], "x", 5, "sonnet", []))
 
+    def test_bench_tools_always_has_glob_and_grep(self):
+        # macOS, Linux and WSL leave Glob and Grep out unless --allowedTools names them.
+        self.assertEqual(claude.bench_tools([]), ["Glob", "Grep"])
+        self.assertEqual(claude.bench_tools(["WebSearch", "Grep", "Bash(wc:*)"]), ["Glob", "Grep", "WebSearch", "Bash(wc:*)"])
+
     def test_score_command(self):
         cmd = claude.score_command(["claude"], "claude-haiku-5-5")
         self.assertEqual(cmd[:2], ["claude", "-p"])
@@ -256,7 +261,7 @@ class BenchTests(RepoTestCase):
         self.assertIsNone(run["topic_commit"], "the fixture is not a git repository")
         self.assertEqual((run["repeat"], run["minutes"], run["quick"]), (1, 30, True))
         self.assertEqual(run["claude_version"], "2.1.314 (Claude Code)")
-        self.assertEqual(run["allowed_tools"], ["WebSearch", "WebFetch"])
+        self.assertEqual(run["allowed_tools"], ["Glob", "Grep", "WebSearch", "WebFetch"])
         self.assertEqual(run["model"], "sonnet")
         self.assertEqual([s["id"] for s in run["scenarios"]], ["teach", "quiz", "grade-s1", "tutor-p01", "tutor-p02"])
         for s in run["scenarios"]:
@@ -288,7 +293,7 @@ class BenchTests(RepoTestCase):
 
         # what the fake saw: the config, the workspace and FORMATS.md, a scrubbed environment, the allowed tools
         fake = result["fake"]
-        self.assertEqual(fake["allowed_tools"], ["WebSearch", "WebFetch"])
+        self.assertEqual(fake["allowed_tools"], ["Glob", "Grep", "WebSearch", "WebFetch"])
         self.assertEqual(fake["env"], {"ANTHROPIC_API_KEY": False, "ANTHROPIC_AUTH_TOKEN": False, "claude_vars": ["CLAUDE_CONFIG_DIR"]})
         for rel in ("CLAUDE.md", "PREFERENCES.md", ".claude/settings.json", ".claude/skills/teach/SKILL.md", "FORMATS.md", "MISSION.md", "NOTES.md", "quizzes/0001.json", "keys/0001.json", "submissions/s1.json", "learning-records/0001-what-a-model-does.md"):
             self.assertIn(rel, fake["seen"])

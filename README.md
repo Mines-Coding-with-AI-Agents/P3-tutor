@@ -169,6 +169,9 @@ Some advice that will save you time:
   The bench keeps every new file a scenario writes, so the record lands in the run's outputs, and you can then say whether the revisions moved anything.
 - **Keep drafts out of the folders the bench reads.**
   The teach check expects exactly one new lesson in `lessons/`, so a draft saved there turns a good run into a recorded failure; put drafts in a folder of your own, such as `drafts/`.
+- **Watch the permission denials.**
+  In my own review-loop config, the teach session tried seven times to copy the finished draft into `lessons/` with a shell command, was denied each time, and then wrote the whole lesson out again, which costs output tokens and turns.
+  `run.json` lists every scenario's denials; either allow the narrow command you need in `tutor/.claude/settings.json`, or tell the skill how to finish without it.
 
 #### Step 3: split up the teach job (`c3-split`)
 
@@ -196,8 +199,10 @@ These are the facts the guard rests on, from the Claude Code documentation and m
   A hook that fails in any other way, such as a script that is not found, a Python command that does not exist on the machine, or a script that raises an exception, lets the tool call through, so a broken guard looks exactly like no guard.
   Reference the script by a path that resolves from the workspace root, as the hooks documentation does with `$CLAUDE_PROJECT_DIR`, because the bench runs each scenario in a fresh folder.
   Then confirm once, with a `--config live` run and its trace, that the hook really runs in the bench: the grader's reads of `keys/` go through, and a read by the main conversation comes back with your hook's message.
-- **Cover Read, Grep, Glob and Bash.**
+- **Cover Read, Grep, Glob, Bash and PowerShell.**
   A guard on Read alone is a guard that `cat keys/0001.json` walks around.
+  On Windows, Claude Code also has a PowerShell tool, on by default, so match `Bash|PowerShell` for shell commands, as the hooks documentation advises; my pilot's tutors reached for PowerShell on their own.
+  The bench always gives your tutor Glob and Grep, but in your own sessions on macOS, Linux and WSL, Claude Code searches with `find` and `grep` through Bash instead, so Bash is not optional.
 - **Do not use a permission deny rule for this.**
   A deny rule applies to subagents too, so it would block the grader, and a hook cannot lift a deny.
 
@@ -383,7 +388,7 @@ If you do not have `uv`, every command also works as `python -m p3 ...` (on macO
    Then read `KNOWN-GAPS.md`.
    The gaps there are starting points I saw, not a checklist.
 10. When that works, start the baseline's three full runs in your own terminal: `uv run p3 bench --config c0-baseline --repeats 3`.
-    That is 30 sessions plus their scoring, likely more than an hour, so start it when you can leave it running.
+    That is 30 sessions plus their scoring, about 20 to 25 minutes for the baseline in my pilot, so start it when you can leave it running.
 
 Please do all of this on the first day.
 Setup is the step with the most ways to go wrong, and you want it behind you while there is plenty of time.
@@ -466,7 +471,21 @@ The runs the project needs:
 
 Plus the quick runs you make while you iterate.
 
-PILOT-PENDING: Measured token costs for each scenario are added here after the pilot run.
+These are my pilot's numbers, with Claude Code 2.1.314 and Sonnet: the baseline averaged over three full runs, and one full run of a review-loop config of my own (four skills, with reviewers on teach, quiz and grade, at most two rounds each).
+
+| Scenario | `c0-baseline` | minutes | review loops | minutes |
+|---|---|---:|---|---:|
+| `teach` | 744k tokens (28k output) | 2.8 | 4.96M tokens (109k output), 5 subagents | 9.8 |
+| `quiz` | 161k tokens (5k output) | 0.6 | 747k tokens (30k output), 2 subagents | 3.6 |
+| each `grade` | 160k tokens (3k output) | 0.45 | 311k tokens (9k output), 1 subagent | 1.05 |
+| each tutor probe | about 105k tokens (1.5k output) | 0.25 | about the same, no review loop | 0.25 |
+| **full run** | **1.85M tokens (49k output), $1.75** | **5.8** | **6.99M tokens (167k output), $4.48** | **17.1** |
+| scoring a full run | about 57k tokens, $0.19 | under 1 | the same | under 1 |
+
+The minutes are summed over a run's scenarios, which is about how long a run takes with the default `--jobs 1`.
+A quick run of the baseline was 1.1M tokens and about 4 minutes.
+Most of these tokens are cached reads of Claude Code's own instructions and tools, which cost far less than new input or output, so the list-price column grows more slowly than the token column.
+The review loops made the teach scenario about 6.7 times as expensive in tokens and 3.5 times as slow, and a split teach pipeline adds more on top; if your `final` costs about what my review-loop config did, its three runs are about 21 million tokens.
 
 Some habits that keep the cost down:
 
@@ -655,6 +674,7 @@ If Canvas and this file ever disagree, Canvas wins, and please tell me so I can 
 - **A scenario keeps hitting permission denials.**
   `run.json` lists them per scenario.
   The bench passes your config's `permissions.allow` list from `tutor/.claude/settings.json` to Claude Code, and in a fresh folder that list is the only thing that allows a tool, so add the tool there and try it with `--config live` before you snapshot.
+  The bench always adds `Glob` and `Grep` to that list, because on macOS, Linux and WSL Claude Code leaves them out unless they are named, and every config should be able to search its workspace the same way on every system.
 - **A scenario times out or writes nothing.**
   Read its trace (`trace.jsonl.gz` opens with any gzip tool, and Claude Code can read it for you), and rerun just that scenario with `--config live --only <id> --keep` to look inside its working folder afterwards.
 - **`p3 bench` refuses your test topic.**

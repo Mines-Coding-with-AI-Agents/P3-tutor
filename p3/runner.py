@@ -209,7 +209,7 @@ def run_scenario(sc: Scenario, cfg: config.Config, tp: topic.Topic, formats: Pat
         util.copy_files(tp.workspace, work, util.list_files(tp.workspace))
         shutil.copyfile(formats, work / "FORMATS.md")
         before = {rel: _digest(work / rel) for rel in util.list_files(work)}
-        cmd = claude.bench_command(claude_cmd, sc.prompt, sc.max_turns, cfg.model, cfg.allowed_tools)
+        cmd = claude.bench_command(claude_cmd, sc.prompt, sc.max_turns, cfg.model, claude.bench_tools(cfg.allowed_tools))
         proc = claude.run_process(cmd, work, claude.child_env(), sc.timeout_s)
         outputs, changed = [], []
         after = util.list_files(work)
@@ -558,7 +558,7 @@ def bench(args) -> int:
             "run_id": run_id, "config": cfg.name, "config_hash": cfg.hash, "topic": tp.id, "topic_hash": topic_hash,
             "topic_commit": topic_commit, "repeat": k, "minutes": minutes, "quick": bool(args.quick),
             "started_at": util.iso_utc(), "finished_at": None, "claude_version": version, "p3_version": p3.__version__,
-            "platform": platform.platform(), "model": cfg.model, "allowed_tools": cfg.allowed_tools,
+            "platform": platform.platform(), "model": cfg.model, "allowed_tools": claude.bench_tools(cfg.allowed_tools),
             "entries": cfg.entries, "only": [s.id for s in scenarios] if args.only else None,
             "ancestor_memory": memory, "scenarios": [],
         }  # fmt: skip

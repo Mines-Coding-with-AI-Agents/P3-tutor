@@ -63,12 +63,18 @@ I checked these against Claude Code 2.1.314, the way the bench runs it: `claude 
   Inside a subagent, the JSON a hook receives carries `agent_type` (the subagent's `name`) and an `agent_id`; in the main conversation it carries neither.
   A PreToolUse hook that allowed reading a file only when `agent_type` was `"grader"` let a `grader` subagent read it and blocked the main conversation.
   Hooks from `.claude/settings.json` fire for a subagent's tool calls just as they do for the main conversation's.
-  Remember that `Read` is not the only way to read a file: `Grep`, `Glob` and `Bash` (`cat keys/0001.json`) can too.
+  Remember that `Read` is not the only way to read a file: `Grep`, `Glob`, `Bash` (`cat keys/0001.json`) and, on Windows, `PowerShell` (`Get-Content keys/0001.json`) can too.
 - **Subagents cost tokens, and the bench counts them.**
   Each run's `run.json` records every scenario's tokens summed over every model used, so subagents and the model behind web search are included, along with how many subagents it started, how deeply they nested, and of which types.
 - **Tools have to be allowed in `tutor/.claude/settings.json`.**
   A `claude -p` run in a fresh folder ignores the project's `permissions.allow`, so the bench passes that list with `--allowedTools`, and runs with `--permission-mode acceptEdits` so file edits inside the folder go through.
   A bench run has no one to approve anything else, so a tool call that would need a permission prompt is denied and counted in `run.json` as a permission denial.
+  The Agent tool, which starts a subagent, needs no allow entry, and the allow list also covers your subagents' tool calls.
+  A subagent's `permissionMode` field has no effect in the bench, because a subagent started from an `acceptEdits` session runs in that mode.
+- **The bench always adds Glob and Grep.**
+  On macOS, Linux and WSL, Claude Code leaves the Glob and Grep tools out by default and searches with `find` and `grep` through Bash instead; naming them in `--allowedTools` brings them back.
+  So the bench always passes them, and every config can search its workspace the same way on every system.
+  In your own sessions in `tutor/` on those systems, searches still go through Bash, so a guard has to cover Bash as well as Glob and Grep, and on Windows PowerShell too.
 
 ## Working with subagents
 
