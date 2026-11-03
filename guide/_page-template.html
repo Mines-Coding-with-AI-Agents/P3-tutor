@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PAGE TITLE - P3 Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="book.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="book" href="index.html">P3 Guide</a>
+    <span class="where">CSCI 498E/598E · Project 3, a tutoring agent</span>
+  </div>
+</header>
+
+<div class="layout">
+<!-- nav:start -->
+<!-- nav:end -->
+
+<main>
+<article class="chapter">
+
+<p class="eyebrow">Part III · The ladder</p>
+<h1>Page title as a plain name</h1>
+<p class="lede">One or two sentences that say what this page gives you.</p>
+<p class="meta">About 10 minutes to read.</p>
+
+<!-- Every step page opens with the short path: why the step exists, what to do, how you know it is
+     done, and where to go next. Keep Do to three actions at most; the detail goes below. -->
+<section class="path" aria-labelledby="short-path">
+  <h2 id="short-path">The short path</h2>
+  <dl>
+    <dt>Why</dt>
+    <dd><p>Why this step exists, in one or two sentences, with its cost when it has one.</p></dd>
+    <dt>Do</dt>
+    <dd><ol><li>The first action, with the window it happens in.</li><li>The second.</li></ol></dd>
+    <dt>Done when</dt>
+    <dd><p>What you can see when it is done, such as a line of <code>uv run p3 next</code>.</p></dd>
+    <dt>Then</dt>
+    <dd><p><a href="index.html">The next page</a>, or ask the Guide.</p></dd>
+  </dl>
+</section>
+
+<h2 id="a-section">A section heading</h2>
+<p>Running text in full sentences to "you". Name a window with a tag: <span class="tag guide">Guide</span>, <span class="tag builder">Builder</span>, <span class="tag tutor">Your tutor</span>, <span class="tag plain">Plain terminal</span>. Use <code>inline code</code> for commands, paths and identifiers.</p>
+
+<!-- The exact words to type into a window. The head says which window; the words go in the pre. -->
+<div class="say builder">
+  <div class="say-head">Say to the Builder</div>
+  <pre>Act on Round 2 of reviews/c1-skills.md.</pre>
+  <p>What happens next, or why these words, in a sentence.</p>
+</div>
+
+<div class="say guide">
+  <div class="say-head">Say to the Guide</div>
+  <pre>What does the major review of c1-skills ask me for?</pre>
+</div>
+
+<div class="cmd">
+  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <pre class="in">uv run p3 bench --config c0-baseline --repeats 3</pre>
+  <pre class="out">What it prints, copied from a real run, trimmed with ... where it is long.</pre>
+</div>
+
+<ol class="steps">
+  <li><p><strong>A real sequence step.</strong> Use numbered steps only when the order matters.</p></li>
+  <li><p>The next step.</p></li>
+</ol>
+
+<div class="you-see"><span class="label">What you will see</span><p>The expected output or result.</p></div>
+<div class="watch"><span class="label">Watch out</span><p>A trap, a cost, or a common mistake.</p></div>
+<div class="fail"><span class="label">If it fails</span><p>The exact message and the fix.</p></div>
+<div class="why"><span class="label">Why it is this way</span><p>The reason behind a rule.</p></div>
+<div class="note"><span class="label">Note</span><p>Anything else worth setting apart.</p></div>
+
+<div class="table-wrap">
+<table>
+  <caption>What the table shows, and where the numbers come from.</caption>
+  <thead><tr><th>Scenario</th><th class="num">Tokens</th></tr></thead>
+  <tbody><tr><td><code>teach</code></td><td class="num">744k</td></tr></tbody>
+</table>
+</div>
+
+<figure>
+  <div class="diagram">
+    <svg viewBox="0 0 600 120" role="img" aria-label="Describe the diagram">
+      <rect x="10" y="30" width="160" height="60" rx="4" fill="none" stroke="currentColor"/>
+      <text x="90" y="65" text-anchor="middle" fill="currentColor" font-size="14">a box</text>
+    </svg>
+  </div>
+  <figcaption>What the diagram shows.</figcaption>
+</figure>
+
+</article>
+<!-- pager:start -->
+<!-- pager:end -->
+</main>
+</div>
+
+<script src="book.js"></script>
+</body>
+</html>

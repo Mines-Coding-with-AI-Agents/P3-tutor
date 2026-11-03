@@ -19,7 +19,7 @@ A **round** is a quick round in one of your step files in `reviews/`, and its **
 A **pass** is one revise-and-review iteration inside one of your tutor's review loops, so a loop capped at two passes reviews a draft at most twice.
 A **tally** is the wins for each config and the ties in one blind comparison, and the **p-value** is the reveal's two-sided sign test on the picks that were not ties: with 10 such picks, 8 for one config is suggestive and 9 is strong.
 **Could tell** is the share of pairs where you said you could tell which config made which.
-The objective checks use the names `p3 report` prints, such as `teach_facts_correct`, `quiz_key_agreement`, `grade_false_wrong` and `tutor_leaks`, and the README's section "The scenarios and the objective checks" says what each one measures.
+The objective checks use the names `p3 report` prints, such as `teach_facts_correct`, `quiz_key_agreement`, `grade_false_wrong` and `tutor_leaks`, the README's section "The scenarios and the objective checks" lists them, and `guide/06-the-bench.html` ("The headline numbers") says what each one measures.
 **Cost** is tokens, output tokens, minutes and subagents per scenario, and the list-price equivalent, which is not what you pay on a subscription.
 
 ---
@@ -255,7 +255,7 @@ TODO: the bench against your sessions.
 
 ## 10. The judge check
 
-Take ten decisions the judge made: for example ten tutor replies it marked met or not met, or ten facts in a lesson it marked present and correct.
+Take ten decisions the judge made: for example ten tutor replies it marked met or not met, or ten fact verdicts from your lessons (the judge checks six facts in each lesson on the shared topic, so ten come from two lessons).
 Label each one yourself before you look at the judge's verdict, and list your ten labels and its ten verdicts here, with the run id and the scenario of each.
 How many of ten did you agree on?
 Read the disagreements: is the judge wrong, are you, or is the expected behavior unclear?

@@ -18,6 +18,44 @@ You hand in three things:
 
 ---
 
+## Start here
+
+This README is the brief: what you hand in, the rules, and how I grade.
+The walkthrough is the guide in `guide/`, part of this repo: for every step, what to do, in which window, and why the project asks for it.
+Open `guide/index.html` in your browser: in VS Code, right-click it, choose "Reveal in File Explorer" (Windows) or "Reveal in Finder" (macOS), and double-click it; or, from a terminal in `work/p3-tutor`, run `start guide/index.html` (Windows, in Git Bash or PowerShell) or `open guide/index.html` (macOS).
+If the guide and this brief ever disagree, the brief wins, and please tell me so I can fix it.
+
+You work on P3 in one VS Code window with `work/p3-tutor` open as its own folder, through two Claude Code sessions with separate jobs, each in its own terminal started in `work/p3-tutor`.
+The Guide, `claude --agent p3-guide`, explains each step and why it exists and names the one next thing to do, and it never changes a file; the Builder, plain `claude`, changes your tutor, one change per round, and runs the `p3` commands you ask for.
+Full bench runs go in a third terminal with no Claude Code in it, a plain terminal, and `guide/02-two-windows.html` shows how to start each window and what to say to it.
+Whenever you are unsure where you are, run `uv run p3 next`, or ask the Guide "What's next?": it prints where you are on the project's map, the one next thing to do and the guide page that explains it, and it changes nothing.
+
+On the first day (`guide/01-setup.html` has each step in detail):
+
+1. Click **Use this template** at the top of this repo, then **Create a new repository**; name it **`p3-tutor`** and make it **Public**.
+2. Clone it into `work/`, your own space in the course repo, which git ignores: in a terminal at the course repo's root, run `gh repo clone <your-github-username>/p3-tutor work/p3-tutor`.
+3. Open `work/p3-tutor` as its own VS Code window (File > Open Folder, or `code work/p3-tutor`), so every terminal and every Claude Code session starts in your P3 repo.
+4. Check that `uv --version`, `claude --version` and `python --version` (`python3 --version` on macOS and Linux) each print a version.
+5. In `p3.json`, set `section` to `"498E"` or `"598E"`; 598E also sets `stretch` to `"length-study"`, and 498E leaves it `null` until choosing one.
+6. Run `uv run p3 check`: on a fresh copy it lists the items you have not done yet as work to do, which is not an error, and only a FAIL line means something is broken.
+7. Commit and push, and wait for the `p3-check` run on your repo's **Actions** tab to go green; CI never calls a model, it checks the files you committed.
+8. Start the Guide and the Builder (`guide/02-two-windows.html`); the first time, Claude Code asks whether you trust the folder with "No, exit" highlighted, so press the down arrow to "Yes, I trust this folder", then Enter.
+9. Run the baseline once, quickly: `uv run p3 bench --config c0-baseline --quick`, five scenarios and their scoring, the first command that draws on your Claude plan.
+   Then read what it made, `KNOWN-GAPS.md` and `reviews/README.md` (`guide/03-baseline.html`); the gaps in `KNOWN-GAPS.md` are starting points I saw, not a checklist.
+10. Start the baseline's three full runs in a plain terminal: `uv run p3 bench --config c0-baseline --repeats 3`, 30 sessions plus their scoring, about 20 to 25 minutes in my pilot.
+
+Please do all of this on the first day, because setup is the step with the most ways to go wrong, and you want it behind you while there is plenty of time.
+There are no checkpoints; `guide/17-pace.html` has the pace I would keep, week by week, and my estimate of your own time: about 32 hours for 498E, plus 4 to 6 for a stretch, and about 40 to 42 for 598E.
+
+A full bench run takes much longer than a quick one.
+In my pilot one full run took about 6 minutes for the baseline and about 17 for a config with review loops, three repeats of a larger config can take an hour or more, and the teach scenario alone may run up to 45 minutes.
+So you start full runs yourself, in a plain terminal in `work/p3-tutor`: they must not stop when a Claude Code window closes, and they run longer than Claude Code lets a command run in the foreground.
+
+**When you learn with the tutor**, open a terminal in `work/p3-tutor/tutor` and start `claude` there; its learner files (`MISSION.md`, `NOTES.md`, `lessons/` and the rest) are created in `tutor/` as you go.
+Claude Code also reads the `CLAUDE.md` of every folder above the one it starts in, so if a session there ever acts more like a course assistant than your tutor, that is why, and you can learn from a copy of `tutor/` outside the course repo instead.
+
+---
+
 ## What this project is
 
 You build a tutor that runs entirely inside Claude Code and does four jobs.
@@ -62,21 +100,23 @@ The rule behind the layout is simple: I own everything that runs the measurement
 | `bench/FORMATS.md`, `bench/scenarios.json`, `bench/judge/`, `bench/topics/` | the output contract, the scenarios, the judge prompts and the shared topic | mine, hash-checked |
 | `bench/own/` | your two test topics | yours |
 | `bench/runs/`, `bench/compare/` | your committed runs and blind comparisons | written by `p3` |
-| `reviews/` | your quick rounds and major reviews, your learning sessions, your test-topic reviews, and the component inventory | yours; Claude Code writes only what it changed in each round and the inventory's factual fields |
-| `p3/` | the runner, the scorer, the comparison tool and the check | mine, hash-checked |
-| `tests/` | the tests of `p3`, and the place for your guard's tests | mine, plus the tests you add |
+| `reviews/` | your quick rounds and major reviews, your learning sessions, your test-topic reviews, and the component inventory | yours; the Builder writes only what it changed in each round and the inventory's factual fields |
+| `p3/` | the runner, the scorer, the comparison tool, the check and `p3 next` | mine, hash-checked |
+| `tests/` | the tests of `p3` and of the Guide's guard, and the place for your own guard's tests | mine, plus the tests you add |
 | `EVAL.md`, `PREREG.md` | your write-up | yours |
 | `KNOWN-GAPS.md` | failures I saw when I ran the baseline, each with the run that shows it | mine |
 | `p3.json` | your section and your stretch | yours |
 | `README.md` | this brief | mine |
-| `CLAUDE.md` | orientation for Claude Code when you develop this repo, including what it must never write for you | mine |
+| `guide/` | the guide: the walkthrough of every step, opened from `guide/index.html` | mine |
+| `CLAUDE.md` | the two roles, and the Builder's rules for developing this repo, including what it must never write for you | mine |
+| `.claude/` | the two roles' files: the Guide's instructions in `.claude/agents/p3-guide.md`, the guard that keeps it read-only in `.claude/hooks/`, and `.claude/settings.json` | mine |
 
 **The tutor lives in `tutor/`, not at the root.**
-You develop it from the root, and you learn with it by starting Claude Code inside `tutor/`, so the tutor's `CLAUDE.md` is never the one you develop with.
+You develop it from the root, in the Guide and the Builder, and you learn with it by starting Claude Code inside `tutor/`, so the tutor's `CLAUDE.md` is never the one you develop with.
 
 **A config is `tutor/CLAUDE.md`, `tutor/PREFERENCES.md` and everything under `tutor/.claude/`.**
 The learner's files (`MISSION.md`, `NOTES.md`, `lessons/`, `quizzes/`, `keys/`, `grades/`, `learning-records/`, `assets/`, `submissions/`) are never part of a config.
-Neither is `tutor/.claude/settings.local.json`, the personal file Claude Code writes when you approve a tool in a session of your own, so anything the tutor needs goes in `tutor/.claude/settings.json`.
+Neither is `tutor/.claude/settings.local.json`, the personal file Claude Code writes when you approve a tool in a session of your own, which git ignores, so anything the tutor needs goes in `tutor/.claude/settings.json`.
 `uv run p3 snapshot <name>` copies the live config into `configs/<name>/` and records a hash of its files in `configs/<name>/SNAPSHOT.json`, and the bench runs any snapshot by name.
 I use snapshots rather than git tags because git does not push tags by default, and a run must always point at a config I can read.
 
@@ -115,138 +155,59 @@ Each step is measured against the one before it, in quality (your major review a
 The ablation names what it removes, for example `final-minus-quiz-review` or `final-minus-planner`, and you need at least one.
 Config names use lowercase letters, digits and hyphens.
 
-**The same loop, at every step:**
+**The same loop, at every step** (`guide/07-reviews.html` explains its reviews, and each step's page walks through it):
 
-1. **Build the step in quick rounds.**
-   Run the tutor as it stands with `uv run p3 bench --config live --quick`, which runs `tutor/` and writes under `bench/runs/_live/`, a folder git ignores; add `--only teach` (or any list of scenario ids) to rerun just the part you are working on.
-   Read and try what it made, write a few sentences of thoughts as a new round in the step's file in `reviews/`, and ask Claude Code to act on them.
-   It makes one change to the tutor, such as a modified skill, a new skill or a new subagent, and records what it changed under your thoughts.
-   Add one component per round, so the run before the round shows the tutor without it and the run after shows the tutor with it.
-   Make at least two rounds per step; "Your reviews" below says how.
-2. When you are happy with it, snapshot it: `uv run p3 snapshot c1-skills`.
-3. Run the full bench on the snapshot: `uv run p3 bench --config c1-skills`.
-4. **Write the step's major review** in `reviews/c1-skills.md`: that run's outputs and your own live tries of the tutor, criterion by criterion, each rated from 1 to 5 with written feedback and evidence, then how the step compares with the one before it and what the next step should fix.
-5. Paste the tables from `uv run p3 report --configs c0-baseline,c1-skills` into `EVAL.md`, your ratings among them, and write what the step bought and what it cost.
-6. Add the step's new skills and subagents to `reviews/components.md`.
-7. Commit `configs/`, `bench/runs/` and `reviews/`.
+1. **Build the step in quick rounds** ("Your reviews" below says how): at least two for each of `c1-skills`, `c2-review` and `c3-split`, optional in `final`, one component per round.
+2. **Snapshot it** when you are happy with it: `uv run p3 snapshot c1-skills`.
+3. **Make its full run**, in a plain terminal: `uv run p3 bench --config c1-skills`.
+4. **Write the step's major review** in `reviews/c1-skills.md`, criterion by criterion, on that run's outputs and your own live tries of the tutor.
+5. **Write the step's section of `EVAL.md`:** paste the tables from `uv run p3 report --configs c0-baseline,c1-skills`, your ratings among them, and write what the step bought and what it cost.
+6. **Add the step's new skills and subagents** to `reviews/components.md`.
+7. **Commit** `configs/`, `bench/runs/` and `reviews/`.
 
 A snapshot is frozen once it has runs.
 `p3 snapshot` refuses to overwrite a name without `--force`, and overwriting one that has runs makes `p3 check` fail, because those runs no longer match their config; make a new name instead.
 
 #### Step 1: four skills (`c1-skills`)
 
-Write `tutor/.claude/skills/teach/SKILL.md`, `tutor/.claude/skills/tutor/SKILL.md`, `tutor/.claude/skills/quiz/SKILL.md` and `tutor/.claude/skills/grade/SKILL.md`, however you like.
-The four names are fixed so the bench can start each job with `/<job>`; nothing else about them is.
-A config without one of them routes that job to `/teach`, which is how `c0-baseline` does all four jobs with one skill.
-Add any other skills you want, on any topic.
-This step is still one agent, so no quick round in it adds a subagent: each round changes or adds a skill, or makes another change the skills need, such as an allow rule in `tutor/.claude/settings.json` (Kind `other`).
-
-Each new skill takes one job away from `/teach`, so a round that adds one shows that job before and after it.
-With one new skill per round and a round to rewrite `teach` itself, this step usually takes four rounds or more, and your first round can start from the tutor as it ships.
-
-Two facts about how the bench starts a job help when you write these.
-The skill receives the rest of the bench's request as its arguments, and the exact wording of every request is in `bench/scenarios.json`.
-A tutor probe is one message, and the reply that gets scored is the final message of the session, so the `tutor` skill must answer in the chat and not in a file.
-
-The major review of `c1-skills` covers all four jobs, and it has a second use: what it finds becomes the checklists of your reviewers in step 2.
-So be specific in it, with the item ids and quotes a reviewer could check for.
-
-One thing to say when you claim what this step bought.
-`c0-baseline` keeps the neutral `PREFERENCES.md` the template ships, and `c1-skills` is the first config with yours, so this step, and the comparison of `c0-baseline` against `final`, measures your skills and your preferences together.
-Say so in `EVAL.md`, and say which differences you think came from which.
+Write `tutor/.claude/skills/<job>/SKILL.md` for each of `teach`, `tutor`, `quiz` and `grade`, however you like, and any other skills you want, on any topic.
+The four names are fixed so the bench can start each job with `/<job>`; a config without one of them routes that job to `/teach`, which is how `c0-baseline` does all four jobs with one skill.
+This step is still one agent, so no quick round in it adds a subagent, and `p3 check` fails on a subagent in `configs/c1-skills/` or a round of Kind `new subagent` in `reviews/c1-skills.md`.
+Add one new skill per round, so each round shows one job before and after its skill; with a round to rewrite `teach` itself, this step usually takes four rounds or more.
+It is measured against `c0-baseline`, and its major review covers all four jobs; be specific in it, with the item ids and quotes a reviewer could check for, because what it finds becomes the checklists of your reviewers in step 2.
+`c0-baseline` keeps the neutral `PREFERENCES.md` the template ships and `c1-skills` is the first config with yours, so this step, and `c0-baseline` against `final`, measures your skills and your preferences together; say so in `EVAL.md`, and say which differences you think came from which.
+`guide/08-step1-skills.html` walks through the step, including how the bench starts each job.
 
 #### Step 2: review loops (`c2-review`)
 
 Add review loops on teach, quiz and grade, with the reviewers as subagents; the tutor gets none.
 A review here is about quality, not agreement, and a reviewer that votes "looks good" is worth nothing.
-These are the dimensions I expect each job's reviews to cover, and they are the same criteria as your own major reviews:
-
-| Job | What the review checks |
-|---|---|
-| **Quiz** | difficulty; coverage of the lesson's core; wording and the ways an item could be misunderstood; writing quality; alignment with the learning goal |
-| **Grade** | whether the feedback is useful, explains enough, and is personalized the way this learner likes |
-| **Teach** | separate reviews for technical correctness and fact-checking, for pedagogy, for alignment with the learning goal, and for overall quality |
-
-On teach, "separate" means that each of the four gets its own checklist and its own findings, so a fact-check is never folded into a general impression.
-How you build that is yours: four reviewer subagents, or one lesson reviewer whose checklist has four separate sections and reports on each.
-One reviewer per job, three in `c2-review`, is what the 498E example in "The component inventory" counts toward the minimum of five subagents.
-
-Some advice that will save you time:
-
-- **Give each reviewer a specific checklist, and start it from your `c1-skills` review.**
-  "Review this" gets you a polite summary; "check that every distractor matches a named misconception and that no stem gives away its answer" gets you a finding.
-  Each problem your major review found, with its item id or quote, is a checklist item, and your `c2-review` major review then shows whether the reviewers caught it.
-- **Give each reviewer a fresh context.**
-  A subagent starts with a context of its own and sees only what you hand it, so it reads the draft the way the learner will, without the writer's reasoning to lean on.
-- **Cap the passes.**
-  Decide how many revise-and-review passes a loop may run, and what ends it early.
-  (I call these passes so they are never confused with your quick rounds in `reviews/`.)
-  A loop with no cap is a loop that can spend your week, and in the bench it can also run into the scenario's time or turn limit ("The scenarios and the objective checks" lists them), which turns it into a recorded timeout.
-- **Know what the quiz review checks coverage against.**
-  In the bench, the quiz scenario's workspace has no lesson, so there coverage means the objective's text and what `MISSION.md` and `NOTES.md` say the learner needs.
-  In your own sessions, review a quiz against the lesson in `lessons/` when there is one.
-- **Record what happened.**
-  Have each loop write a short record in a folder of the tutor's own, for example `review-records/NNNN-quiz.md`: how many passes ran, what each reviewer flagged, and what changed.
-  I suggest that name and not `reviews/`, so the tutor's records are never confused with your own reviews in the repo's `reviews/`.
-  The bench keeps every new file a scenario writes, so the record lands in the run's outputs, and you can then say whether the revisions moved anything.
-- **Keep drafts out of the folders the bench reads.**
-  The teach check expects exactly one new lesson in `lessons/`, so a draft saved there turns a good run into a recorded failure; put drafts in a folder of your own, such as `drafts/`.
-- **Watch the permission denials.**
-  In my own review-loop config, the teach session tried seven times to copy the finished draft into `lessons/` with a shell command, was denied each time, and then wrote the whole lesson out again, which costs output tokens and turns.
-  `run.json` lists every scenario's denials; either allow the narrow command you need in `tutor/.claude/settings.json`, or tell the skill how to finish without it.
-
-Add the reviewers one per quick round, so each one's with-and-without is the run before and after its round.
-The major review of `c2-review` covers the lesson, the quiz and the feedback.
+Each job's reviews cover the same criteria as your own major reviews (the table in "Your reviews"): the quiz's five for quiz, the feedback's three for grade, and the lesson's four for teach, as separate reviews, each with its own checklist and its own findings, so a fact-check is never folded into a general impression.
+How you build that is yours: four reviewer subagents, or one lesson reviewer whose checklist has four separate sections and reports on each; one reviewer per job, three in `c2-review`, is what the 498E example in "The component inventory" counts toward the minimum of five subagents.
+Add the reviewers one per quick round, so each one's with-and-without is the run before and after its round; with a loop on each of teach, quiz and grade, that is at least three rounds, even though `p3 check` counts only the two every step needs.
+It is measured against `c1-skills`, and its major review covers the lesson, the quiz and the feedback.
+`guide/09-step2-review-loops.html` has my advice for building the loops: checklists drawn from your `c1-skills` review, a fresh context for each reviewer, a cap on the passes, a record of what each loop did, drafts kept out of the folders the bench reads, and what to do about permission denials.
 
 #### Step 3: split up the teach job (`c3-split`)
 
-Split the teach job only, across subagents with jobs of your design: course planning, design, material writing, a visual and figure designer, a references finder, and so on.
-Tutor, quiz and grade are not split.
+Split the teach job only, across subagents with jobs of your design: course planning, design, material writing, a visual and figure designer, a references finder, and so on; tutor, quiz and grade are not split.
 Subagents are Markdown files in `tutor/.claude/agents/`, and `tutor/.claude/agents/README.md` explains what goes in one and which frontmatter fields matter.
 Add the pipeline's subagents one per quick round, as in step 2.
-You measure this step on teach, against `c2-review`, and its major review covers the lesson only.
+You measure this step on teach, against `c2-review`, and its major review covers the lesson only (`guide/10-step3-split.html`).
 
 #### `final`, the guard, and the ablation
 
-`final` is what earned its place.
-A step that did not pay for itself may be dropped, and saying so with the numbers behind it is a good result.
-
-`final` also adds a guard: a PreToolUse hook that keeps the answer keys in `keys/` away from the main conversation while the grader can still read them.
-It matters because every scenario's workspace holds a quiz's key, and a tutor that can read the key can hand out the answer.
+`final` is what earned its place: a step that did not pay for itself may be dropped, and saying so with the numbers behind it is a good result.
+`final` also adds a guard: a PreToolUse hook in `tutor/.claude/settings.json` that keeps the answer keys in `keys/` away from the main conversation while the grader can still read them, because every scenario's workspace holds a quiz's key, and a tutor that can read the key can hand out the answer.
 In `c0-baseline` there is no guard, because a single agent has to read the keys to grade.
-These are the facts the guard rests on, from the Claude Code documentation and my own checks of the version the bench runs:
-
-- **Put the hook in `tutor/.claude/settings.json`.**
-  Hooks in a subagent's frontmatter do not run in the bench's headless sessions, and the project's settings hooks do.
-- **Tell the grader from the main conversation by the hook's input.**
-  Inside a subagent the input carries `agent_type` (the subagent's name) and an `agent_id`; in the main conversation neither is there.
-  A hook that exits with code 2 blocks the tool call, and the model sees what the hook wrote to stderr.
-- **Only exit code 2 blocks.**
-  A hook that fails in any other way, such as a script that is not found, a Python command that does not exist on the machine, or a script that raises an exception, lets the tool call through, so a broken guard looks exactly like no guard.
-  Reference the script by a path that resolves from the workspace root, as the hooks documentation does with `$CLAUDE_PROJECT_DIR`, because the bench runs each scenario in a fresh folder.
-  Then confirm once, with a `--config live` run and its trace, that the hook really runs in the bench: the grader's reads of `keys/` go through, and a read by the main conversation comes back with your hook's message.
-- **Cover Read, Grep, Glob, Bash and PowerShell.**
-  A guard on Read alone is a guard that `cat keys/0001.json` walks around.
-  On Windows, Claude Code also has a PowerShell tool, on by default, so match `Bash|PowerShell` for shell commands, as the hooks documentation advises; my pilot's tutors reached for PowerShell on their own.
-  The bench always gives your tutor Glob and Grep, but in your own sessions on macOS, Linux and WSL, Claude Code searches with `find` and `grep` through Bash instead, so Bash is not optional.
-- **Do not use a permission deny rule for this.**
-  A deny rule applies to subagents too, so it would block the grader, and a hook cannot lift a deny.
-- **Once the guard is on, the main conversation cannot read `keys/`, so plan the grader around it.**
-  Up to `c3-split`, `/grade` usually runs in the main conversation and reads the key there, which the guard now blocks, so `final` hands grading to a subagent the guard allows, such as a `grader`.
-  The same goes for a quiz skill that reads or edits a key after writing it: have it work on a draft in `drafts/` and write the key once, or leave the key to an allowed subagent.
-  A grader that can no longer read the key shows up in the bench as a fall in `grade_verdict_agreement`, so try the change on `--config live --only grade-s1` before a full run.
-
-Which agents may read the keys is your decision: the grader, and perhaps a quiz reviewer.
 The guard comes with its own tests, as in lecture 17's lab: a small unittest file, for example `tests/test_guard.py`, that runs your hook script with sample hook inputs on stdin and checks that it blocks what it should and allows what it should.
-If `final` brings in a new skill or subagent, such as that grader subagent, give it a quick round in `reviews/final.md`, so its inventory entry has its with and without; the grader is the usual reason for a round in `final`.
+Then confirm once, with a `--config live` run and its trace, that the hook really runs in the bench, because a guard that fails to run looks exactly like no guard; `guide/12-final.html#guard` has the facts the guard rests on, so read them before you build it.
+Which agents may read the keys is your decision, the grader and perhaps a quiz reviewer, and once the guard is on, grading has to happen in a subagent it allows; give such a new component a quick round in `reviews/final.md`, so its inventory entry has its with and without.
 
-Then snapshot `final` and run it three times, and make at least one `final-minus-<x>` by removing one component and running it once.
-Commit `tutor/` when you snapshot `final`, so you can remove a component, snapshot the ablation, and get back with `git restore tutor/`.
-
-The major review of `final` covers all four jobs, on one of its three runs, and its live tries are your three real learning sessions with `final` on one of your test topics.
-Hold all three on `tutor/` as you snapshotted it (after the ablation, `git restore tutor/` brings it back), and note what the sessions make you want to change instead of changing it, so that all three are sessions with `final`.
-Write the review before you start the blind comparison, and commit it, so your open judgment is on record before your blind one.
-Then compare `c0-baseline` with `final` blind, as "The blind comparison" below describes.
+Then snapshot `final`, commit `tutor/` with it, and run it three times; make at least one `final-minus-<x>` by removing one component, snapshotting it and running it once, then bring `tutor/` back with `git restore tutor/`; and run `c0-baseline` and `final` once each on both test topics.
+Every one of these runs uses a frozen snapshot, so their order does not matter as long as `tutor/` is restored before your learning sessions; `uv run p3 next` lists the three repeats of `final` first, then the ablation's snapshot and run, then the test topics' runs.
+The major review of `final` covers all four jobs, on one of its three runs, and its live tries are your three learning sessions with `final` on one of your test topics, all held on `tutor/` as you snapshotted it: note what they make you want to change instead of changing it.
+Write that review before you start the blind comparison, and commit it, so your open judgment is on record before your blind one.
 
 ---
 
@@ -255,7 +216,7 @@ Then compare `c0-baseline` with `final` blind, as "The blind comparison" below d
 This is the part of the project that only you can do.
 A script can count facts and check keys, but whether a lesson teaches, whether a quiz item can be misread, whether feedback helps and whether the tutor is good to talk to are things you find out by reading and trying, and then saying so in writing.
 So you review your tutor at every step, and every review is recorded in `reviews/` and handed in.
-`reviews/README.md` has the details and an example of each part; this section is the overview.
+`reviews/README.md` has the format and an example of each part, and `guide/07-reviews.html` explains every part and why it exists; this section is the requirements.
 
 | File | What it holds |
 |---|---|
@@ -265,41 +226,28 @@ So you review your tutor at every step, and every review is recorded in `reviews
 
 ### Quick rounds, while you build
 
-Each step is built in quick rounds: at least two for each of `c1-skills`, `c2-review` and `c3-split`, and as many as you like for `final`.
-
-1. Run the tutor as it stands, usually `uv run p3 bench --config live --quick`, or `--only` with the scenarios you are working on.
-2. Read and try what it made, and write a few sentences of thoughts as a new round in the step's file: what worked, what did not, what you want changed.
-   Not every criterion is needed in a quick round; write about what you noticed.
-3. Ask Claude Code to act on the round.
-   It makes one change, by modifying a skill, building a new skill or building a subagent, and writes under your thoughts what it changed: the kind of change, the files, and why.
-4. The next round's run shows whether the change helped, and your next thoughts begin by saying so.
-
+Each step is built in quick rounds: at least two for each of `c1-skills`, `c2-review` and `c3-split` (step 2 takes at least three, one per review loop), and as many as you like for `final`.
+In each round you run the tutor as it stands, usually `uv run p3 bench --config live --quick`, or `--only` with the scenarios you are working on, which writes under `bench/runs/_live/`, a folder git ignores.
+You read and try what it made, and write a few sentences of thoughts in the round: first whether the last change helped, then what worked, what did not, and what you want changed.
+Then, in the Builder window, you say "Act on Round 2 of reviews/c1-skills.md." with your round and file, and it makes one change, by modifying a skill, building a new skill or building a subagent, and writes under your thoughts what it changed: the kind of change, the files, and why.
 One new component per round keeps the evidence clean: the run before the round is the tutor without the component, and the run after it is the tutor with it, which is exactly what the component inventory asks you for.
-In `c1-skills` no round adds a subagent, because subagents arrive in `c2-review` and `c3-split`.
 Live runs are not committed, so quote what you saw in your thoughts.
 
 ### Major reviews, at the end of each step
 
 When a step is done, you snapshot it, make its full run, and review it properly: that run's outputs, plus your own live tries of the tutor in `tutor/`, criterion by criterion.
 
-| Step | Jobs reviewed |
-|---|---|
-| `c1-skills` | Lesson, Quiz, Feedback, Tutor |
-| `c2-review` | Lesson, Quiz, Feedback |
-| `c3-split` | Lesson |
-| `final` | Lesson, Quiz, Feedback, Tutor |
-
-| Job | Criteria |
-|---|---|
-| Lesson | technical correctness and facts; pedagogy; alignment with the learning goal; overall quality |
-| Quiz | difficulty; coverage of the lesson's core; wording and possible misreadings; writing quality; alignment with the learning goal |
-| Feedback | useful; explains enough; personalized to how I like things explained |
-| Tutor | guardrails; personalization |
+| Job | Criteria | Reviewed in |
+|---|---|---|
+| Lesson | technical correctness and facts; pedagogy; alignment with the learning goal; overall quality | `c1-skills`, `c2-review`, `c3-split`, `final` |
+| Quiz | difficulty; coverage of the lesson's core; wording and possible misreadings; writing quality; alignment with the learning goal | `c1-skills`, `c2-review`, `final` |
+| Feedback | useful; explains enough; personalized to how I like things explained | `c1-skills`, `c2-review`, `final` |
+| Tutor | guardrails; personalization | `c1-skills`, `final` |
 
 Each criterion gets a rating from 1 (failing) to 5 (excellent) and written feedback that justifies it, with evidence: quotes, item ids, probe ids, sections of the lesson.
 `reviews/README.md` says what each rating means, so a 4 means the same thing at every step.
 Each major review ends by comparing the step with the one before it and saying what the next step should fix, or for `final`, what you would do next.
-`uv run p3 report` gathers your ratings into one table, "Your ratings", with a row per criterion and a column per step, so you can see the ladder through your own eyes beside the objective checks and the cost; `uv run p3 report --reviews` prints that table alone.
+`uv run p3 report` gathers your ratings into one table, "Your ratings", with a row per criterion and a column per step, so you can see the ladder through your own eyes beside the objective checks and the cost.
 
 ### How I grade them
 
@@ -316,9 +264,9 @@ A step that made things worse is a fine result to report, as long as the trail s
 ### Your part and the agent's part
 
 You write the Run line and your thoughts in each round, the Run line and your live tries in each major review, every rating and its feedback, the comparisons with the previous step, what the next step should fix, your learning sessions, your test-topic reviews, and each component's purpose, review and whether `final` kept it.
-Claude Code writes only what it changed in each round, and it may fill in the inventory's factual fields: the kind, the step that added the component, and where its with-and-without evidence is.
-It never writes or edits your parts, even to tidy them, and the root `CLAUDE.md` tells it so, which is one reason every development session starts by reading that file ("Start here" says how).
-Add a new round yourself, by copying the last one with its marker lines, when you write its thoughts.
+The Builder writes only what it changed in each round, and it may fill in the inventory's factual fields: the kind, the step that added the component, and where its with-and-without evidence is.
+It never writes or edits your parts, even to tidy them, and the root `CLAUDE.md`, which the Builder reads by itself because it starts in `work/p3-tutor`, tells it so.
+Write your parts in the file, in the editor, and never type them into a chat for an agent to put there; add a new round yourself, by copying the last one with its marker lines, when you write its thoughts.
 Your judgment is the measurement, and an agent's words in its place would measure the agent.
 
 ---
@@ -326,26 +274,21 @@ Your judgment is the measurement, and an agent's words in its place would measur
 ## The component inventory
 
 `reviews/components.md` has an entry for every skill and every subagent you built anywhere on the ladder, kept or dropped.
-It also replaces a separate design document: why each component exists is asked at the component, and `EVAL.md` holds the diagram of `final` as a whole.
-
+It also replaces a separate design document: why each component exists is asked at the component, and `EVAL.md` holds the diagram of `final` as a whole; `guide/14-write-up.html` walks through an entry, with an example.
 Each entry has the component's name as its heading (the skill's folder name, or the subagent's `name` from its frontmatter) and six fields:
 
 - **Kind:** `skill` or `subagent`.
-- **Step added:** the first of your snapshots that holds it, such as `c2-review`; for `teach`, which ships with the baseline and which you rewrite in step 1, that is `c1-skills`; for a component you took out again before the step's snapshot, the step whose round built it.
+- **Step added:** the first of your snapshots that holds it, such as `c2-review`; `c1-skills` for `teach`, which ships with the baseline and which you rewrite in step 1.
 - **Purpose:** why the tutor needs it, and why it is a skill or a subagent rather than the other.
-- **With and without:** where the evidence is, usually the quick round that added it, whose run is the output without it while the next round's run is the output with it; when two components came in one round, a separate check of each.
+- **With and without:** where the evidence is, usually the quick round that added it, whose run is the output without it while the next round's run is the output with it.
 - **Review:** your short review of the output with it against without it, with evidence.
 - **Kept in final:** `yes`, or `no, because` and the reason; a dropped component stays listed.
 
-A component you tried in a round and took out before any snapshot gets an entry too, with `Kept in final: no, because` and what the next round showed, since it is often the best example of a change that did not pay.
-`p3 check` cannot see such a component, because no snapshot holds it, so keeping its entry is up to you, and it does not count toward the minimums.
-
+A component you tried in a round and took out before any snapshot gets an entry too, since it is often the best example of a change that did not pay; `p3 check` cannot see it, so keeping its entry is up to you, and it does not count toward the minimums.
 The guard is a hook, not a skill or a subagent, so it has no entry; `EVAL.md` covers it, including why it is a hook.
 
-**The minimums.**
-They are counted over what you built across the ladder, not over what `final` keeps, so dropping a component for a good reason never costs you.
-A component counts toward them when it appears in one of your snapshots, any folder under `configs/` other than `c0-baseline`.
-A Markdown file under `.claude/agents/` counts as a subagent only when it has frontmatter with a `name`, which is also what Claude Code needs to load it; a checklist file a subagent reads is fine there, and `p3 check` notes it as documentation.
+**The minimums** are counted over what you built across the ladder, not over what `final` keeps, so dropping a component for a good reason never costs you.
+A component counts when it appears in one of your snapshots, any folder under `configs/` other than `c0-baseline`, and a Markdown file under `.claude/agents/` counts as a subagent only when it has frontmatter with a `name`, which is also what Claude Code needs to load it.
 
 | Section | Skills | Subagents |
 |---|---|---|
@@ -358,26 +301,17 @@ A Markdown file under `.claude/agents/` counts as a subagent only when it has fr
 
 ## The bench
 
-The bench runs every config through the same scenarios from the same starting state, scores the outputs with fixed checks, and records what each scenario cost.
+The bench runs every config through the same scenarios from the same starting state, scores the outputs with fixed checks, and records what each scenario cost; `guide/06-the-bench.html` explains every scenario, check and number in full.
 
 ### The topics
 
-**The shared development topic is agent architecture.**
-It is a generic introduction, written for a fixed novice: an engineering junior who has used a chatbot and written some Python, but never built an agent, and wants to build an assistant for a senior design project.
-I wrote it, so my knowledge is the ground truth, not the model's, and it is not a copy of this course's lectures.
-It has five objectives (O1 the agent loop, O2 tools and tool calling, O3 context and memory, O4 workflows and agents, O5 multi-agent systems), the facts each one must get right, six misconceptions a novice holds, a starting workspace, true grades for two learner submissions, and six tutor probes.
-The bench teaches O3, quizzes on O4, and grades two submissions of the six-item quiz `0001` on O1 and O2.
-You tune your tutor on this topic and only this topic.
+**The shared development topic is agent architecture**, a generic introduction I wrote for a fixed novice, an engineering junior who has used a chatbot and written some Python but never built an agent, so my knowledge is the ground truth, not the model's.
+The bench teaches its objective O3 (context and memory), quizzes on O4 (workflows and agents), and grades two submissions of its six-item quiz `0001` on O1 and O2, and you tune your tutor on this topic and only this topic.
 
-**You pick two test topics: one from another Mines course you have taken, and one life skill.**
-You write each one yourself in `bench/own/<id>/`, in the same shape as the shared topic, and `bench/own/README.md` walks you through it, starting from `uv run p3 new-topic <id>`.
+**You pick two test topics: one from another Mines course you have taken, and one life skill**, and write each one yourself in `bench/own/<id>/`, starting from `uv run p3 new-topic <id>`, as `bench/own/README.md` and `guide/11-test-topics.html` describe.
 Commit a topic's items before its first run; the bench refuses to run a topic with uncommitted changes, and `p3 check --final` confirms from git history that every run used the items you committed.
-When `final` is frozen, you run `c0-baseline` and `final` once each on both test topics.
-They are the held-out check: does the architecture still pay off on statics or on cooking, where you never tuned it?
-You review the two configs on each topic openly, in `reviews/final.md`: you read both outputs side by side, knowing which config made which, and say for each job which did better and why.
-There are no blind comparisons on the test topics.
-You also use `final` for three real learning sessions on one of the two topics, and those sessions are the live tries of `final`'s major review.
-You write a topic's items from what you know well, and in the sessions you learn something you do not know yet, so choose the topic for the sessions with both in mind; `bench/own/README.md` says how.
+When `final` is frozen, you run `c0-baseline` and `final` once each on both, the held-out check of whether the architecture still pays off where you never tuned it, and you review the two openly in `reviews/final.md`; there are no blind comparisons on the test topics.
+Your three learning sessions with `final` are on one of the two topics, so choose it with both uses in mind: you write a topic's items from what you know well, and in the sessions you learn something you do not know yet.
 
 ### The scenarios and the objective checks
 
@@ -392,66 +326,20 @@ Each scenario runs headless, `claude -p` in a fresh folder outside your repo tha
 | cost | - | tokens (input, output, cache), turns, subagents, web searches and fetches, minutes, and the list-price equivalent, per scenario |
 
 A full run is these ten scenarios; `--quick` runs `teach`, `quiz`, `grade-s1`, `tutor-p01` and `tutor-p02`, once.
-
-Each scenario has a time and a turn limit, set in `bench/scenarios.json` and the same at every lesson length: `teach` 45 minutes and 200 turns, `quiz` and each `grade` 15 minutes and 80 turns, and each tutor probe 10 minutes and 40 turns.
-A scenario that reaches its limit is stopped and recorded as a timeout or an error, and that is a result about your tutor, so design review loops and pipelines to finish well inside these limits.
-
-A few of the checks need saying plainly.
-**The length check is a rough reading-time estimate:** the lesson's visible words divided by 150 words a minute, against the minutes requested, and a ratio from 0.6 to 1.5 counts as on length.
-A lesson with a good interactive exercise and few words reads as short, so treat the ratio as a warning light and not a verdict.
-**The judge** is a fixed prompt in `bench/judge/` and a pinned model (`claude-sonnet-5-5`), used only for what a script cannot check: whether the key facts are present and correct, whether a listed misconception is asserted, the fit to the learner's level, and whether a tutor reply did what the probe expected.
-**The solvers** are `claude-sonnet-5-5` and `claude-haiku-5-5`.
-When both agree with each other and not with your key, the key is probably wrong; when they disagree with each other, the item is probably ambiguous.
-After lecture 24 you check the judge against ten labels of your own and report how often you agree, because a judge you have not checked is a number you cannot lean on.
-
-The headline numbers that `p3 report` and the reveal use are `teach_facts_correct`, `teach_misconceptions`, `teach_length_ratio`, `teach_dead_links`, `quiz_key_agreement`, `quiz_wrong_key`, `quiz_ambiguous`, `grade_verdict_agreement`, `grade_false_wrong`, `grade_misconception_hit`, `tutor_leaks` and `tutor_behavior_met`, plus the cost: total tokens, output tokens, minutes, subagents and the list-price equivalent, per job and in total.
-Each one, per run:
-
-- `teach_facts_correct`: the share (0 to 1) of the teach objective's facts that the judge found in the lesson, present and correct.
-- `teach_misconceptions`: how many of the topic's misconceptions the judge found the lesson asserting, a count.
-- `teach_length_ratio`: the rough reading-time estimate over the minutes requested, where 0.6 to 1.5 counts as on length.
-- `teach_dead_links`: how many of the lesson's links answered 404 or 410, a count, unknown with `--offline`.
-- `quiz_key_agreement`: the share of the items that can be scored where the Sonnet solver's answer matches your key.
-- `quiz_wrong_key`: how many items both solvers answered alike and differently from your key, the likely wrong keys.
-- `quiz_ambiguous`: how many items the two solvers answered differently, the likely ambiguous items.
-- `grade_verdict_agreement`: the share of graded answers whose verdict matches the true grade.
-- `grade_false_wrong`: of the answers whose true verdict is correct, the share graded partial or wrong.
-- `grade_misconception_hit`: of the answers with a true misconception, the share where the grade names the same one.
-- `tutor_leaks`: how many replies gave away the answer to the quiz item a probe asks about, counted over the probes that got a reply.
-- `tutor_behavior_met`: the share of probes whose reply did what the probe expected, in the judge's view.
-
+Each scenario has a time and a turn limit, the same at every lesson length (`teach` 45 minutes and 200 turns, `quiz` and each `grade` 15 minutes and 80 turns, each tutor probe 10 minutes and 40 turns), and one that reaches its limit is recorded as a timeout or an error, which is a result about your tutor, so design review loops and pipelines to finish well inside them.
 A job that failed counts against the config: a missing lesson scores 0 facts, a missing quiz or key 0 key agreement, a missing grades file disagrees on every answer, and a probe with no reply is not met.
 
-### What a run leaves behind
-
-A run of config `c1-skills` writes `bench/runs/c1-skills/<run-id>/`, where the run id is the time, the topic, the minutes and the repeat, such as `20261105-141502-agent-architecture-m30-r1`.
-
-| File | What it holds |
-|---|---|
-| `run.json` | the config and its hash, the topic and its hash and commit, the Claude Code version, the model, and per scenario its status, duration, turns, tokens, subagents, web use and permission denials |
-| `score.json` | every check's result, the headline numbers, and what the scoring itself cost |
-| `<scenario>/outputs/` | every file the scenario wrote or changed, at its own path: open `teach/outputs/lessons/` in a browser to read the lesson |
-| `<scenario>/result.json` | the final result line, including the tutor's reply |
-| `<scenario>/trace.jsonl.gz` | the whole stream of the session, gzipped, including every subagent's messages |
-| `<scenario>/stderr.txt` | anything Claude Code printed to stderr, when there was something |
+The headline numbers that `p3 report` and the reveal use are `teach_facts_correct`, `teach_misconceptions`, `teach_length_ratio`, `teach_dead_links`, `quiz_key_agreement`, `quiz_wrong_key`, `quiz_ambiguous`, `grade_verdict_agreement`, `grade_false_wrong`, `grade_misconception_hit`, `tutor_leaks` and `tutor_behavior_met`, plus the cost: total tokens, output tokens, minutes, subagents and the list-price equivalent, per job and in total.
+`guide/06-the-bench.html#headline-numbers` says what each one measures, and the same page explains the judge (a fixed prompt and the pinned model `claude-sonnet-5-5`), the two solvers and the length check, which is a rough reading-time estimate and a warning light, not a verdict.
+After lecture 24 you check the judge against ten labels of your own and report how often you agree, because a judge you have not checked is a number you cannot lean on.
 
 Commit your runs.
-They are the evidence, and `p3 check` confirms each one points at a config whose hash still matches.
+They are the evidence, and `p3 check` confirms each one points at a config whose hash still matches; `guide/06-the-bench.html#run-folder` says what a run folder holds and how to open each file.
 
 ### The blind comparison
 
 `p3 compare` puts two configs' outputs for the same task side by side, without telling you which is which, and records your pick.
-
-**Why blind, and why so rarely.**
-Your reviews are open: you know which config made what, because you built it.
-You built the later configs, you know which one has the review loops, and you expect it to win.
-That expectation leaks into what you see, which is why medical trials hide which pill is which, and why lecture 24 checks a model judge for bias before trusting it.
-You are the judge in this project, so you get the same check: at the end you judge `c0-baseline` against `final` with the labels hidden, and then you set your open reviews beside your blind picks.
-That is once for most of you; the table below adds the second comparison that 598E and the length study require and that other 498E students may choose.
-It stays this rare because a blind session costs real reading time, and your major reviews already carry the judgment at each step.
-Where they agree, your reviews have earned some trust; where they disagree, knowing which was which may have shaped what you saw, and `EVAL.md` asks you which you believe.
-
-**Which comparisons.**
+Your reviews are open, and you built the later configs and expect them to win, so at the end you judge `c0-baseline` against `final` with the labels hidden, and `EVAL.md` asks you to set your open reviews beside your blind picks.
 
 | Comparison | Who | Jobs | Pairs |
 |---|---|---|---|
@@ -461,228 +349,54 @@ Where they agree, your reviews have earned some trust; where they disagree, know
 
 That is the whole list: no comparison at each step, and none on the test topics, because your major reviews and your open test-topic reviews cover those.
 The required comparison is the one `p3 check --final` looks for, and for the length study it also looks for the three teach comparisons.
-
-The optional second is your choice; a good one is the step you are least sure paid off, such as `c1-skills` against `c2-review` on grade.
-Its pairs come from the runs you already have, and with one full run of each config a teach or a quiz comparison is a single pair, a grade comparison 12 pairs and a tutor comparison six, so choose a job with enough pairs to say something.
-If you take the cheaper-tutor stretch, a blind comparison there counts as your optional second.
-For 598E, and for 498E with the length-study stretch, the length study's three comparisons are your second, and there is no other on top.
-
-**How it works.**
-
-1. Both configs need scored full runs on the topic at the same lesson length, the topic's 30 minutes unless you add `--minutes M`; the comparison refuses with a clear message when one has none.
-   Quick runs are left out, and `--quick` pairs them instead, which is for trying the tool out: `p3 check` does not count a session of quick runs.
-   Runs made with `--only` are left out too, so a run of one scenario never takes a full run's place; `--teach-only` pairs the length study's teach-only runs instead.
-2. Run it yourself, in your own terminal, because the picks must be yours: `uv run p3 compare c0-baseline final --job tutor`.
-   It pairs the two configs' runs by repeat order, oldest first, and for each pair it decides at random which config goes on the left, from a secret seed it keeps in a key file.
-3. A local page opens in your browser, one pair at a time, labelled only "Left" and "Right", with "Pair k of n".
-   Lessons show side by side in frames, and quizzes, grades and tutor replies as readable text.
-4. For each pair you answer three questions: which fits you better (left, right or tie), why in one sentence (required), and whether you could tell which configuration made which (yes or no).
-5. Each answer is saved as you submit it, so closing the browser loses nothing; `uv run p3 compare --resume <session-id>` picks up where you stopped, and `uv run p3 compare --list` shows your sessions.
-6. When every pair is done, run `uv run p3 compare --reveal <session-id>`.
-7. Commit both files it wrote, `bench/compare/<session-id>.json` and `bench/compare/<session-id>.key.json`.
-   Do not open the key file before you reveal; the page never reads it, and neither should you.
-
-If a browser is awkward, `--terminal` writes each pair as one side-by-side HTML file, prints its path, and asks the three questions in the terminal.
-Comparing costs time and no tokens, because the pairs come from runs you already have.
-
-**What a pair is, and how many you get.**
-A teach pair is the two lessons from one pair of runs, and a quiz pair is the two quizzes with their keys.
-A grade pair is one learner answer with each version's verdict and feedback, so one pair of runs gives 12 of them (six items in each of two submissions).
-A tutor pair is the two replies to one probe, so one pair of runs gives six.
-`c0-baseline` against `final` has three pairs of runs, which makes 3 teach pairs, 3 quiz pairs, 36 grade pairs and 18 tutor pairs.
-A lesson takes about five minutes to skim and judge, a quiz a few minutes, and a grade or tutor pair under a minute, so plan on about an hour for the four sessions.
-
-**Reading the tally.**
-Ties are set aside, and the question is whether one config won more of the rest than chance would give it.
-If two versions were equally good, your picks would be coin flips.
-With 10 picks, a version that is no better still wins 8 or more about 5% of the time by luck alone, so 8 of 10 is suggestive; it wins 9 or more about 1% of the time, so 9 of 10 is strong; and 6 of 10 says nothing at all.
-The reveal prints the exact two-sided sign-test p-value, which counts either config winning that often, so it shows about 0.11 for 8 of 10 and about 0.02 for 9 of 10.
-With the 18 tutor pairs, 14 of 18 non-tie picks for one config gives a p-value of about 0.03 and 13 of 18 about 0.10; with the 36 grade pairs, 25 of 36 gives about 0.03.
-With three teach or quiz pairs, no tally can reach those numbers (even 3 of 3 has a p-value of 0.25), so for those two jobs your reasons and the objective checks carry the weight; lecture 23 adds the intervals.
-
-**The limits.**
-
-- **Blinding fails when the versions look obviously different.**
-  A split pipeline's lessons may have a look you recognize at once, which is why every pick asks whether you could tell, and why the reveal reports how often you could.
-- **Preference is not learning.**
-  A lesson you enjoy is not always one you learn more from, which is why the objective checks sit beside the picks.
-- **On the shared topic you are not the novice.**
-  Judge each pair by whether it would have fit you as a learner when you were new to agents.
-- **The results are one person's taste, and that is the point.**
-  They are yours, made with your `PREFERENCES.md`, and they are not averaged across the class.
-- **Pairs from one run are not independent.**
-  The 36 grade pairs come from twelve grading sessions, six for each config, so they say less than 36 separate sessions would.
-
-**The reveal shows quality first, then cost.**
-It prints, in this order: the tally (wins for each config, and ties), the sign-test p-value with a line on reading it, the share of pairs where you could tell, your reasons grouped by the config that won, then the objective checks for the job as means over the session's runs, and only then a cost table for the job: mean tokens, output tokens, minutes and subagents per scenario for each config.
-The order is deliberate.
-You decide what the quality difference is before you know its price, and then you decide whether it was worth it.
-
----
-
-## Start here
-
-Every command below runs from the root of your own P3 repo, `work/p3-tutor` once you have cloned it, and every `p3` command starts with `uv run`.
-Say "In work/p3-tutor, run ..." to Claude Code, or run it yourself in a terminal in that folder.
-If you do not have `uv`, every command also works as `python -m p3 ...` (on macOS and Linux, `python3 -m p3 ...`), because `p3` uses only Python's standard library, from Python 3.11 on.
-
-1. Click **Use this template** at the top of this repo, then **Create a new repository**.
-2. **Name it `p3-tutor`** and make it **Public**.
-3. Clone it into `work/`, your own space in the course repo: say **"clone my P3 repo into work/p3-tutor"** to Claude Code, or in a terminal at the root of the course repo run `gh repo clone <your-github-username>/p3-tutor work/p3-tutor`.
-   Git ignores `work/`, so this repo never collides with a course update.
-   At the start of every Claude Code session you use for P3, ask it to read `work/p3-tutor/CLAUDE.md`, a short orientation for the agent on how this repo works, what not to edit, and which parts of `reviews/` it must never write for you.
-   That includes every session in which you ask it to act on a quick round, because the rule that keeps your words yours lives in that file.
-4. Check that `uv --version` prints a version number; you installed `uv` for lecture 12.
-5. Open `p3.json` and set `section` to your course, `"498E"` or `"598E"`.
-   Leave `stretch` as `null` until you choose one.
-6. Run `uv run p3 check`.
-   On a fresh copy it prints a checklist and exits cleanly: the items you have not done yet are listed as work to do, which is not an error, and only a failure means something is broken.
-7. Commit and push, open the **Actions** tab of your repo, and wait for the `p3-check` run to go green.
-   CI never calls a model; it checks the files you committed.
-8. Run the baseline once, quickly: `uv run p3 bench --config c0-baseline --quick`.
-   This is the first command that draws on your Claude plan: five scenarios and their scoring.
-   It prints a summary table when it finishes, and writes `bench/runs/c0-baseline/<run-id>/`.
-9. Open the lesson it wrote, under `teach/outputs/lessons/` in that run folder, in your browser, and read `result.json` in the two tutor scenarios.
-   Then read `KNOWN-GAPS.md`, and `reviews/README.md`, which says how you will review your own tutor from here on.
-   The gaps in `KNOWN-GAPS.md` are starting points I saw, not a checklist.
-10. When that works, start the baseline's three full runs in your own terminal: `uv run p3 bench --config c0-baseline --repeats 3`.
-    That is 30 sessions plus their scoring, about 20 to 25 minutes for the baseline in my pilot, so start it when you can leave it running.
-
-Please do all of this on the first day.
-Setup is the step with the most ways to go wrong, and you want it behind you while there is plenty of time.
-
-A full bench run takes much longer than a quick one: the lesson alone is allowed up to 45 minutes.
-So run full runs yourself in a terminal, or ask Claude Code to run them in the background, because Claude Code stops a foreground command after ten minutes at most.
-
-**When you learn with the tutor**, open a terminal in `work/p3-tutor/tutor` and start `claude` there.
-The tutor's learner files (`MISSION.md`, `NOTES.md`, `lessons/` and the rest) are created in `tutor/` as you go.
-Claude Code also reads the `CLAUDE.md` of every folder above the one it starts in, so a session in `tutor/` sees the repo's root `CLAUDE.md` and, inside the course repo, the course's own.
-The bench avoids that, because it runs each scenario in a fresh folder outside your repo, in your system's temporary folder.
-On Windows that folder is inside your home folder, so a `CLAUDE.md` in your home folder itself would reach every scenario; `p3 bench` warns when it finds one above the temporary folder and records it in `run.json`, and you should move it before you make runs you will commit.
-If a real session ever acts more like a course assistant than your tutor, that is why, and you can learn from a copy of `tutor/` outside the course repo instead.
-
-### A pace that works
-
-There are no checkpoints, and nothing is checked on these dates.
-This is the pace I would keep.
-
-- **Week 1, Nov 3 to 9:** set up, run `c0-baseline` (its three full runs), read `KNOWN-GAPS.md` and the baseline's outputs, write `PREFERENCES.md`, build the four skills in quick rounds, snapshot `c1-skills`, make its full run, and write its major review.
-  The P4 proposal (Fri Nov 6) competes with this week, so start the baseline runs on the first day and do most of the rounds once the proposal is in.
-- **Week 2, Nov 10 to 16:** the review loops (`c2-review`) in quick rounds, with checklists drawn from your `c1-skills` review, and its major review; then the teach split (`c3-split`) in quick rounds and its major review; write the test topics' items and commit them.
-  For 598E, and the length-study stretch, also commit `PREREG.md` and make the nine `c1-skills` runs of the length study this week, since they need only `c1-skills`.
-- **Week 3, Nov 17 to 24:** freeze `final` with the guard as early in the week as you can, and start with the runs that need it: its three repeats, then the test topics' runs, then the ablation, and for the length study its nine `final` runs.
-  Almost every token the project spends in this week goes to those runs, so do the reading and writing while they run: your three learning sessions and the major review of `final`, the blind comparison against `c0-baseline`, the test topics' open review, the repeats read the way lecture 23 (Nov 17) reads them, the judge check (after lecture 24 on Nov 19), the component inventory, `EVAL.md` and the video.
-
-The deadline is two days before Thanksgiving, so plan to be done before the holiday traffic starts.
-
-### How long it takes
-
-This is my estimate of your own time, not of the time the runs take; a run goes on in the background while you do something else.
-
-| Part | Hours, 498E |
-|---|---|
-| Setup, the baseline's runs, and reading its outputs and `KNOWN-GAPS.md` | 1.5 |
-| `PREFERENCES.md` | 0.5 |
-| Quick rounds: about nine across `c1-skills`, `c2-review` and `c3-split`, at 30 to 45 minutes each for the reading, the thoughts and the change | 6 |
-| The four major reviews: about 2 hours for `c1-skills`, 1.75 for `c2-review`, 0.75 for `c3-split` and 1.5 for `final` | 6 |
-| The guard and its tests, the grader subagent it needs and its quick round, the repeats and the ablation | 3 |
-| Three learning sessions, about an hour each with the write-up | 3 |
-| Two test topics: writing their items, about 1.75 hours each, then the open review of their runs, about 45 minutes each | 5 |
-| The blind comparison | 1 |
-| The judge check | 0.5 |
-| The component inventory | 1 |
-| `EVAL.md` | 3 |
-| The video | 1.5 |
-| **Total** | **about 32** |
-
-A stretch adds about 4 to 6 hours on top, and an A needs one.
-For 598E the larger architecture means more rounds, at least six skills and eight subagents with one new component per round, so about 14 rounds instead of 9 and a longer inventory: about 36 hours for the core work, and the length study adds its 4 to 6, so about 40 to 42 hours in all.
-The reviews are most of that time, and they are the part of the project that only you can do.
-If you are well past these numbers by the end of week 2, come and talk to me early, while there is still time to plan around it.
+The optional second comes from the runs you already have, such as `c1-skills` against `c2-review` on grade, and a blind comparison in the cheaper-tutor stretch counts as it.
+Both configs need scored full runs on the topic at the same lesson length, and you run each session yourself, for example `uv run p3 compare c0-baseline final --job tutor`, because the picks must be yours.
+Commit both files each session writes, and do not open its key file before you reveal.
+Comparing costs time and no tokens, about an hour for the four sessions, and `guide/13-blind-comparison.html` takes you through a session, from the first pair to reading the reveal.
 
 ---
 
 ## Commands
 
-Run each one as `uv run p3 ...`, or as `python -m p3 ...` without `uv`.
+Run each one in `work/p3-tutor` as `uv run p3 ...`, or without `uv` as `python -m p3 ...` (on macOS and Linux, `python3 -m p3 ...`), because `p3` uses only Python's standard library, from Python 3.11 on.
+`uv run p3 <command> --help` lists a command's options, and `guide/18-commands-and-files.html` explains every option and file.
 
 | Command | What it does |
 |---|---|
-| `p3 check [--final]` | prints a checklist of the repo's state and fails when something is broken (a changed fixed file, a snapshot whose files no longer match its hash, a run whose config changed, a topic that does not validate, a subagent in `c1-skills`); it also reads your files in `reviews/` and lists what is still to do in them, such as a round with an empty part, a rating that is not a whole number from 1 to 5, or a component with no inventory entry, and warns about what to tidy, such as a round whose Run line is not written; with `--final` it also fails on anything not yet done |
-| `p3 snapshot <name> [--force]` | copies the live config from `tutor/` into `configs/<name>/` with its hash, and refuses to overwrite a name without `--force` |
-| `p3 bench --config <name>` | runs the scenarios on a snapshot, scores them and prints a summary table; `--config live` runs `tutor/` as it stands, into the ignored `bench/runs/_live/` |
-| `p3 score <run-dir>` | scores a run, or scores it again; `--offline` skips the link checks, and `--no-model` skips every check that calls a model |
-| `p3 report [--topic t] [--configs a,b,...]` | prints Markdown tables for `EVAL.md`: one row per config with each headline number as the mean and range over its scored full runs (runs made with `--only` are left out), with the run count, a cost table per job, and then, in a report of the shared topic's full runs, "Your ratings", the ratings from your major reviews in `reviews/`, one row per criterion and one column per step; `--minutes M` keeps one lesson length, `--quick` shows the quick runs instead, `--teach-only` the length study's teach-only runs, and `--reviews` only your ratings |
-| `p3 compare <config-a> <config-b> --job <job>` | starts a blind comparison of two configs on `teach`, `quiz`, `grade` or `tutor`, and takes `--minutes M`, `--quick`, `--teach-only` (with `--job teach`), `--terminal` and `--port P`, and `--topic t`, though every comparison this project asks for is on the shared topic, the default, and there are none on the test topics |
+| `p3 next` | where you are on the project's map, the one next thing to do, and the guide page for it; it changes nothing |
+| `p3 check [--final]` | a checklist of the repo's state and of what is still to do in `reviews/`; it fails only when something is broken, and with `--final` also on anything not yet done |
+| `p3 snapshot <name> [--force]` | copies the live config from `tutor/` into `configs/<name>/` with its hash; it refuses to overwrite a name without `--force` |
+| `p3 bench --config <name>` | runs a snapshot's scenarios, scores them and prints a summary table; `--config live` runs `tutor/` as it stands, and `--quick`, `--only <ids>`, `--repeats N`, `--minutes M` and `--topic <id>` choose what runs |
+| `p3 score <run-dir>` | scores a run, or scores it again |
+| `p3 report [--configs a,b,...]` | the Markdown tables for `EVAL.md`: headline numbers and cost over the scored full runs, and "Your ratings" from your major reviews |
+| `p3 compare <config-a> <config-b> --job <job>` | starts a blind comparison of two configs on `teach`, `quiz`, `grade` or `tutor` |
 | `p3 compare --resume <session-id>` | continues a comparison you closed |
 | `p3 compare --reveal <session-id>` | shows the result of a finished comparison, quality first and then cost |
 | `p3 compare --list` | lists your comparison sessions |
 | `p3 new-topic <id>` | writes a skeleton test topic in `bench/own/<id>/` |
-
-The options of `p3 bench`:
-
-| Option | What it does |
-|---|---|
-| `--topic <id>` | the topic, `agent-architecture` by default; an id is looked up in `bench/topics/` and then in `bench/own/` |
-| `--repeats N` | run the whole set N times, one after another |
-| `--quick` | run `teach`, `quiz`, `grade-s1` and the first two tutor probes, once |
-| `--minutes M` | the lesson length to request, the topic's by default, which is 30 on the shared topic (the length study uses 10, 30 and 60) |
-| `--only <ids>` | run only these scenarios, as a comma-separated list such as `teach,tutor-p03`; such a run is not a full run, so `p3 report`, `p3 compare` and `p3 check` leave it out, except that `--only teach` runs are the length study's and `--teach-only` shows them |
-| `--jobs N` | run up to N scenarios of a repeat at the same time, which saves time but not tokens |
-| `--keep` | keep each scenario's working folder, to look inside it afterwards; a later `p3 bench` deletes kept folders more than a day old |
-| `--no-score` | skip scoring; score later with `p3 score <run-dir>` |
-| `--offline` | skip the link checks when scoring |
+| `p3 rehash` | mine, for when I change a fixed file; never run it in your repo |
 
 ---
 
 ## What the runs cost
 
-Everything that runs `claude` draws on your own Claude plan: the scenarios, and the scoring calls after them (the judge, and the two solvers).
-Comparing costs nothing, and neither does `p3 check`, `p3 report` or `p3 snapshot`.
-
-Every `claude -p` call carries a fixed load before it does any work: in my checks, 24,000 to 49,000 input tokens, almost all of them cached reads of Claude Code's own instructions and tools.
-Every subagent pays a share of that again, plus whatever it reads, which is why fan-out is what drains a weekly limit.
-A split teach pipeline with three reviewers is the most expensive thing in this course so far, and the repeats are limited to `c0-baseline` and `final` for that reason.
+Everything that runs `claude` draws on your own Claude plan: the scenarios, and the scoring calls after them (the judge, and the two solvers); comparing costs nothing, and neither does `p3 next`, `p3 check`, `p3 report` or `p3 snapshot`.
 The dollar figure in `run.json` and in the reports is the list-price equivalent that Claude Code reports, not what you pay on a subscription; on your plan, the cost is your usage limit.
 
-The runs the project needs:
-
-| What | Runs |
+| The runs the project needs | Runs |
 |---|---|
 | The ladder, on the shared topic | `c0-baseline` 3, `c1-skills` 1, `c2-review` 1, `c3-split` 1, `final` 3, each `final-minus-<x>` 1: at least 10 full runs |
-| The quick rounds | at least two per step, each a quick run or an `--only` run of `--config live`: with one new component per round, about 9 for 498E and about 14 for 598E |
+| The quick rounds | at least two in each of `c1-skills`, `c2-review` and `c3-split`, each a quick run or an `--only` run of `--config live`: with one new component per round, about 9 for 498E and about 14 for 598E |
 | The test topics | `c0-baseline` and `final`, once each on both topics: 4 full runs |
 | The length study (598E, or the stretch) | 18 teach-only runs |
 
-These are my pilot's numbers, with Claude Code 2.1.314 and Sonnet: the baseline averaged over three full runs, and one full run of a review-loop config of my own (four skills, with reviewers on teach, quiz and grade, at most two passes each).
-
-| Scenario | `c0-baseline` | minutes | review loops | minutes |
-|---|---|---:|---|---:|
-| `teach` | 744k tokens (28k output) | 2.8 | 4.96M tokens (109k output), 5 subagents | 9.8 |
-| `quiz` | 161k tokens (5k output) | 0.6 | 747k tokens (30k output), 2 subagents | 3.6 |
-| each `grade` | 160k tokens (3k output) | 0.45 | 311k tokens (9k output), 1 subagent | 1.05 |
-| each tutor probe | about 105k tokens (1.5k output) | 0.25 | about the same, no review loop | 0.25 |
-| **full run** | **1.85M tokens (49k output), $1.75** | **5.8** | **6.99M tokens (167k output), $4.48** | **17.1** |
-| scoring a full run | about 57k tokens, $0.19 | under 1 | the same | under 1 |
-
-The minutes are summed over a run's scenarios, which is about how long a run takes with the default `--jobs 1`.
-A quick run of the baseline was 1.1M tokens and about 4 minutes; a quick run of my review-loop config would be about 6 million, nearly all of it the teach scenario.
-Most of these tokens are cached reads of Claude Code's own instructions and tools, which cost far less than new input or output, so the list-price column grows more slowly than the token column.
-The review loops made the teach scenario about 6.7 times as expensive in tokens and 3.5 times as slow, and a split teach pipeline adds more on top; if your `final` costs about what my review-loop config did, its three runs are about 21 million tokens.
-With the ablation and the test topics' runs, that puts roughly 45 million tokens into week 3, which is why the pace above starts `final`'s runs first.
-
-**598E, plan for the cost.**
-Your architecture is larger than mine: at least eight subagents, where my review-loop config had six and took 7 million tokens per full run.
-A 598E `final` may well take 10 to 15 million tokens per full run, and you run it three times, on top of the ablation, the test topics and the length study's eighteen teach-only runs, six of them 60-minute lessons through your pipeline.
-Everything that needs `final` waits until you freeze it, so spread what can be spread: the baseline's runs in week 1, the length study's `c1-skills` runs in week 2 once `PREREG.md` is committed, and `final`'s runs as early in week 3 as you can, so a usage limit late in the week still leaves you time.
-Check `/usage` before each big run, and try every new subagent on an `--only` run before a full one.
-
-Some habits that keep the cost down:
-
-- Iterate on `--config live --quick`, and on `--only` with the one scenario you are changing: a round about the quiz needs `--only quiz`, not a teach scenario as well.
-- Make full runs only of snapshots you mean to keep.
-- Spread the full runs over several days where you can, and check `/usage` in Claude Code before a big one.
-- Try a review loop or a split pipeline on one quick teach scenario before you run it in full.
+**Plan for the cost.**
+In my pilot, with Claude Code 2.1.314 and Sonnet, a full run of `c0-baseline` was about 1.85M tokens, and a full run of a review-loop config of my own (four skills, with reviewers on teach, quiz and grade, at most two passes each) about 7M.
+Every `claude -p` call carries a fixed load of cached reads of Claude Code's own instructions and tools, and every subagent pays a share of it again, which is why fan-out is what drains a weekly limit and why the repeats are limited to `c0-baseline` and `final`.
+If your `final` costs about what my review-loop config did, its three runs are about 21 million tokens, and with the ablation and the test topics' runs roughly 45 million go into week 3, so start `final`'s runs as early in that week as you can.
+For 598E, a `final` with at least eight subagents may well take 10 to 15 million tokens per full run, three times over, on top of the ablation, the test topics and the length study's eighteen teach-only runs, three of them 60-minute lessons through your pipeline; so spread what can be spread: the baseline's runs in week 1, the length study's `c1-skills` runs in week 2 once `PREREG.md` is committed, and `final`'s runs as early in week 3 as you can.
+Check `/usage` before each big run, iterate on `--config live --quick` and on `--only` with the one scenario you are changing, and try every new subagent on an `--only` run before a full one.
+`guide/06-the-bench.html#cost` has my pilot's table, scenario by scenario.
 
 ---
 
@@ -706,11 +420,11 @@ Some habits that keep the cost down:
 - **The measurements come from the commands.**
   Runs, scores and comparison records are written by `p3`; do not edit them by hand, and do not delete a run because you did not like its numbers.
   There are two exceptions.
-  A run that failed for a reason outside your tutor, such as a usage limit or a sign-in problem, measures nothing; `p3 bench` sets such a repeat aside by itself, and "When it breaks" says what to do with anything it missed.
+  A run that failed for a reason outside your tutor, such as a usage limit or a sign-in problem, measures nothing; `p3 bench` sets such a repeat aside by itself, and "When it breaks" says where to find what to do with anything it missed.
   And a test topic with a real mistake in it is fixed by the procedure in `bench/own/README.md`, which deletes that topic's earlier runs.
 - **The judgment is yours.**
   Your reviews are the measurement: your thoughts in each quick round, your live tries, every rating and its feedback, your learning sessions, your test-topic reviews, and each component's purpose, review and whether `final` kept it.
-  Claude Code writes only what it changed in each round and the inventory's factual fields, and it never writes or edits your parts.
+  The Builder writes only what it changed in each round and the inventory's factual fields, and it never writes or edits your parts.
   Make every blind pick yourself as well; an agent must never make them for you, or say which config made an output.
   The same goes for your test topics' true grades, your judge-check labels and the prose in `EVAL.md`.
 - **On the life-skill topic, no individualized financial, medical or legal advice.**
@@ -762,30 +476,15 @@ For 598E it is the rider, which is required, and you do not do the other options
 
 Set `stretch` in `p3.json` to the option's id, so I know which one you did (for the length study it also switches on that study's checks in `p3 check --final`), and write it up in the last section of `EVAL.md`.
 For 598E, set `section` to `"598E"` and `stretch` to `"length-study"`.
-Pick your option early and try a small piece of it first, because most of them draw on your Claude plan.
+Pick your option early and try a small piece of it first, because most of them draw on your Claude plan; `guide/16-stretch-and-598e.html` walks through each one.
 
 | Id | Option |
 |---|---|
-| `length-study` | 1. The length study |
-| `personalization-swap` | 2. Personalization swap |
-| `cheaper-tutor` | 3. A cheaper tutor |
-| `mcp-server` | 4. An MCP server the tutor uses |
-| `agent-sdk-grader` | 5. The grader ported to the Agent SDK |
-
-1. **The length study** (the 598E rider, below).
-   In 498E, set `stretch` to `length-study`, and `p3 check --final` checks its runs and `PREREG.md` exactly as it does for 598E.
-   Its three blind comparisons are then your second blind comparison, as they are for 598E.
-2. **Personalization swap:** two learner profiles on the same topic; show that lesson, quiz and feedback change as intended and stay correct.
-   Write a second `PREFERENCES.md` for a learner unlike you, snapshot `final` with it under a second name, run both, and show both halves: the changes match the profile, and the objective checks hold.
-3. **A cheaper tutor:** the same quality with Haiku subagents or fewer calls, judged by a major review of the cheaper config and by the objective checks.
-   Write that review in the same form as the others, in a file of its own such as `reviews/cheaper-tutor.md`, and compare it with your review of `final`.
-   A subagent can name its own model in its frontmatter.
-   Run the cheaper config as many times as `final`, so both sides of the comparison have repeats.
-   A blind comparison of the cheaper config against `final` is welcome, and it counts as your optional second.
-4. **An MCP server the tutor uses** (a review scheduler, a progress store), measured (lecture 16).
-   Ask me before you start this one, so we agree on how the bench's scenarios start your server.
-5. **The grader ported to the Agent SDK** (lecture 21) and measured against the Claude Code version.
-   Keep the SDK code outside `p3/` and `bench/`, for example in `sdk/`, have it write grades in the `FORMATS.md` format, and compare it with your Claude Code grader on the same submissions, in quality and in cost.
+| `length-study` | **1. The length study**, the 598E rider below; in 498E, `p3 check --final` checks its runs and `PREREG.md` exactly as it does for 598E, and its three blind comparisons are your second blind comparison. |
+| `personalization-swap` | **2. Personalization swap:** write a second `PREFERENCES.md` for a learner unlike you, snapshot `final` with it under a second name, run both, and show that lesson, quiz and feedback change as that profile intends and stay correct. |
+| `cheaper-tutor` | **3. A cheaper tutor:** the same quality with Haiku subagents or fewer calls, judged by a major review of the cheaper config, in a file of its own such as `reviews/cheaper-tutor.md`, and by the objective checks, with as many runs of it as of `final`. |
+| `mcp-server` | **4. An MCP server the tutor uses** (a review scheduler, a progress store), measured (lecture 16); ask me before you start this one, so we agree on how the bench's scenarios start your server. |
+| `agent-sdk-grader` | **5. The grader ported to the Agent SDK** (lecture 21), which runs on your Claude subscription with no API key, kept outside `p3/` and `bench/` (for example in `sdk/`), writing grades in the `FORMATS.md` format, and compared with your Claude Code grader on the same submissions, in quality and in cost. |
 
 ---
 
@@ -799,31 +498,18 @@ Does splitting up the teach job matter more as lessons get longer, and does qual
 | `final` | 3 runs | 3 runs | 3 runs |
 
 Eighteen teach runs on the shared topic, teach only, with `p3 bench --minutes`, for example `uv run p3 bench --config c1-skills --only teach --minutes 60 --repeats 3`.
-Set `section` to `"598E"` in `p3.json`, which makes `p3 check --final` look for these runs and for `PREREG.md`.
+Set `section` to `"598E"` in `p3.json`, which makes `p3 check --final` look for these runs and for `PREREG.md`; `guide/16-stretch-and-598e.html#length-study` walks through the study.
 
-1. **`PREREG.md` before the runs**, as in P2: which config loses more as length grows, and the smallest difference that matters.
-   Commit it before the first of the eighteen runs; git history proves the order, and `p3 check --final` reads it.
-2. **Comparisons within a length, never across:** blind `c1-skills` against `final` at each length, and whether `final`'s win rate grows with length.
-   `uv run p3 compare c1-skills final --job teach --teach-only --minutes 10` pairs only the 10-minute teach-only runs, three pairs; run it again with `--minutes 30` and `--minutes 60`.
-   `--teach-only` keeps the ladder's full runs out of the 30-minute session, so every length gets exactly the study's three pairs.
-   Never compare a 10-minute lesson with a 60-minute one, because judges also favor longer outputs (lecture 24).
-3. **Length accuracy:** actual against requested length, because a "60-minute" lesson that is really 35 confounds the comparison.
-   `uv run p3 report --configs c1-skills,final --teach-only` gives every cell's numbers.
+1. **`PREREG.md` before the runs**, as in P2: which config loses more as length grows, and the smallest difference that matters, committed before the first of the eighteen runs; git history proves the order, and `p3 check --final` reads it.
+2. **Comparisons within a length, never across:** blind `c1-skills` against `final` at each length, with `uv run p3 compare c1-skills final --job teach --teach-only --minutes 10` and again with `--minutes 30` and `--minutes 60`, three pairs each, because judges also favor longer outputs (lecture 24).
+3. **Length accuracy:** actual against requested length, from `uv run p3 report --configs c1-skills,final --teach-only`, because a "60-minute" lesson that is really 35 confounds the comparison.
 4. **Cost against length:** tokens per minute of lesson for each config, and whether the pipeline's overhead grows in step with length or faster.
 5. **Threats to validity** (lecture 22): blinding failures, judge bias, and three runs per cell.
 
 I estimate 4 to 6 extra hours.
-The risk is tokens: six 60-minute lessons go through your multi-agent pipeline, so run the 60-minute cells over several days, and try one before you commit to the rest.
+The risk is tokens: the three 60-minute runs of `final` go through your multi-agent pipeline, so run the 60-minute cells over several days, and try one before you commit to the rest.
 The time limit does not grow with the lesson: a teach scenario has 45 minutes at every length, so try one 60-minute run of `final` first and see whether its pipeline finishes in time.
-
-The rider changes three other things for 598E:
-
-- **Your second blind comparison is this study's.**
-  The three per-length teach comparisons in item 2 are your second blind comparison of the project, beside `c0-baseline` against `final`, and you make no other on top.
-- **A larger architecture.**
-  You build at least six skills (the four and two of your own) and at least eight subagents across the ladder, counted over what you built, as "The component inventory" says.
-- **More cost.**
-  A larger `final` costs more per run, and "What the runs cost" has my warning: plan for 10 to 15 million tokens per full run of `final`, three times over, plus this study.
+The rider changes three other things for 598E: the three per-length teach comparisons are your second blind comparison, beside `c0-baseline` against `final`, with no other on top; you build at least six skills and at least eight subagents across the ladder ("The component inventory"); and a larger `final` costs more, so plan for 10 to 15 million tokens per full run of it, three times over, plus this study ("What the runs cost").
 
 ---
 
@@ -862,61 +548,11 @@ If Canvas and this file ever disagree, Canvas wins, and please tell me so I can 
 
 ## When it breaks
 
-- **`claude` is not found.**
-  `p3` looks for Claude Code in the environment variable `P3_CLAUDE` first, and then for `claude` on your PATH, and its message names `P3_CLAUDE` when it finds neither.
-  Check that `claude --version` works in the same terminal.
-  If it does not, point `P3_CLAUDE` at the program: in Git Bash, `export P3_CLAUDE="C:/Users/<you>/.local/bin/claude.exe"`; in PowerShell, `$env:P3_CLAUDE = "C:\Users\<you>\.local\bin\claude.exe"`; on macOS or Linux, `export P3_CLAUDE="$HOME/.local/bin/claude"`, each with the path where your `claude` really is.
-  A path with spaces in it works as it is, with or without quotes around the whole path.
-- **`claude -p` fails or asks you to sign in.**
-  Open `claude` once in a terminal and sign in, then run the command again.
-  The bench stops at the first scenario that fails this way, as it does at a usage limit (next item).
-- **You see "removed ANTHROPIC_API_KEY so the bench uses your Claude subscription".**
-  That is `p3` protecting you.
-  In headless mode an API key in your shell silently replaces your subscription login, and after lecture 20 many of you have one set, so `p3` removes `ANTHROPIC_API_KEY` and `ANTHROPIC_AUTH_TOKEN` from every `claude` it starts, and says so.
-  It also removes Claude Code's own session variables, so running the bench from inside a Claude Code session is fine.
-- **A run hits your usage limit.**
-  `p3 bench` stops at the first scenario that reports a usage limit, a sign-in problem or an API outage, stops every scenario still running, and starts no new one.
-  That repeat says nothing about your tutor, so it is not saved as a run: its files go to `bench/runs/_live/_aborted/`, which git ignores, the repeats after it do not run, and the repeats before it are kept.
-  If the limit comes while a run is being scored, the run keeps its `run.json` with no `score.json`, and `p3 report`, `p3 compare` and `p3 check` ignore it until you score it with `uv run p3 score <run-dir>`.
-  Wait for the reset (`/usage` shows when), and run the bench again.
-  In the meantime, do the work that needs no Claude: your test topics, your reviews of runs you already have, the blind comparison once its runs exist, and the write-up.
-  If you ever find a committed run whose `result.json` files say Claude was not working, delete that run, because it measures nothing.
-  A scenario that failed for any other reason, such as a timeout or a lesson that was never written, is a result: keep it and report it.
-- **A scenario keeps hitting permission denials.**
-  `run.json` lists them per scenario.
-  The bench passes your config's `permissions.allow` list from `tutor/.claude/settings.json` to Claude Code, and in a fresh folder that list is the only thing that allows a tool, so add the tool there and try it with `--config live` before you snapshot.
-  The bench always adds `Glob` and `Grep` to that list, because on macOS, Linux and WSL Claude Code leaves them out unless they are named, and every config should be able to search its workspace the same way on every system.
-- **A scenario times out or writes nothing.**
-  Read its trace (`trace.jsonl.gz` opens with any gzip tool, and Claude Code can read it for you), and rerun just that scenario with `--config live --only <id> --keep` to look inside its working folder afterwards.
-- **`p3 bench` refuses your test topic.**
-  It runs a test topic only when every file in it is committed and unchanged; commit it, then run again.
-  When git itself cannot be used here, the message says why instead, such as git missing from your PATH, a repository git does not trust (its message names the `git config --global --add safe.directory` fix), or a folder that is not its own clone.
-- **The scorer warns that no link could be checked.**
-  This Python cannot verify web certificates, which happens with the python.org installer on macOS until its `Install Certificates.command` has run (in the Python folder in Applications).
-  Run it, then score the run again with `uv run p3 score <run-dir>`; until then the run's dead links are unknown, not zero.
-- **`p3 compare` refuses.**
-  Both configs need scored full runs on that topic at the same lesson length, and the message says which one is missing.
-  If you ran with `--no-score`, run `uv run p3 score <run-dir>` first; for runs at another length, add `--minutes M`.
-- **`p3 check` lists a review as still to do, and you think it is done.**
-  Its line names the file and the heading.
-  The usual causes are a heading that no longer matches the template's word for word (`p3 check` finds each part by its heading), one of the template's marker lines left somewhere in the part, a rating written as "4.5", "four" or "3-4" instead of a whole number such as `Rating: 4`, a major review whose Run line does not name a scored full run of that step on the shared topic under `bench/runs/`, a learning session whose Topic line does not start with the id of one of your test topics, a skill or subagent in one of your snapshots whose name does not match any heading in `reviews/components.md`, and a review file saved as UTF-16, which Windows PowerShell's `>` and `Out-File` write, or in another encoding than UTF-8, which `p3 check` names as such.
-- **`p3 check` fails.**
-  Read the failing lines; each one names the file.
-  The usual causes are an edit under `bench/` outside `bench/own/` or under `p3/` (restore it with `git restore`), a changed `tutor/FORMATS.md`, a snapshot edited by hand or overwritten after it had runs, a run that was stopped midway (its folder has no `run.json`; delete it), a test topic changed after its runs (see "Commit before the first run" in `bench/own/README.md`), and a subagent in `configs/c1-skills/` or a round of Kind `new subagent` in `reviews/c1-skills.md`, because step 1 adds no subagent.
-  A file saved in a Windows "ANSI" encoding instead of UTF-8 can also make a snapshot or a test topic stop matching its hash; `p3 check` and `p3 snapshot` name such files.
-- **Windows.**
-  The template is written to run on Windows, macOS and Linux, and its own tests run on all three, but Windows is the setup I have tested least.
-  Use Git Bash for the commands, as in P2; PowerShell works for `p3` too.
-  Git stores this repo's text files with LF line endings, and every hash `p3` computes ignores the difference, so a checkout with Windows line endings does not break the check.
-  Your guard hook runs on your machine, so register it with the Python command that works in your own terminal (`python` on Windows, `python3` on macOS and Linux), and use forward slashes in its paths.
-  If something fails, send me the exact output.
-
+`guide/19-troubleshooting.html` lists the usual symptoms with their fixes, from `claude` not being found to a usage limit in the middle of a run to a `p3 check` line you think is wrong, and you can paste the message to the Guide, which reads that page with you.
+If something fails, send me the exact output.
 Still stuck after 20 minutes?
-Come to office hours: Tue and Thu, 9 to 10 am and 2 to 3 pm, CTLM 246L.
-Bring the exact error message, because the words on the screen usually save us half the debugging time.
-
-And if anything in this brief is unclear or seems wrong, tell me.
-That is a bug too, and I would rather fix it than have you guess.
+Come to office hours: Tue and Thu, 9 to 10 am and 2 to 3 pm, CTLM 246L, and bring the exact error message, because the words on the screen usually save us half the debugging time.
+And if anything in this brief is unclear or seems wrong, tell me: that is a bug too, and I would rather fix it than have you guess.
 
 ---
 

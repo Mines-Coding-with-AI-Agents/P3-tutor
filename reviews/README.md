@@ -34,7 +34,7 @@ A quick round is how you build a step: you look at what the tutor made, you say 
    When the round is about the tutor, also talk to it: start `claude` in `tutor/` and ask it something.
 3. **Write your thoughts** under the round's `**My thoughts:**`, in a few sentences: what worked, what did not, and what you want changed.
    Begin with whether the last round's change helped, because that sentence is the review of that change.
-4. **Ask Claude Code to act on it**, in a session that has read `work/p3-tutor/CLAUDE.md`, as "Start here" in the main `README.md` says to begin every P3 session, for example: "read work/p3-tutor/CLAUDE.md, then act on my latest round in work/p3-tutor/reviews/c1-skills.md".
+4. **Ask the Builder to act on it**: in the Builder window, plain `claude` started in `work/p3-tutor`, where it reads this repo's `CLAUDE.md` by itself, say for example "Act on Round 2 of reviews/c1-skills.md." (`guide/02-two-windows.html` explains the Builder and the Guide).
    That file is where the rule lives that it writes only the What changed part and never your words, so a session that has not read it does not know the rule.
    It makes one change to the tutor and writes the round's `**What changed:**` under your thoughts: the kind of change, the files it touched, and why.
 5. **Start the next round** with a new run of the changed tutor: add a `### Round N` section by copying the last one with its marker lines, and fill in its Run line and your thoughts.
@@ -227,8 +227,8 @@ A step that got worse is a fine thing to report, as long as the trail shows it.
 | the Run lines, My thoughts, and Live tries | you |
 | every rating and its feedback, the comparisons with the previous step, and what the next step should fix | you |
 | the learning sessions and the test-topic reviews | you |
-| What changed, under each round: Kind, Files and Why | Claude Code, when you ask it to act on a round |
-| the inventory's Kind, Step added, and With and without | Claude Code may fill these in, and you check them |
+| What changed, under each round: Kind, Files and Why | the Builder, when you ask it to act on a round |
+| the inventory's Kind, Step added, and With and without | the Builder may fill these in, and you check them |
 | the inventory's Purpose, Review, and Kept in final | you |
 
 Your judgment is the measurement, so an agent must never write or edit your thoughts, your ratings, your feedback, or your purposes and reviews in the inventory, even to tidy them.

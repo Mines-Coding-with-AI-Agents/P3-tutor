@@ -7,6 +7,7 @@
     p3 report     Markdown tables of the scored runs, for EVAL.md
     p3 compare    blind side-by-side comparison of two configs' outputs, then the reveal
     p3 check      is everything in place and unchanged (CI runs this)
+    p3 next       where you are on the project's map, and the one next thing to do
     p3 new-topic  a skeleton own topic in bench/own/<id>/
     p3 rehash     instructor only: rewrite p3/bench.sha256
 """
@@ -78,6 +79,8 @@ def parser() -> argparse.ArgumentParser:
     ch = sub.add_parser("check", help="is everything in place and unchanged (CI runs this)")
     ch.add_argument("--final", action="store_true", help="also check that everything the hand-in needs is there")
 
+    sub.add_parser("next", help="where you are on the project's map, and the one next thing to do, with the guide page for it (it changes nothing)")
+
     nt = sub.add_parser("new-topic", help="write a skeleton own topic in bench/own/<id>/")
     nt.add_argument("topic_id", metavar="ID", help="the topic's id, such as statics-trusses (lowercase letters, digits and hyphens)")
 
@@ -131,6 +134,12 @@ def cmd_check(args) -> int:
     return check.main(args)
 
 
+def cmd_next(args) -> int:
+    from p3 import next as next_step
+
+    return next_step.main(args)
+
+
 def cmd_new_topic(args) -> int:
     from p3 import newtopic
 
@@ -151,6 +160,7 @@ COMMANDS = {
     "report": cmd_report,
     "compare": cmd_compare,
     "check": cmd_check,
+    "next": cmd_next,
     "new-topic": cmd_new_topic,
     "rehash": cmd_rehash,
 }
