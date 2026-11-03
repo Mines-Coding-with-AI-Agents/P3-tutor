@@ -144,9 +144,15 @@ When you run <code>uv run p3 bench --config c1-skills</code>, the bench works th
 
 <p>You never type the Claude Code command yourself; <code>p3 bench</code> does.
 It looks like this, with the parts in angle brackets filled in for each scenario:</p>
-<pre><code>claude -p "&lt;request&gt;" --output-format stream-json --verbose --no-session-persistence
-  --setting-sources project,local --permission-mode acceptEdits
-  --max-turns &lt;limit&gt; --model &lt;model&gt; --allowedTools Glob Grep &lt;your allow list&gt;</code></pre>
+<pre><code>claude -p "&lt;request&gt;"
+  --output-format stream-json
+  --verbose
+  --no-session-persistence
+  --setting-sources project,local
+  --permission-mode acceptEdits
+  --max-turns &lt;limit&gt;
+  --model &lt;model&gt;
+  --allowedTools Glob Grep &lt;your allow list&gt;</code></pre>
 <p>Read it as a description of what your tutor gets: the settings in the scenario folder (your <code>tutor/.claude/settings.json</code>) and none of your own user settings, file edits inside the folder without asking, the turn limit, the model your config names (<code>sonnet</code> by default), and exactly the tools on your allow list plus <code>Glob</code> and <code>Grep</code>.
 <a href="05-tutor-and-configs.html#settings">tutor/.claude/settings.json</a> explains the allow list and why anything else is denied.</p>
 
@@ -354,7 +360,7 @@ The one exception is a failure outside your tutor, such as a usage limit or a si
 <p>A run of config <code>c1-skills</code> writes <code>bench/runs/c1-skills/&lt;run-id&gt;/</code>, and a run of <code>--config live</code> writes <code>bench/runs/_live/&lt;run-id&gt;/</code>.
 The run id is the time the repeat started, in UTC, then the topic, the lesson minutes and the repeat: <code>20261105-141502-agent-architecture-m30-r1</code> is repeat 1 of a 30-minute run on the shared topic, started at 14:15:02 UTC on November 5.
 A full run's folder looks like this:</p>
-<pre><code>bench/runs/c1-skills/20261105-141502-agent-architecture-m30-r1/
+<pre class="tree"><code>bench/runs/c1-skills/20261105-141502-agent-architecture-m30-r1/
   run.json
   score.json
   teach/
@@ -380,16 +386,16 @@ A tutor scenario often has no <code>outputs/</code> at all, because its reply is
 <code>stderr.txt</code> appears in a scenario's folder only when Claude Code printed something there.</p>
 
 <div class="table-wrap">
-<table>
+<table class="stack">
   <caption>The files of a run.</caption>
   <thead><tr><th>File</th><th>What it holds</th></tr></thead>
   <tbody>
-    <tr><td><code>run.json</code></td><td>the config and its hash, the topic and its hash and commit, the Claude Code version, the model, and per scenario its status, duration, turns, tokens, subagents, web use and permission denials</td></tr>
-    <tr><td><code>score.json</code></td><td>every check's result, the headline numbers, and what the scoring itself cost</td></tr>
-    <tr><td><code>&lt;scenario&gt;/outputs/</code></td><td>every file the scenario wrote or changed, at its own path</td></tr>
-    <tr><td><code>&lt;scenario&gt;/result.json</code></td><td>the final result line, including the tutor's reply</td></tr>
-    <tr><td><code>&lt;scenario&gt;/trace.jsonl.gz</code></td><td>the whole stream of the session, gzipped, including every subagent's messages</td></tr>
-    <tr><td><code>&lt;scenario&gt;/stderr.txt</code></td><td>anything Claude Code printed to stderr, when there was something</td></tr>
+    <tr><td data-label="File"><code>run.json</code></td><td data-label="What it holds">the config and its hash, the topic and its hash and commit, the Claude Code version, the model, and per scenario its status, duration, turns, tokens, subagents, web use and permission denials</td></tr>
+    <tr><td data-label="File"><code>score.json</code></td><td data-label="What it holds">every check's result, the headline numbers, and what the scoring itself cost</td></tr>
+    <tr><td data-label="File"><code>&lt;scenario&gt;/outputs/</code></td><td data-label="What it holds">every file the scenario wrote or changed, at its own path</td></tr>
+    <tr><td data-label="File"><code>&lt;scenario&gt;/result.json</code></td><td data-label="What it holds">the final result line, including the tutor's reply</td></tr>
+    <tr><td data-label="File"><code>&lt;scenario&gt;/trace.jsonl.gz</code></td><td data-label="What it holds">the whole stream of the session, gzipped, including every subagent's messages</td></tr>
+    <tr><td data-label="File"><code>&lt;scenario&gt;/stderr.txt</code></td><td data-label="What it holds">anything Claude Code printed to stderr, when there was something</td></tr>
   </tbody>
 </table>
 </div>
@@ -400,53 +406,51 @@ Runs of <code>--config live</code> are never committed, so the only record of wh
 <h3 id="open-files">How to open each file</h3>
 <p>Start by finding the run id: <code>ls bench/runs/c1-skills/</code> lists them, oldest first, and <code>p3 bench</code> prints each run's folder as its repeat starts.
 In a terminal, the Tab key completes a long path for you.</p>
-<dl>
-  <dt>The lesson, <code>teach/outputs/lessons/0001-&lt;slug&gt;.html</code>: in your browser</dt>
-  <dd><p>In VS Code's Explorer, right-click the file and choose "Reveal in File Explorer" (Windows) or "Reveal in Finder" (macOS), then double-click it.
-  Or from a terminal in <code>work/p3-tutor</code>:</p>
-  <div class="cmd">
-    <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
-    <pre class="in">start bench/runs/c1-skills/&lt;run-id&gt;/teach/outputs/lessons/0001-&lt;slug&gt;.html</pre>
-  </div>
-  <p>That is for Windows, in Git Bash or PowerShell; on macOS, use <code>open</code> in place of <code>start</code>.
-  A stylesheet or image under <code>assets/</code> was kept at its own path beside <code>lessons/</code>, so the lesson looks the way the tutor made it.</p></dd>
+<h4>The lesson, <code>teach/outputs/lessons/0001-&lt;slug&gt;.html</code>: in your browser</h4>
+<p>In VS Code's Explorer, right-click the file and choose "Reveal in File Explorer" (Windows) or "Reveal in Finder" (macOS), then double-click it.
+Or from a terminal in <code>work/p3-tutor</code>:</p>
+<div class="cmd">
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
+  <pre class="in">start bench/runs/c1-skills/&lt;run-id&gt;/teach/outputs/lessons/0001-&lt;slug&gt;.html</pre>
+</div>
+<p>That is for Windows, in Git Bash or PowerShell; on macOS, use <code>open</code> in place of <code>start</code>.
+A stylesheet or image under <code>assets/</code> was kept at its own path beside <code>lessons/</code>, so the lesson looks the way the tutor made it.</p>
 
-  <dt>The quiz, the key and the grades: in VS Code</dt>
-  <dd><p><code>quiz/outputs/quizzes/0002.json</code> and <code>quiz/outputs/keys/0002.json</code>, and <code>grade-s1/outputs/grades/0001-s1.json</code> and its <code>grade-s2</code> twin.
-  Take the quiz yourself before you open the key; that is the fastest way to find an item that can be read two ways.</p></dd>
+<h4>The quiz, the key and the grades: in VS Code</h4>
+<p><code>quiz/outputs/quizzes/0002.json</code> and <code>quiz/outputs/keys/0002.json</code>, and <code>grade-s1/outputs/grades/0001-s1.json</code> and its <code>grade-s2</code> twin.
+Take the quiz yourself before you open the key; that is the fastest way to find an item that can be read two ways.</p>
 
-  <dt>A tutor reply, <code>tutor-pNN/result.json</code>: in VS Code</dt>
-  <dd><p>The reply is the text under <code>"result"</code>.
-  <code>"is_error"</code> says whether the session ended in an error, and <code>"num_turns"</code> how many turns it took.
-  The probe the reply answers is in <code>bench/topics/agent-architecture/probes.json</code>, under its id.</p></dd>
+<h4>A tutor reply, <code>tutor-pNN/result.json</code>: in VS Code</h4>
+<p>The reply is the text under <code>"result"</code>.
+<code>"is_error"</code> says whether the session ended in an error, and <code>"num_turns"</code> how many turns it took.
+The probe the reply answers is in <code>bench/topics/agent-architecture/probes.json</code>, under its id.</p>
 
-  <dt><code>run.json</code>: in VS Code</dt>
-  <dd><p>At the top: the config and its hash, the topic, the minutes, whether it was a quick run, the model, the tools the run allowed (<code>allowed_tools</code>), which command started each job (<code>entries</code>), and any <code>ancestor_memory</code>.
-  Then one entry per scenario under <code>"scenarios"</code>: <code>status</code> (<code>ok</code>, <code>timeout</code> or <code>error</code>), <code>duration_ms</code>, <code>num_turns</code>, <code>tokens</code> (input, output, cache reads and cache writes), <code>cost_usd_list</code>, <code>web_searches</code> and <code>web_fetches</code>, <code>subagents</code> (how many started, how deeply they nested, and of which types), <code>permission_denials</code> (the name of each tool that was denied), and <code>outputs</code>, the files it wrote.
-  This is the first file to read when a scenario went wrong.</p></dd>
+<h4><code>run.json</code>: in VS Code</h4>
+<p>At the top: the config and its hash, the topic, the minutes, whether it was a quick run, the model, the tools the run allowed (<code>allowed_tools</code>), which command started each job (<code>entries</code>), and any <code>ancestor_memory</code>.
+Then one entry per scenario under <code>"scenarios"</code>: <code>status</code> (<code>ok</code>, <code>timeout</code> or <code>error</code>), <code>duration_ms</code>, <code>num_turns</code>, <code>tokens</code> (input, output, cache reads and cache writes), <code>cost_usd_list</code>, <code>web_searches</code> and <code>web_fetches</code>, <code>subagents</code> (how many started, how deeply they nested, and of which types), <code>permission_denials</code> (the name of each tool that was denied), and <code>outputs</code>, the files it wrote.
+This is the first file to read when a scenario went wrong.</p>
 
-  <dt><code>score.json</code>: in VS Code</dt>
-  <dd><p><code>"summary"</code> holds the headline numbers and the cost per job; <code>"jobs"</code> holds every check in detail, such as the item ids the solvers flagged under <code>likely_wrong_key</code> and <code>likely_ambiguous</code>, or each probe's leak and judge result; <code>"scoring_cost"</code> and <code>"warnings"</code> close it.</p></dd>
+<h4><code>score.json</code>: in VS Code</h4>
+<p><code>"summary"</code> holds the headline numbers and the cost per job; <code>"jobs"</code> holds every check in detail, such as the item ids the solvers flagged under <code>likely_wrong_key</code> and <code>likely_ambiguous</code>, or each probe's leak and judge result; <code>"scoring_cost"</code> and <code>"warnings"</code> close it.</p>
 
-  <dt id="trace"><code>trace.jsonl.gz</code>: with gzip, or ask the Builder</dt>
-  <dd><p>The trace is the whole session as Claude Code streamed it, one JSON object per line, gzipped: the session's start, every message the model wrote with every tool call it made, every tool result it got back, every subagent's messages, and the final result line.
-  It is where you find out what a session actually did: which files it read, which command was denied and what it tried next, or whether your guard's message came back.
-  It opens with any gzip tool.
-  In Git Bash, or a terminal on macOS or Linux, this pages through it (press <kbd>q</kbd> to quit):</p>
-  <div class="cmd">
-    <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
-    <pre class="in">gzip -dc bench/runs/c1-skills/&lt;run-id&gt;/teach/trace.jsonl.gz | less</pre>
-  </div>
-  <p>The lines are long JSON, so for a real question it is easier to let Claude Code read the trace for you.</p>
-  <div class="say builder">
-    <div class="say-head">Say to the Builder</div>
-    <pre>Read bench/runs/c1-skills/&lt;run-id&gt;/teach/trace.jsonl.gz and tell me which tool calls were denied, and what the session did after each one.</pre>
-    <p>Reading a trace draws on your plan, and a long teach trace is big, so look in <code>run.json</code> first and open a trace when <code>run.json</code> cannot answer the question.</p>
-  </div></dd>
+<h4 id="trace"><code>trace.jsonl.gz</code>: with gzip, or ask the Builder</h4>
+<p>The trace is the whole session as Claude Code streamed it, one JSON object per line, gzipped: the session's start, every message the model wrote with every tool call it made, every tool result it got back, every subagent's messages, and the final result line.
+It is where you find out what a session actually did: which files it read, which command was denied and what it tried next, or whether your guard's message came back.
+It opens with any gzip tool.
+In Git Bash, or a terminal on macOS or Linux, this pages through it (press <kbd>q</kbd> to quit):</p>
+<div class="cmd">
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
+  <pre class="in">gzip -dc bench/runs/c1-skills/&lt;run-id&gt;/teach/trace.jsonl.gz | less</pre>
+</div>
+<p>The lines are long JSON, so for a real question it is easier to let Claude Code read the trace for you.</p>
+<div class="say builder">
+  <div class="say-head">Say to the Builder</div>
+  <pre>Read bench/runs/c1-skills/&lt;run-id&gt;/teach/trace.jsonl.gz and tell me which tool calls were denied, and what the session did after each one.</pre>
+  <p>Reading a trace draws on your plan, and a long teach trace is big, so look in <code>run.json</code> first and open a trace when <code>run.json</code> cannot answer the question.</p>
+</div>
 
-  <dt><code>stderr.txt</code>: in VS Code</dt>
-  <dd><p>Plain text, present only when Claude Code printed something to stderr; read it when a scenario's status is <code>error</code>.</p></dd>
-</dl>
+<h4><code>stderr.txt</code>: in VS Code</h4>
+<p>Plain text, present only when Claude Code printed something to stderr; read it when a scenario's status is <code>error</code>.</p>
 
 <div class="watch"><span class="label">Watch out</span>
 <p>On Windows, a run folder deep inside a long path can push a lesson's path past Windows' 260-character limit, and <code>p3 bench</code> warns before it starts: "the run folders here are N characters long, so a scenario's files may pass Windows' 260-character path limit and fail to copy or to commit".
@@ -545,7 +549,7 @@ Wait until Claude works again (for a usage limit, /usage in Claude Code shows wh
   If you asked for <code>--repeats 3</code> and repeat 2 was stopped, repeat 1 is kept, so the command for the rest is <code>--repeats 2</code>; <code>uv run p3 next</code> and <code>uv run p3 check</code> both count your scored full runs for you.</p></li>
   <li><p><strong>Score a run that was stopped while scoring</strong>, once Claude works again:</p>
   <div class="cmd">
-    <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+    <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
     <pre class="in">uv run p3 score bench/runs/&lt;config&gt;/&lt;run-id&gt;</pre>
   </div></li>
 </ol>

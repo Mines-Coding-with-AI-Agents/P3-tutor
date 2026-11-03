@@ -69,14 +69,14 @@
     <dd><p>A reviewer subagent reads a draft with a fresh context and a specific checklist, the way the learner will, and this step finds out whether that second reading makes the outputs better. It is never free: in my pilot, review loops made the teach scenario about 6.7 times as expensive in tokens.</p></dd>
     <dt>Do</dt>
     <dd><ol>
-      <li>Add one reviewer per quick round, so at least three rounds: run the live tutor in the <span class="tag builder">Builder</span> or a plain terminal, write your thoughts under the round in <code>reviews/c2-review.md</code> in the VS Code editor, then say to the <span class="tag builder">Builder</span> "Act on Round k of reviews/c2-review.md.", with k the round's number.</li>
+      <li>Add one reviewer per quick round, so at least three rounds: run the live tutor in the <span class="tag builder">Builder</span> or a plain terminal, write your thoughts under the round in <code>reviews/c2-review.md</code> in the VS Code editor, then say to the <span class="tag builder">Builder</span> "Act on Round k of <span class="nw">reviews/c2-review.md.",</span> with k the round's number.</li>
       <li>When teach, quiz and grade each have a loop, snapshot it in the <span class="tag builder">Builder</span> or a plain terminal with <code>uv run p3 snapshot c2-review</code>, and start its full run in a <span class="tag plain">Plain terminal</span> with <code>uv run p3 bench --config c2-review</code>.</li>
       <li>In the editor, write the major review (lesson, quiz and feedback) in <code>reviews/c2-review.md</code>, section 3 of <code>EVAL.md</code>, and the Purpose and Review of each reviewer in <code>reviews/components.md</code>; then commit and push, in a <span class="tag plain">Plain terminal</span> or through the Builder.</li>
     </ol></dd>
     <dt>Done when</dt>
-    <dd><p><code>uv run p3 next</code> lists 5 Step 2, c2-review under Done, and its Now line has moved on: to 7 Step 3, c3-split, or, for 598E and the length study, to 6 The length study, part 1.</p></dd>
+    <dd><p><code>uv run p3 next</code> lists 5 Step 2, <span class="nw">c2-review</span> under Done, and its Now line has moved on: to 7 Step 3, <span class="nw">c3-split,</span> or, for 598E and the length study, to 6 The length study, part 1.</p></dd>
     <dt>Then</dt>
-    <dd><p><a href="10-step3-split.html">Step 3: split the teach job (c3-split)</a>, or for the length study, <a href="16-stretch-and-598e.html#prereg">PREREG.md before the runs</a>. Whenever you are unsure what comes next, ask the <span class="tag guide">Guide</span>, or run <code>uv run p3 next</code> in a plain terminal.</p></dd>
+    <dd><p><a href="10-step3-split.html">Step 3: split the teach job (<span class="nw">c3-split</span>)</a>, or for the length study, <a href="16-stretch-and-598e.html#prereg">PREREG.md before the runs</a>. Whenever you are unsure what comes next, ask the <span class="tag guide">Guide</span>, or run <code>uv run p3 next</code> in a plain terminal.</p></dd>
   </dl>
 </section>
 
@@ -138,15 +138,15 @@
 <h3 id="cost">What it costs</h3>
 <p>Every <code>claude -p</code> session carries a fixed load before it does any work, 24,000 to 49,000 input tokens in my checks, almost all of them cached reads of Claude Code's own instructions and tools. Every subagent pays a share of that again, plus whatever it reads, such as the whole draft. And every pass adds time. These are my pilot's numbers, from Claude Code 2.1.314 with Sonnet: the baseline averaged over three full runs, against one full run of a review-loop config of my own, with four skills and reviewers on teach, quiz and grade, at most two passes each.</p>
 <div class="table-wrap">
-<table>
+<table class="stack">
   <caption>My pilot's numbers, from <a href="06-the-bench.html#cost">What runs cost</a>. Minutes are summed over a run's scenarios.</caption>
-  <thead><tr><th>Scenario</th><th>c0-baseline</th><th class="num">min</th><th>review loops</th><th class="num">min</th></tr></thead>
+  <thead><tr><th>Scenario</th><th><span class="nw">c0-baseline</span></th><th class="num">min</th><th>review loops</th><th class="num">min</th></tr></thead>
   <tbody>
-    <tr><td><code>teach</code></td><td>744k tokens (28k output)</td><td class="num">2.8</td><td>4.96M tokens (109k output), 5 subagents</td><td class="num">9.8</td></tr>
-    <tr><td><code>quiz</code></td><td>161k tokens (5k output)</td><td class="num">0.6</td><td>747k tokens (30k output), 2 subagents</td><td class="num">3.6</td></tr>
-    <tr><td>each <code>grade</code></td><td>160k tokens (3k output)</td><td class="num">0.45</td><td>311k tokens (9k output), 1 subagent</td><td class="num">1.05</td></tr>
-    <tr><td>each tutor probe</td><td>about 105k tokens (1.5k output)</td><td class="num">0.25</td><td>about the same, no review loop</td><td class="num">0.25</td></tr>
-    <tr><td><strong>full run</strong></td><td><strong>1.85M tokens (49k output), $1.75</strong></td><td class="num"><strong>5.8</strong></td><td><strong>6.99M tokens (167k output), $4.48</strong></td><td class="num"><strong>17.1</strong></td></tr>
+    <tr><td data-label="Scenario"><code>teach</code></td><td data-label="c0-baseline">744k tokens (28k output)</td><td class="num" data-label="c0-baseline min">2.8</td><td data-label="Review loops">4.96M tokens (109k output), 5 subagents</td><td class="num" data-label="Review loops min">9.8</td></tr>
+    <tr><td data-label="Scenario"><code>quiz</code></td><td data-label="c0-baseline">161k tokens (5k output)</td><td class="num" data-label="c0-baseline min">0.6</td><td data-label="Review loops">747k tokens (30k output), 2 subagents</td><td class="num" data-label="Review loops min">3.6</td></tr>
+    <tr><td data-label="Scenario">each <code>grade</code></td><td data-label="c0-baseline">160k tokens (3k output)</td><td class="num" data-label="c0-baseline min">0.45</td><td data-label="Review loops">311k tokens (9k output), 1 subagent</td><td class="num" data-label="Review loops min">1.05</td></tr>
+    <tr><td data-label="Scenario">each tutor probe</td><td data-label="c0-baseline">about 105k tokens (1.5k output)</td><td class="num" data-label="c0-baseline min">0.25</td><td data-label="Review loops">about the same, no review loop</td><td class="num" data-label="Review loops min">0.25</td></tr>
+    <tr><td data-label="Scenario"><strong>full run</strong></td><td data-label="c0-baseline"><strong>1.85M tokens (49k output), $1.75</strong></td><td class="num" data-label="c0-baseline min"><strong>5.8</strong></td><td data-label="Review loops"><strong>6.99M tokens (167k output), $4.48</strong></td><td class="num" data-label="Review loops min"><strong>17.1</strong></td></tr>
   </tbody>
 </table>
 </div>
@@ -164,12 +164,10 @@
   <li><strong>A clear job for the writer:</strong> fix each finding, or say in the record why not.</li>
 </ul>
 <p>An example of a quiz reviewer's checklist, started from a c1 review:</p>
-<pre><code>1. Every stem names the criterion it asks about. A stem that asks for the "best"
-   or "better" option without saying for what is a finding (my c1 review, q2).
+<pre><code>1. Every stem names the criterion it asks about. A stem that asks for the "best" or "better" option without saying for what is a finding (my c1 review, q2).
 2. No correct option repeats a phrase from its stem that no wrong option repeats.
 3. Every wrong option matches a misconception the key names, by its id.
-4. Each item has one defensible answer: answer it from the stem alone, and report
-   any item where a second option could also be argued.
+4. Each item has one defensible answer: answer it from the stem alone, and report any item where a second option could also be argued.
 5. The items test the core of the objective, not side details.</code></pre>
 
 <h2 id="dimensions">What each job's reviews check</h2>
@@ -194,12 +192,12 @@
   <caption>The two ways the README allows, with what each one costs you.</caption>
   <thead><tr><th></th><th>Four reviewer subagents</th><th>One lesson reviewer, four sections</th></tr></thead>
   <tbody>
-    <tr><td>What it is</td><td>one subagent per review</td><td>one subagent whose checklist has four separate sections, and which reports on each</td></tr>
-    <tr><td>Each reading</td><td>a fresh context with one concern</td><td>one fresh context for all four</td></tr>
-    <tr><td>Cost per pass</td><td>four subagents, each with its share of the fixed load and its own reading of the whole lesson</td><td>one subagent</td></tr>
-    <tr><td>Rounds to build</td><td>four, one reviewer each</td><td>one</td></tr>
-    <tr><td>Inventory entries</td><td>four</td><td>one</td></tr>
-    <tr><td>Watch for</td><td>the teach time limit, if they run one after another</td><td>findings that blur together: ask for each section's findings under its own heading</td></tr>
+    <tr><td><strong>What it is</strong></td><td>one subagent per review</td><td>one subagent whose checklist has four separate sections, and which reports on each</td></tr>
+    <tr><td><strong>Each reading</strong></td><td>a fresh context with one concern</td><td>one fresh context for all four</td></tr>
+    <tr><td><strong>Cost per pass</strong></td><td>four subagents, each with its share of the fixed load and its own reading of the whole lesson</td><td>one subagent</td></tr>
+    <tr><td><strong>Rounds to build</strong></td><td>four, one reviewer each</td><td>one</td></tr>
+    <tr><td><strong>Inventory entries</strong></td><td>four</td><td>one</td></tr>
+    <tr><td><strong>Watch for</strong></td><td>the teach time limit, if they run one after another</td><td>findings that blur together: ask for each section's findings under its own heading</td></tr>
   </tbody>
 </table>
 </div>
@@ -268,13 +266,14 @@
 <p>Make each round's run cover two jobs, as the plan does: the one whose reviewer the last round added (its "with") and the one the next round changes (its "without"). The lesson reviewer's "with" is the step's full run, which your major review covers. With four teach reviewers, add one per round after Round 3, each round running <code>--only teach</code>.</p>
 <p>For Round 1, if you have not changed <code>tutor/</code> since you snapshotted <code>c1-skills</code>, its full run already is the output without your first reviewer, and your c1 major review has read it closely; you can name it on Round 1's Run line instead of making a new run.</p>
 <div class="watch"><span class="label">Watch out</span>
-<p><code>p3 check</code> counts only two complete rounds, and neither it nor <code>p3 next</code> can tell whether teach, quiz and grade each have a loop. So from two complete rounds on, <code>p3 next</code> gives the snapshot with that condition in front: "When teach, quiz and grade each have their review loop and you are happy with the tutor, snapshot it: uv run p3 snapshot c2-review (or add another round first)." This step needs all three, and with one reviewer per round that is at least three rounds. Add rounds until they all have their loop.</p>
+<p><code>p3 check</code> counts only two complete rounds, and neither it nor <code>p3 next</code> can tell whether teach, quiz and grade each have a loop. So from two complete rounds on, <code>p3 next</code> gives the snapshot with that condition in front: "When teach, quiz and grade each have their review loop and you are happy with the tutor, snapshot it: uv run p3 snapshot <span class="nw">c2-review</span> (or add another round first)." This step needs all three, and with one reviewer per round that is at least three rounds. Add rounds until they all have their loop.</p>
 </div>
 
 <h3 id="one-round">One round, as an example</h3>
 <ol class="steps">
   <li>
-    <p><strong>Write your thoughts in <code>reviews/c2-review.md</code>, in the editor.</strong> Open the file in VS Code, find <code>### Round 1</code>, and replace the markers on its Run line and under <code>**My thoughts:**</code>. Save it. An example, in a student's words:</p>
+    <p><strong>Write your thoughts in <code>reviews/c2-review.md</code>, in the editor.</strong> Open the file in VS Code, find <code>### Round 1</code>, and replace the markers on its Run line and under <code>**My thoughts:**</code>. Save it.</p>
+    <div class="student"><span class="label">Example: a round's thoughts, in a student's words</span>
 <pre><code>### Round 1
 
 **Run:** bench/runs/c1-skills/20261108-101500-agent-architecture-m30-r1, the c1-skills full run
@@ -282,27 +281,23 @@
 **My thoughts:**
 
 This is the quiz my c1-skills major review covered, with no reviewer.
-q2 asks which design "is better" without saying better for what, and q5's right
-option is the only one that repeats a phrase from its stem.
-I want a quiz reviewer whose checklist starts from my c1 review's Quiz section:
-every stem names its criterion, no right option repeats its stem, every wrong option
-matches a named misconception. At most two passes, drafts in drafts/, and a record
-in review-records/.</code></pre>
+q2 asks which design "is better" without saying better for what, and q5's right option is the only one that repeats a phrase from its stem.
+I want a quiz reviewer whose checklist starts from my c1 review's Quiz section: every stem names its criterion, no right option repeats its stem, every wrong option matches a named misconception.
+At most two passes, drafts in drafts/, and a record in review-records/.</code></pre>
+    </div>
   </li>
   <li>
     <p><strong>Ask the Builder to act on it.</strong></p>
     <div class="say builder">
       <div class="say-head">Say to the Builder</div>
-      <pre>Act on Round 1 of reviews/c2-review.md.</pre>
+      <pre>Act on Round 1 of <span class="nw">reviews/c2-review.md.</span></pre>
       <p>It reads your thoughts, your <code>c1-skills</code> major review and the step's part of the README, builds the reviewer and the loop, and writes the round's What changed.</p>
     </div>
 <pre><code>**What changed:**
 
 - Kind: new subagent
-- Files: tutor/.claude/agents/quiz-reviewer.md, tutor/.claude/skills/quiz/SKILL.md
-- Why: The c1 review found stems with no criterion and right options that repeat their
-  stem; a quiz-reviewer with those checks reads the draft in drafts/ with a fresh context,
-  and the quiz skill now revises at most twice and writes review-records/NNNN-quiz.md.</code></pre>
+- Files: tutor/.claude/agents/<wbr><span class="nw">quiz-reviewer.md,</span> tutor/.claude/skills/quiz/SKILL.md
+- Why: The c1 review found stems with no criterion and right options that repeat their stem; a quiz-reviewer with those checks reads the draft in drafts/ with a fresh context, and the quiz skill now revises at most twice and writes review-records/NNNN-quiz.md.</code></pre>
     <p>It also adds a <code>### quiz-reviewer</code> entry to <code>reviews/components.md</code> with the factual fields, and suggests the cheapest run that shows the change. It asks before starting any run.</p>
   </li>
   <li>
@@ -321,7 +316,7 @@ in review-records/.</code></pre>
   </li>
 </ol>
 <div class="note"><span class="label">What p3 next says during the rounds</span>
-<p>The same as in step 1, with <code>reviews/c2-review.md</code>. For an untouched round it asks you to run the live tutor and write what you noticed under Round k &gt; My thoughts; once your thoughts are written, "In the Builder window, say: Act on Round k of reviews/c2-review.md."; for anything else missing, "Finish Round k in reviews/c2-review.md:" and its first problem; and with every round complete, either "Add Round k to reviews/c2-review.md by copying the last round with its marker lines." or, from two complete rounds on, "When teach, quiz and grade each have their review loop and you are happy with the tutor, snapshot it: uv run p3 snapshot c2-review (or add another round first)."</p>
+<p>The same as in step 1, with <code>reviews/c2-review.md</code>. For an untouched round it asks you to run the live tutor and write what you noticed under Round k &gt; My thoughts; once your thoughts are written, "In the Builder window, say: Act on Round k of <span class="nw">reviews/c2-review.md.";</span> for anything else missing, "Finish Round k in <span class="nw">reviews/c2-review.md:"</span> and its first problem; and with every round complete, either "Add Round k to <span class="nw">reviews/c2-review.md</span> by copying the last round with its marker lines." or, from two complete rounds on, "When teach, quiz and grade each have their review loop and you are happy with the tutor, snapshot it: uv run p3 snapshot <span class="nw">c2-review</span> (or add another round first)."</p>
 </div>
 
 <h2 id="snapshot">Snapshot</h2>
@@ -341,7 +336,7 @@ Run it with: p3 bench --config c2-review</pre>
 <h2 id="full-run">The full run</h2>
 <p>A full run is the ten scenarios on the shared topic plus their scoring, and <code>c2-review</code> needs one scored full run, because it is the run your major review reviews and the one <code>uv run p3 report</code> sets beside <code>c1-skills</code>; quick and <code>--only</code> runs are left out of both. Check <code>/usage</code> in a Claude Code window first: my review-loop config took 6.99 million tokens and 17.1 minutes of scenario time per full run. Then start it in a plain terminal, a terminal tab with no Claude Code in it, in <code>work/p3-tutor</code>:</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 bench --config c2-review</pre>
 </div>
 <p>It belongs in a plain terminal because it can take longer than Claude Code lets a foreground command run, ten minutes at most, and it must not stop when you close a Claude Code window. It names the run folder, <code>bench/runs/c2-review/&lt;run-id&gt;</code>, as it starts, and prints a summary table and the scores when it finishes. While it runs, do your live tries (below), and the reviewers' inventory entries, which <code>uv run p3 next</code> usually names on its Also line after "While it runs".</p>
@@ -380,7 +375,7 @@ Run it with: p3 bench --config c2-review</pre>
 </div>
 <p>Write each rating as a whole number on its own line, <code>Rating: 4</code>, with the feedback below it, on the same scale as in step 1, because <code>p3 report</code> puts your ratings side by side. <a href="07-reviews.html">Your reviews</a> explains the ratings and how I grade reviews.</p>
 <ul>
-  <li><strong>Say whether the problems your c1-skills review found are gone.</strong> For each one, with its id or quote: gone, still there, or replaced by a new problem. This is how the trail from your c1 review to the reviewers' checklists shows whether the reviewers caught what they were built to catch.</li>
+  <li><strong>Say whether the problems your <span class="nw">c1-skills</span> review found are gone.</strong> For each one, with its id or quote: gone, still there, or replaced by a new problem. This is how the trail from your c1 review to the reviewers' checklists shows whether the reviewers caught what they were built to catch.</li>
   <li><strong>Compared with the previous step:</strong> <code>c1-skills</code>, job by job, with the cost beside the gain.</li>
   <li><strong>What the next step should fix:</strong> step 3 changes only the lesson, so say first what you want from the lesson.</li>
 </ul>
@@ -403,27 +398,21 @@ Run it with: p3 bench --config c2-review</pre>
 <p>The prose is yours. The Guide can explain what a question is asking, and it will not write the answer.</p>
 
 <h2 id="inventory">The inventory: an entry for each reviewer</h2>
-<p>Each reviewer gets an entry in <code>reviews/components.md</code>, headed with the subagent's <code>name</code> from its frontmatter, such as <code>### quiz-reviewer</code>, so that each reviewer's reason for existing sits next to its evidence and a reviewer that did not pay shows up as plainly as one that did. The Builder fills in Kind (<code>subagent</code>), Step added (<code>c2-review</code>) and With and without (the round that added it, such as <code>reviews/c2-review.md, Round 1 (without) and Round 2 (with)</code>); you check them. You write the Purpose (why the tutor needs it, and why it is a subagent rather than a step in the skill) and the Review (the output with it against without it, with evidence). Kept in final waits until <code>final</code> is frozen, and until then <code>p3 check</code> lists the entry as not complete, which is expected; <code>p3 next</code> needs only the Purpose and the Review now. If a reviewer of the snapshot has no entry yet, <code>p3 next</code> gives you the words for the Builder: "Add an entry to reviews/components.md for each component of configs/c2-review/ that has none (...), with Kind, Step added, and With and without." <a href="14-write-up.html">The inventory and EVAL.md</a> explains the inventory in full.</p>
+<p>Each reviewer gets an entry in <code>reviews/components.md</code>, headed with the subagent's <code>name</code> from its frontmatter, such as <code>### quiz-reviewer</code>, so that each reviewer's reason for existing sits next to its evidence and a reviewer that did not pay shows up as plainly as one that did. The Builder fills in Kind (<code>subagent</code>), Step added (<code>c2-review</code>) and With and without (the round that added it, such as <code>reviews/c2-review.md, Round 1 (without) and Round 2 (with)</code>); you check them. You write the Purpose (why the tutor needs it, and why it is a subagent rather than a step in the skill) and the Review (the output with it against without it, with evidence). Kept in final waits until <code>final</code> is frozen, and until then <code>p3 check</code> lists the entry as not complete, which is expected; <code>p3 next</code> needs only the Purpose and the Review now. If a reviewer of the snapshot has no entry yet, <code>p3 next</code> gives you the words for the Builder: "Add an entry to reviews/components.md for each component of <span class="nw">configs/c2-review/</span> that has none (...), with Kind, Step added, and With and without." <a href="14-write-up.html">The inventory and EVAL.md</a> explains the inventory in full.</p>
 <p>The template's own example of a finished entry, from the comment in <code>reviews/components.md</code>:</p>
 <pre><code>### quiz-reviewer
 
 - Kind: subagent
 - Step added: c2-review
-- Purpose: My c1 review found two quiz items that could be read two ways (q2 and q4)
-  and one whose correct option repeated the stem; a reviewer with a fresh context reads
-  the draft the way a learner will, which the quiz skill writing its own items cannot do,
-  so it is a subagent and not a step in the skill.
+- Purpose: My c1 review found two quiz items that could be read two ways (q2 and q4) and one whose correct option repeated the stem; a reviewer with a fresh context reads the draft the way a learner will, which the quiz skill writing its own items cannot do, so it is a subagent and not a step in the skill.
 - With and without: reviews/c2-review.md, Round 1 (without) and Round 2 (with)
-- Review: Without it, q2 asked which design "is better" with no criterion; with it, every
-  stem names its criterion and the reviewer's record shows two items flagged and fixed in
-  one round, for about 0.6M more tokens per quiz, which I think a quiz is worth, because
-  a misread item teaches the wrong thing.
+- Review: Without it, q2 asked which design "is better" with no criterion; with it, every stem names its criterion and the reviewer's record shows two items flagged and fixed in one pass, for about 0.6M more tokens per quiz, which I think a quiz is worth, because a misread item teaches the wrong thing.
 - Kept in final: yes</code></pre>
 <p>A Markdown file in <code>tutor/.claude/agents/</code> counts as a subagent only when its frontmatter opens on the first line and has a <code>name</code>, which is also what Claude Code needs to load it. A checklist file there that a reviewer reads is fine; <code>p3 check</code> notes it as documentation and does not count it.</p>
 
 <h2 id="commit">Commit and push</h2>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">git add configs bench/runs reviews EVAL.md
 git commit -m "c2-review: snapshot, full run and major review"
 git push</pre>
@@ -437,7 +426,7 @@ git push</pre>
   <pre>I finished step 2. What is the one thing I should do next, and why?</pre>
 </div>
 <ul>
-  <li><strong>For most of 498E,</strong> the Now line moves to 7 Step 3, c3-split: <a href="10-step3-split.html">Step 3: split the teach job (c3-split)</a>.</li>
+  <li><strong>For most of 498E,</strong> the Now line moves to 7 Step 3, <span class="nw">c3-split:</span> <a href="10-step3-split.html">Step 3: split the teach job (<span class="nw">c3-split</span>)</a>.</li>
   <li><strong>For 598E, and 498E with the length study,</strong> it moves to 6 The length study, part 1 first: sections 1 to 4 of <code>PREREG.md</code> written and committed, then three teach-only runs of <code>c1-skills</code> at each of 10, 30 and 60 minutes. <a href="16-stretch-and-598e.html#prereg">PREREG.md before the runs</a> and <a href="16-stretch-and-598e.html#length-runs">the length study's runs</a> explain them.</li>
 </ul>
 <p>Week 2 is also when you write your two test topics' items and commit them; <a href="11-test-topics.html">Your two test topics</a> explains how.</p>

@@ -115,7 +115,7 @@
   <li>
     <p><strong>Start it yourself, in a plain terminal.</strong> The picks must be yours, so neither Claude Code window runs this command, and it keeps a small web server going while you answer, which belongs in a terminal of its own. One session is one job.</p>
     <div class="cmd">
-      <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+      <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
       <pre class="in">uv run p3 compare c0-baseline final --job teach</pre>
       <pre class="out">p3 compare: session 20261121-150212-teach, teach on agent-architecture, 3 pairs from 3 pairs of runs
   which config is on which side is in bench/compare/20261121-150212-teach.key.json; do not open it before the reveal
@@ -139,7 +139,7 @@
   <li>
     <p><strong>Stop when you like.</strong> Each answer is saved as you submit it, so closing the browser loses nothing. You can go back with "Previous pair", and saving a pair again replaces its answer. To stop the session, press Ctrl-C in the terminal; to pick it up again, resume it, and to see your sessions, list them.</p>
     <div class="cmd">
-      <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+      <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
       <pre class="in">uv run p3 compare --resume 20261121-150212-teach
 uv run p3 compare --list</pre>
     </div>
@@ -148,7 +148,7 @@ uv run p3 compare --list</pre>
   <li>
     <p><strong>When every pair is done, reveal it.</strong> When you save the last pair the page says "All 3 pairs are answered", the server stops by itself, and the terminal prints the reveal command.</p>
     <div class="cmd">
-      <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+      <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
       <pre class="in">uv run p3 compare --reveal 20261121-150212-teach</pre>
     </div>
     <p>The reveal refuses a session that is not finished, because revealing early would end the blinding. Once a session is revealed its picks are final; you can print the reveal again with the same command at any time.</p>
@@ -156,7 +156,7 @@ uv run p3 compare --list</pre>
   <li>
     <p><strong>Commit both files it wrote.</strong> Each session writes two: <code>bench/compare/&lt;session-id&gt;.json</code>, with the pairs, your picks and, after the reveal, the result, and <code>bench/compare/&lt;session-id&gt;.key.json</code>, with which config was on which side. <code>p3 check</code> needs both.</p>
     <div class="cmd">
-      <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+      <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
       <pre class="in">git add bench/compare/
 git commit -m "Blind comparison, teach"
 git push</pre>
@@ -167,14 +167,14 @@ git push</pre>
 
 <h2 id="pairs">What a pair is, and how many you get</h2>
 <div class="table-wrap">
-<table>
+<table class="stack">
   <caption>For <code>c0-baseline</code> against <code>final</code>, with three pairs of runs. The times are my estimate of reading and judging.</caption>
   <thead><tr><th>Job</th><th>One pair is</th><th class="num">Per pair of runs</th><th class="num">Pairs</th><th>About how long</th></tr></thead>
   <tbody>
-    <tr><td>teach</td><td>the two lessons from one pair of runs</td><td class="num">1</td><td class="num">3</td><td>about 5 minutes a pair</td></tr>
-    <tr><td>quiz</td><td>the two quizzes, each with its key</td><td class="num">1</td><td class="num">3</td><td>a few minutes a pair</td></tr>
-    <tr><td>grade</td><td>one learner answer, then each version's verdict and feedback</td><td class="num">12</td><td class="num">36</td><td>under a minute a pair</td></tr>
-    <tr><td>tutor</td><td>one probe's message, then each version's reply</td><td class="num">6</td><td class="num">18</td><td>under a minute a pair</td></tr>
+    <tr><td data-label="Job">teach</td><td data-label="One pair is">the two lessons from one pair of runs</td><td class="num" data-label="Per pair of runs">1</td><td class="num" data-label="Pairs">3</td><td data-label="About how long">about 5 minutes a pair</td></tr>
+    <tr><td data-label="Job">quiz</td><td data-label="One pair is">the two quizzes, each with its key</td><td class="num" data-label="Per pair of runs">1</td><td class="num" data-label="Pairs">3</td><td data-label="About how long">a few minutes a pair</td></tr>
+    <tr><td data-label="Job">grade</td><td data-label="One pair is">one learner answer, then each version's verdict and feedback</td><td class="num" data-label="Per pair of runs">12</td><td class="num" data-label="Pairs">36</td><td data-label="About how long">under a minute a pair</td></tr>
+    <tr><td data-label="Job">tutor</td><td data-label="One pair is">one probe's message, then each version's reply</td><td class="num" data-label="Per pair of runs">6</td><td class="num" data-label="Pairs">18</td><td data-label="About how long">under a minute a pair</td></tr>
   </tbody>
 </table>
 </div>
@@ -239,7 +239,7 @@ git push</pre>
 </div>
 <p>It prints Markdown, ready to paste into <code>EVAL.md</code> section 8 with its session id, and it also writes the result into the session file. This is what the first part looks like, with made-up picks:</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 compare --reveal 20261121-160540-tutor</pre>
   <pre class="out">## Blind comparison 20261121-160540-tutor
 
@@ -277,7 +277,7 @@ You could tell which config made which in 5 of 18 pairs (28%).
 <h2 id="terminal">If a browser is awkward: --terminal</h2>
 <p>Add <code>--terminal</code> to start or resume a session without the local page. It writes each pair as one side-by-side HTML file in a temporary folder and prints its path; open that file in a browser, read the pair, and answer the three questions in the terminal: <code>l</code>, <code>r</code> or <code>t</code>, then your reason, then <code>y</code> or <code>n</code>. Every answer is saved as you give it, and Ctrl-C stops the session.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 compare c0-baseline final --job grade --terminal</pre>
 </div>
 <p>If the page's port is taken or blocked, <code>--port P</code> picks another.</p>

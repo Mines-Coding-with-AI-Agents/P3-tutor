@@ -119,7 +119,7 @@ What a learner knows belongs in <code>NOTES.md</code>: the topic's own in the be
 <p>On the shared topic you are not the novice, and that is fine.
 Your preferences still apply to how the lesson explains, the examples it picks, its density, its feedback and its tone, and when you judge it you ask whether it would have fit you when you were new to agents.</p>
 
-<h2 id="neutral-baseline">Why <code>c0-baseline</code> keeps the neutral file</h2>
+<h2 id="neutral-baseline">Why <span class="nw">c0-baseline</span> keeps the neutral file</h2>
 <p><code>c0-baseline</code> is the tutor exactly as it ships, and you run it on the first day, before you have written this file.
 Its snapshot, <code>configs/c0-baseline/</code>, holds the neutral <code>PREFERENCES.md</code> the template ships, and it keeps it: a snapshot is a fixed record, and overwriting one that has runs makes <code>p3 check</code> fail, because those runs would no longer match their config.</p>
 <p>That means <code>c1-skills</code> is the first config with your preferences, and step 1 changes two things at once: your four skills and your preferences.
@@ -243,7 +243,7 @@ The Guide can explain what a heading is for, or ask you a question that helps yo
 If an agent wrote it, it would describe the learner the agent guessed at, and your measurements would be about that learner instead of you.</p>
 <p>When you have saved it, check where you are:</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 next</pre>
 </div>
 <div class="you-see"><span class="label">What you will see</span>
@@ -252,7 +252,7 @@ If the baseline's full runs are still going, Done lists <code>2 The baseline</co
 </div>
 <p>Then commit it:</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">git add tutor/PREFERENCES.md
 git commit -m "Write my PREFERENCES.md"
 git push</pre>
@@ -281,7 +281,7 @@ So a change of preferences always reaches your committed runs in a snapshot unde
 </ul>
 <p>The personalization-swap stretch does this on purpose: a second <code>PREFERENCES.md</code> for a learner unlike you, snapshotted with <code>final</code> under a second name, to show that the tutor changes as the profile asks and stays correct (<a href="16-stretch-and-598e.html">Stretch options and the 598E length study</a>).</p>
 
-<h2 id="if-it-fails">If <code>p3 next</code> still shows Your preferences</h2>
+<h2 id="if-it-fails">If p3 next still shows Your preferences</h2>
 <ul>
   <li><strong>The file is not saved.</strong> VS Code marks an unsaved tab with a dot; save with Ctrl+S (Cmd+S on macOS).</li>
   <li><strong>You edited the wrong copy.</strong> Edit <code>tutor/PREFERENCES.md</code>, never <code>configs/c0-baseline/PREFERENCES.md</code>. A snapshot is written only by <code>p3 snapshot</code>, and editing one by hand makes it stop matching its hash, which <code>p3 check</code> reports as a failure, and <code>p3 next</code> then shows that failure instead of the stage; <code>git restore configs/c0-baseline</code> puts it back.</li>

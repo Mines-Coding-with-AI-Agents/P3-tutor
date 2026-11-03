@@ -128,17 +128,17 @@ Three kinds of Claude Code session touch this repo, and each has its own instruc
 <div class="table-wrap">
 <table>
   <caption>The sessions, where each starts, and which instructions it follows. <a href="02-two-windows.html">The Guide and the Builder</a> explains the windows.</caption>
-  <thead><tr><th>Session</th><th>How you start it</th><th>Its instructions</th><th>What it does here</th></tr></thead>
+  <thead><tr><th>Session, and how you start it</th><th>Its instructions</th><th>What it does here</th></tr></thead>
   <tbody>
-    <tr><td><span class="tag guide">Guide</span></td><td><code>claude --agent p3-guide</code> in <code>work/p3-tutor</code></td><td><code>.claude/agents/p3-guide.md</code></td><td>explains and points the way; never changes a file</td></tr>
-    <tr><td><span class="tag builder">Builder</span></td><td><code>claude</code> in <code>work/p3-tutor</code></td><td>the root <code>CLAUDE.md</code></td><td>changes the files in <code>tutor/</code>, one change per round, and runs <code>p3</code> commands you ask for</td></tr>
-    <tr><td><span class="tag tutor">Your tutor</span></td><td><code>claude</code> in <code>work/p3-tutor/tutor</code></td><td><code>tutor/CLAUDE.md</code></td><td>teaches you, in live tries and in your learning sessions</td></tr>
+    <tr><td><span class="tag guide">Guide</span><br><code>claude --agent p3-guide</code> in <code>work/p3-tutor</code></td><td><code>.claude/agents/p3-guide.md</code></td><td>explains and points the way; never changes a file</td></tr>
+    <tr><td><span class="tag builder">Builder</span><br><code>claude</code> in <code>work/p3-tutor</code></td><td>the root <code>CLAUDE.md</code></td><td>changes the files in <code>tutor/</code>, one change per round, and runs <code>p3</code> commands you ask for</td></tr>
+    <tr><td><span class="tag tutor">Your tutor</span><br><code>claude</code> in <code>work/p3-tutor/tutor</code></td><td><code>tutor/CLAUDE.md</code></td><td>teaches you, in live tries and in your learning sessions</td></tr>
   </tbody>
 </table>
 </div>
 
 <div class="cmd">
-  <div class="cmd-head">Run in a new terminal in work/p3-tutor, to learn with your tutor</div>
+  <div class="cmd-head">Run in a new terminal in <code>work/p3-tutor</code>, to learn with your tutor</div>
   <pre class="in">cd tutor
 claude</pre>
 </div>
@@ -429,7 +429,7 @@ In your own sessions in <code>tutor/</code>, Claude can wait for a subagent only
 That is why these four skill names are fixed, and it is how <code>c0-baseline</code> does all four jobs with its one skill.</p>
 
 <div class="table-wrap">
-<table>
+<table class="stack">
   <caption>Which command starts each job.</caption>
   <thead><tr><th>Job</th><th>Its scenarios</th><th>Starts with</th><th>When the config has no such skill</th></tr></thead>
   <tbody>

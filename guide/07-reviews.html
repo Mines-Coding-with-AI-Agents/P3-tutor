@@ -249,12 +249,12 @@ These are the lines it gives during the rounds of a step, with your round number
   <caption>The Next line of p3 next while you build a step in quick rounds.</caption>
   <thead><tr><th>Where you are</th><th>What p3 next says</th></tr></thead>
   <tbody>
-    <tr><td>Round k is untouched</td><td>Run the live tutor (uv run p3 bench --config live --quick, or --only with the scenarios you are working on), then write what you noticed under Round k &gt; My thoughts in reviews/&lt;step&gt;.md.</td></tr>
-    <tr><td>Your thoughts are written, and What changed still holds its markers</td><td>In the Builder window, say: Act on Round k of reviews/&lt;step&gt;.md.</td></tr>
-    <tr><td>Something else in the round is not finished</td><td>Finish Round k in reviews/&lt;step&gt;.md: &lt;its first problem&gt;.</td></tr>
-    <tr><td>Every round is complete, and you have fewer than the minimum</td><td>Add Round k to reviews/&lt;step&gt;.md by copying the last round with its marker lines.</td></tr>
-    <tr><td>The minimum is reached, in step 1, and one of the four required skills is missing from <code>tutor/</code></td><td>Add a round for the &lt;job&gt; skill: copy the last round of reviews/c1-skills.md with its marker lines, as Round k.</td></tr>
-    <tr><td>The minimum is reached otherwise</td><td>&lt;what the step must hold&gt;, snapshot it: uv run p3 snapshot &lt;step&gt; (or add another round first).</td></tr>
+    <tr><td>Round k is untouched</td><td>Run the live tutor (<code>uv run p3 bench --config live --quick</code>, or <code>--only</code> with the scenarios you are working on), then write what you noticed under Round k &gt; My thoughts in <code>reviews/&lt;step&gt;.md</code>.</td></tr>
+    <tr><td>Your thoughts are written, and What changed still holds its markers</td><td>In the Builder window, say: Act on Round k of <code>reviews/&lt;step&gt;.md</code>.</td></tr>
+    <tr><td>Something else in the round is not finished</td><td>Finish Round k in <code>reviews/&lt;step&gt;.md</code>: &lt;its first problem&gt;.</td></tr>
+    <tr><td>Every round is complete, and you have fewer than the minimum</td><td>Add Round k to <code>reviews/&lt;step&gt;.md</code> by copying the last round with its marker lines.</td></tr>
+    <tr><td>The minimum is reached, in step 1, and one of the four required skills is missing from <code>tutor/</code></td><td>Add a round for the &lt;job&gt; skill: copy the last round of <code>reviews/c1-skills.md</code> with its marker lines, as Round k.</td></tr>
+    <tr><td>The minimum is reached otherwise</td><td>&lt;what the step must hold&gt;, snapshot it: <code>uv run p3 snapshot &lt;step&gt;</code> (or add another round first).</td></tr>
   </tbody>
 </table>
 </div>
@@ -438,7 +438,7 @@ In my estimate it takes about 2 hours for <code>c1-skills</code>, 1.75 for <code
 A review written before the run it names would be a review of something you had not seen.</p>
 </div>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">git add reviews/c1-skills.md
 git commit -m "Major review of c1-skills"
 git push</pre>
@@ -507,16 +507,16 @@ TODO
 
 TODO</code></pre>
 <div class="table-wrap">
-<table>
+<table class="stack">
   <caption>The parts of a major review. You write all of them.</caption>
   <thead><tr><th>Part</th><th>What goes there</th></tr></thead>
   <tbody>
-    <tr><td><code>**Run:**</code></td><td>the folder of the full run you reviewed, <code>bench/runs/&lt;step&gt;/&lt;run-id&gt;</code>; it must be a scored full run of that step on the shared topic, not a quick run, an <code>--only</code> run or a test topic's run</td></tr>
-    <tr><td><code>**Live tries:**</code></td><td>what you did in <code>tutor/</code> and what you saw, as one text, or with a heading of your own for each try (such as <code>### Try 1: a quiz on tools</code>) above <code>### Lesson</code>; everything up to the first job's heading counts</td></tr>
-    <tr><td><code>### Lesson</code>, <code>### Quiz</code>, <code>### Feedback</code>, <code>### Tutor</code></td><td>one heading per job the step reviews, already there; do not add or remove jobs</td></tr>
-    <tr><td><code>#### &lt;criterion&gt;</code> with <code>Rating:</code></td><td>a whole number from 1 to 5 on the Rating line, such as <code>Rating: 4</code>, and below it the feedback that justifies it, with evidence</td></tr>
-    <tr><td><code>### Compared with the previous step</code></td><td>how this step compares with the one before it, job by job</td></tr>
-    <tr><td><code>### What the next step should fix</code></td><td>what the next step should fix; in <code>final.md</code> this heading is <code>### What I would do next</code></td></tr>
+    <tr><td data-label="Part"><code>**Run:**</code></td><td data-label="What goes there">the folder of the full run you reviewed, <code>bench/runs/&lt;step&gt;/&lt;run-id&gt;</code>; it must be a scored full run of that step on the shared topic, not a quick run, an <code>--only</code> run or a test topic's run</td></tr>
+    <tr><td data-label="Part"><code>**Live tries:**</code></td><td data-label="What goes there">what you did in <code>tutor/</code> and what you saw, as one text, or with a heading of your own for each try (such as <code>### Try 1: a quiz on tools</code>) above <code>### Lesson</code>; everything up to the first job's heading counts</td></tr>
+    <tr><td data-label="Part"><code>### Lesson</code>, <code>### Quiz</code>, <code>### Feedback</code>, <code>### Tutor</code></td><td data-label="What goes there">one heading per job the step reviews, already there; do not add or remove jobs</td></tr>
+    <tr><td data-label="Part"><code>#### &lt;criterion&gt;</code> with <code>Rating:</code></td><td data-label="What goes there">a whole number from 1 to 5 on the Rating line, such as <code>Rating: 4</code>, and below it the feedback that justifies it, with evidence</td></tr>
+    <tr><td data-label="Part"><code>### Compared with the previous step</code></td><td data-label="What goes there">how this step compares with the one before it, job by job</td></tr>
+    <tr><td data-label="Part"><code>### What the next step should fix</code></td><td data-label="What goes there">what the next step should fix; in <code>final.md</code> this heading is <code>### What I would do next</code></td></tr>
   </tbody>
 </table>
 </div>
@@ -628,7 +628,7 @@ Your open judgment has to be on record before your blind one, because <code>EVAL
 It lets you see the ladder through your own eyes, beside the objective checks and the cost.
 It makes no model call, so it is free to run as often as you like.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 report --reviews</pre>
   <pre class="out">## Your ratings
 
@@ -722,23 +722,23 @@ A round in progress looks like this:</p>
 <p>That one is not a problem: it means your Round 2 thoughts are written and the Builder has not acted on them yet.
 The table below lists the messages you are most likely to see and what to do about each.</p>
 <div class="table-wrap">
-<table>
+<table class="stack">
   <caption>Common p3 check lines about reviews, with the cause and the fix. Your round numbers, steps and run ids will differ.</caption>
   <thead><tr><th>What p3 check says</th><th>What it means, and the fix</th></tr></thead>
   <tbody>
-    <tr><td><code>Quick rounds &gt; Round 2: not written yet</code></td><td>The round still holds only its marker lines. Run the tutor and write it.</td></tr>
-    <tr><td><code>Quick rounds &gt; Round 1: My thoughts is still TODO</code></td><td>A marker line is left under the label, even if your thoughts are there too. Delete the <code>TODO</code> line.</td></tr>
-    <tr><td><code>Quick rounds &gt; Round 1: Why is still TODO</code></td><td>The Builder has not acted on the round. Say "Act on Round 1 of reviews/c1-skills.md." to the Builder.</td></tr>
-    <tr><td><code>Quick rounds &gt; Round 1: Kind is 'new skil'; write one of modified skill, new skill, new subagent, other</code></td><td>The Kind is not one of the four kinds. Ask the Builder to correct the Kind of that round.</td></tr>
-    <tr><td><code>Major review &gt; Lesson &gt; Pedagogy: Rating is 4.5; write a whole number from 1 to 5</code>, or <code>Rating is 'four'</code>, or <code>Rating is '3-4'; pick one, a whole number from 1 to 5, not a range</code></td><td>Write one whole number, as <code>Rating: 4</code>, and put your hesitation into the feedback.</td></tr>
-    <tr><td><code>Major review &gt; Quiz &gt; Difficulty: no feedback below the rating (say why, with quotes or item ids)</code></td><td>A rating with no reason. Write the feedback below it.</td></tr>
-    <tr><td><code>Major review &gt; Lesson &gt; Pedagogy: missing; add #### Pedagogy</code></td><td>The heading was renamed or deleted. Put it back word for word, at the same level (four <code>#</code> for a criterion, three for a job). Case, spacing, bold and code marks do not matter; the words and the level do.</td></tr>
-    <tr><td><code>Major review: Run is still TODO; name the run you reviewed (bench/runs/c1-skills/&lt;run-id&gt;)</code></td><td>Write the folder of the full run you reviewed on the Run line.</td></tr>
-    <tr><td><code>Major review &gt; Run: bench/runs/c1-skills/&lt;run-id&gt; is a quick run; the major review reviews a full run (p3 bench --config c1-skills)</code></td><td>The Run line names a quick run. The same line appears, in its own words, for an <code>--only</code> run, a run on a test topic, or a run not scored yet. Name the step's scored full run on the shared topic.</td></tr>
-    <tr><td><code>reviews/c1-skills.md, major review: complete here but in no commit yet; commit it</code></td><td>The review is finished but not committed. Commit it, so <code>p3 check</code> can see it came after the run.</td></tr>
-    <tr><td><code>reviews/c2-review.md: it is saved as UTF-16 (as Windows PowerShell's &gt; and Out-File write files), not UTF-8, so p3 check cannot read its headings; save it as UTF-8 (in VS Code: Reopen with Encoding, then Save with Encoding, UTF-8)</code></td><td>The file was written by a command, not saved by your editor. See the note below.</td></tr>
-    <tr><td><code>WARN</code> ... <code>Quick rounds &gt; Round 2: the Run line is not written; name the run your thoughts rest on</code></td><td>The round is complete but has no Run line. Write the run, so the round shows its evidence.</td></tr>
-    <tr><td><code>WARN</code> ... <code>Quick rounds &gt; Round 3: not written; fill it in or delete it</code></td><td>An untouched round, once the step has its minimum. Write it, or delete it.</td></tr>
+    <tr><td data-label="What p3 check says"><code>Quick rounds &gt; Round 2: not written yet</code></td><td data-label="What it means, and the fix">The round still holds only its marker lines. Run the tutor and write it.</td></tr>
+    <tr><td data-label="What p3 check says"><code>Quick rounds &gt; Round 1: My thoughts is still TODO</code></td><td data-label="What it means, and the fix">A marker line is left under the label, even if your thoughts are there too. Delete the <code>TODO</code> line.</td></tr>
+    <tr><td data-label="What p3 check says"><code>Quick rounds &gt; Round 1: Why is still TODO</code></td><td data-label="What it means, and the fix">The Builder has not acted on the round. Say "Act on Round 1 of reviews/c1-skills.md." to the Builder.</td></tr>
+    <tr><td data-label="What p3 check says"><code>Quick rounds &gt; Round 1: Kind is 'new skil'; write one of modified skill, new skill, new subagent, other</code></td><td data-label="What it means, and the fix">The Kind is not one of the four kinds. Ask the Builder to correct the Kind of that round.</td></tr>
+    <tr><td data-label="What p3 check says"><code>Major review &gt; Lesson &gt; Pedagogy: Rating is 4.5; write a whole number from 1 to 5</code>, or <code>Rating is 'four'</code>, or <code>Rating is '3-4'; pick one, a whole number from 1 to 5, not a range</code></td><td data-label="What it means, and the fix">Write one whole number, as <code>Rating: 4</code>, and put your hesitation into the feedback.</td></tr>
+    <tr><td data-label="What p3 check says"><code>Major review &gt; Quiz &gt; Difficulty: no feedback below the rating (say why, with quotes or item ids)</code></td><td data-label="What it means, and the fix">A rating with no reason. Write the feedback below it.</td></tr>
+    <tr><td data-label="What p3 check says"><code>Major review &gt; Lesson &gt; Pedagogy: missing; add #### Pedagogy</code></td><td data-label="What it means, and the fix">The heading was renamed or deleted. Put it back word for word, at the same level (four <code>#</code> for a criterion, three for a job). Case, spacing, bold and code marks do not matter; the words and the level do.</td></tr>
+    <tr><td data-label="What p3 check says"><code>Major review: Run is still TODO; name the run you reviewed (bench/runs/c1-skills/&lt;run-id&gt;)</code></td><td data-label="What it means, and the fix">Write the folder of the full run you reviewed on the Run line.</td></tr>
+    <tr><td data-label="What p3 check says"><code>Major review &gt; Run: bench/runs/c1-skills/&lt;run-id&gt; is a quick run; the major review reviews a full run (p3 bench --config c1-skills)</code></td><td data-label="What it means, and the fix">The Run line names a quick run. The same line appears, in its own words, for an <code>--only</code> run, a run on a test topic, or a run not scored yet. Name the step's scored full run on the shared topic.</td></tr>
+    <tr><td data-label="What p3 check says"><code>reviews/c1-skills.md, major review: complete here but in no commit yet; commit it</code></td><td data-label="What it means, and the fix">The review is finished but not committed. Commit it, so <code>p3 check</code> can see it came after the run.</td></tr>
+    <tr><td data-label="What p3 check says"><code>reviews/c2-review.md: it is saved as UTF-16 (as Windows PowerShell's &gt; and Out-File write files), not <span class="nw">UTF-8,</span> so p3 check cannot read its headings; save it as UTF-8 (in VS Code: Reopen with Encoding, then Save with Encoding, UTF-8)</code></td><td data-label="What it means, and the fix">The file was written by a command, not saved by your editor. See the note below.</td></tr>
+    <tr><td data-label="What p3 check says"><code>WARN</code> ... <code>Quick rounds &gt; Round 2: the Run line is not written; name the run your thoughts rest on</code></td><td data-label="What it means, and the fix">The round is complete but has no Run line. Write the run, so the round shows its evidence.</td></tr>
+    <tr><td data-label="What p3 check says"><code>WARN</code> ... <code>Quick rounds &gt; Round 3: not written; fill it in or delete it</code></td><td data-label="What it means, and the fix">An untouched round, once the step has its minimum. Write it, or delete it.</td></tr>
   </tbody>
 </table>
 </div>

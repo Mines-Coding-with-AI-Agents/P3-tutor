@@ -115,7 +115,7 @@ The ladder is <code>c0-baseline</code> (the tutor as it ships), <code>c1-skills<
 
 <h2 id="the-map">The map</h2>
 <p>The project runs through twelve stages, in this order.
-<code>uv run p3 next</code> uses the same numbers and names, so when it says "Now: 4 Step 1, c1-skills", you are on the fourth line below.
+<code>uv run p3 next</code> uses the same numbers and names, so when it says "Now: 4 Step 1, <span class="nw">c1-skills"</span>, you are on the fourth line below.
 The weeks are the pace I would keep; nothing is checked on those dates, and <a href="17-pace.html">A pace that works</a> says what fits in each week.</p>
 <ol class="map">
   <li><a href="01-setup.html">Set up</a><span class="when">Week 1</span>
@@ -152,7 +152,7 @@ Two of them run Claude Code all the time: <strong>the Guide</strong> explains an
 In Project 2 one agent did both, and many of you told me that was confusing, so here they are separate.</p>
 <figure>
   <div class="diagram">
-    <svg viewBox="0 0 760 330" role="img" aria-label="One VS Code window with work/p3-tutor open holds four terminals. The Guide, started with claude --agent p3-guide, explains each step and why, names the one next thing, and never changes a file; it only reads the repo. The Builder, started with claude, changes your tutor one change per round and runs the p3 commands you ask for; it changes tutor/. A plain terminal with no Claude Code in it runs the full bench runs, from about 6 minutes for one run of the baseline to over an hour for three repeats of a larger config, and writes bench/runs/. Your tutor, started with claude in tutor/, is for learning with it, in live tries and the learning sessions. All four work on the same repo.">
+    <svg viewBox="0 0 760 322" role="img" aria-label="One VS Code window with work/p3-tutor open holds four terminals. The Guide, started with claude --agent p3-guide, explains each step and why, names the one next thing, and never changes a file; it only reads the repo. The Builder, started with claude, changes your tutor one change per round and runs the p3 commands you ask for; it changes tutor/. A plain terminal with no Claude Code in it runs the full bench runs, from about 6 minutes for one run of the baseline to over an hour for three repeats of a larger config, and writes bench/runs/. Your tutor, started with claude in tutor/, is for learning with it, in live tries and the learning sessions. All four work on the same repo.">
       <defs>
         <marker id="win-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
           <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
@@ -223,7 +223,7 @@ This guide is the walkthrough: for every stage, what to do, in which window, and
 When the two ever disagree, the README wins, and I would like to hear about it.</p>
 <ul>
   <li><strong>Every step page opens with the short path</strong>, a box with four parts: Why the step exists, what to Do (three actions at most, each naming its window), how you know it is Done, and where to go Then. If you only want the next action, read the box. The sections below it explain how, with examples and the mistakes to avoid.</li>
-  <li><strong>The exact words to type sit in boxes</strong> whose head names the window, with a copy button, like this one:
+  <li><p><strong>The exact words to type sit in boxes</strong> whose head names the window, with a copy button, like this one:</p>
     <div class="say guide">
       <div class="say-head">Say to the Guide</div>
       <pre>What is the one thing I should do next?</pre>
@@ -242,7 +242,7 @@ When the two ever disagree, the README wins, and I would like to hear about it.<
   It reads your repo, changes nothing, makes no model call, and prints where you are on the map above, the one next thing to do, and the page that explains it.</p>
 </div>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 next</pre>
   <pre class="out">p3 next: 498E (C:\...\work\p3-tutor)
 

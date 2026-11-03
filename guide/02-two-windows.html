@@ -85,29 +85,25 @@
 <div class="table-wrap">
 <table>
   <caption>The four terminals of P3. The Guide and the Builder run all the time; the other two you open when you need them.</caption>
-  <thead><tr><th>Window</th><th>Start it with</th><th>What it does</th><th>What it never does</th></tr></thead>
+  <thead><tr><th>Window</th><th>What it does</th><th>What it never does</th></tr></thead>
   <tbody>
     <tr>
-      <td><span class="tag guide">Guide</span></td>
-      <td><code>claude --agent p3-guide</code>, in a terminal in <code>work/p3-tutor</code></td>
+      <td><span class="tag guide">Guide</span><br>Start it with <code>claude --agent p3-guide</code>, in a terminal in <code>work/p3-tutor</code></td>
       <td>explains the project and each step, says why the project asks for it, and names the one next thing to do and the window that does it; it reads your repo and runs read-only commands such as <code>uv run p3 next</code></td>
       <td>changes a file, starts a bench run, or writes, rates or rewords any part of your reviews</td>
     </tr>
     <tr>
-      <td><span class="tag builder">Builder</span></td>
-      <td><code>claude</code>, in a second terminal in <code>work/p3-tutor</code></td>
+      <td><span class="tag builder">Builder</span><br>Start it with <code>claude</code>, in a second terminal in <code>work/p3-tutor</code></td>
       <td>changes your tutor in <code>tutor/</code>, one change per round; writes the What changed part of each round and the inventory's factual fields; runs the <code>p3</code> commands you ask for, and asks before any bench run</td>
       <td>plans the project, writes your parts of <code>reviews/</code>, or makes a full run in its own window</td>
     </tr>
     <tr>
-      <td><span class="tag plain">Plain terminal</span></td>
-      <td>a third terminal in <code>work/p3-tutor</code>, with no Claude Code in it (Git Bash on Windows)</td>
+      <td><span class="tag plain">Plain terminal</span><br>Start it with a third terminal in <code>work/p3-tutor</code>, with no Claude Code in it (Git Bash on Windows)</td>
       <td>runs the full bench runs, from about 6 minutes for one run of the baseline to an hour or more for three repeats of a larger config, and any command you want to type yourself</td>
       <td>anything you did not type</td>
     </tr>
     <tr>
-      <td><span class="tag tutor">Your tutor</span></td>
-      <td><code>claude</code>, in a terminal in <code>work/p3-tutor/tutor</code></td>
+      <td><span class="tag tutor">Your tutor</span><br>Start it with <code>claude</code>, in a terminal in <code>work/p3-tutor/tutor</code></td>
       <td>is the tutor you built, for learning with it: live tries in a major review, and the three learning sessions in <code>final</code></td>
       <td>building: changes to the tutor go through the Builder, in quick rounds</td>
     </tr>
@@ -132,7 +128,7 @@ If after a few days this split feels wrong for how you work, tell me; I would ra
   Its prompt should show a path that ends in <code>p3-tutor</code>; if you are not sure, <code>pwd</code> prints the whole path.</p></li>
   <li><p><strong>Start the Guide.</strong></p>
   <div class="cmd">
-    <div class="cmd-head">Run in a new terminal in work/p3-tutor</div>
+    <div class="cmd-head">Run in a new terminal in <code>work/p3-tutor</code></div>
     <pre class="in">claude --agent p3-guide</pre>
   </div></li>
   <li><p><strong>Answer the trust question, if it comes.</strong> The first time Claude Code starts in this folder it asks whether you trust it, and the highlighted choice is "No, exit"; <a href="#trust">The trust question</a> below shows what to press.</p></li>
@@ -143,13 +139,9 @@ If after a few days this split feels wrong for how you work, tell me; I would ra
 <p>Its first reply says in a sentence who it is, then gives one next thing with the reason for it, and then hands that thing to the right place.
 Right after setup, that next thing is the baseline's first run, which is the next page of this guide.
 Later in the project, a first reply looks something like this.</p>
-<pre><code>I'm the Guide: I explain the project and point the way, and the Builder
-window is the one that changes your tutor.
+<pre><code>I'm the Guide: I explain the project and point the way, and the Builder window is the one that changes your tutor.
 
-You have finished Round 1 of c1-skills and written your thoughts for
-Round 2, so the next thing is for the Builder to make the one change
-those thoughts ask for. Keeping it to one change means your next run
-shows exactly what that change did.
+You have finished Round 1 of c1-skills and written your thoughts for Round 2, so the next thing is for the Builder to make the one change those thoughts ask for. Keeping it to one change means your next run shows exactly what that change did.
 
 Say to the Builder:
 
@@ -162,7 +154,7 @@ When it hands you something to do, it uses one of four forms, and they match the
   <li><strong>"Say to the Builder:"</strong> and one sentence you can paste into the Builder's window, naming the file and the round.</li>
   <li><strong>"Run in a plain terminal in work/p3-tutor:"</strong> and the exact command.</li>
   <li><strong>For your own writing</strong>: the file, the heading to write under, and what kind of thing goes there, but never the words themselves.</li>
-  <li><strong>For your tutor</strong>: "Open a terminal in work/p3-tutor/tutor and start claude there", and what to try in it.</li>
+  <li><strong>For your tutor</strong>: "Open a terminal in <span class="nw">work/p3-tutor/tutor</span> and start claude there", and what to try in it.</li>
 </ul>
 <p>When an idea is new, the Guide may end with one short question to check that it landed, or offer to go deeper.
 Answering helps it set the level of the next explanation, and saying "skip" is fine.
@@ -192,7 +184,7 @@ That is fine for both windows: the Guide's limits come from its guard and not fr
   It starts in <code>work/p3-tutor</code>, like the first.</p></li>
   <li><p><strong>Start Claude Code with no agent.</strong></p>
   <div class="cmd">
-    <div class="cmd-head">Run in a second terminal in work/p3-tutor</div>
+    <div class="cmd-head">Run in a second terminal in <code>work/p3-tutor</code></div>
     <pre class="in">claude</pre>
   </div></li>
   <li><p><strong>Check the header.</strong> It has no <code>@p3-guide</code> in it, so this is the Builder. It waits for you; it sends no first message.</p></li>
@@ -248,7 +240,7 @@ Give it one thing per message: when you ask for several, it does the first, says
 <div class="say builder">
   <div class="say-head">Say to the Builder</div>
   <pre>Run the cheapest run that shows this change.</pre>
-  <p>It names the command, such as <code>uv run p3 bench --config live --only quiz</code> for a change to the quiz skill, says how many sessions it will start, and waits for your yes before it starts the run in the background. A full run it never starts itself: it gives you the command for a plain terminal.</p>
+  <p>It names the command, such as <code>uv run p3 bench <span class="nw">--config live</span> <span class="nw">--only quiz</span></code> for a change to the quiz skill, says how many sessions it will start, and waits for your yes before it starts the run in the background. A full run it never starts itself: it gives you the command for a plain terminal.</p>
 </div>
 <div class="say builder">
   <div class="say-head">Say to the Builder</div>
@@ -309,29 +301,22 @@ A round from a student's file, with both parts written, looks like this:</p>
 
 **My thoughts:**
 
-The new quiz skill helped: the six items now mix mcq, numeric and short,
-where the quiz in Round 1 was six mcq items.
-But q4 asks for "the best design" without saying best for what, and I could
-argue for two of its options.
-The feedback on s1 q5 marks it partial, which is right, but it only says
-"You are close, think about why", and it never says that my answer gave the
-what and missed the why.
-I want feedback that says which part of an answer was right, which part was
-missing, and one thing to reread.
+The new quiz skill helped: the six items now mix mcq, numeric and short, where the quiz in Round 1 was six mcq items.
+But q4 asks for "the best design" without saying best for what, and I could argue for two of its options.
+The feedback on s1 q5 marks it partial, which is right, but it only says "You are close, think about why", and it never says that my answer gave the what and missed the why.
+I want feedback that says which part of an answer was right, which part was missing, and one thing to reread.
 
 **What changed:**
 
 - Kind: new skill
 - Files: tutor/.claude/skills/grade/SKILL.md
-- Why: Grading still ran inside /teach with no rule for feedback; a grade
-  skill of its own names what was right, what was missing and one thing to
-  reread for every item, as these thoughts ask.</code></pre>
+- Why: Grading still ran inside /teach with no rule for feedback; a grade skill of its own names what was right, what was missing and one thing to reread for every item, as these thoughts ask.</code></pre>
 <p>The Run line and My thoughts are the student's; What changed is the Builder's.
 The full example is in <code>reviews/README.md</code>, and <a href="07-reviews.html">Your reviews</a> explains every part of every review.</p>
 <div class="why"><span class="label">Why the file and never the chat</span>
   <p>A chat is not part of your repo: <code>p3 check</code> cannot count what you typed there, and I never see it.
   If you type a review into a chat and ask an agent to put it in the file, the words in the file came through an agent, which is the one thing the reviews must never do.
-  And the Builder's job starts from the file: "Act on Round 2 of reviews/c1-skills.md" makes it read your words exactly where you wrote them.</p>
+  And the Builder's job starts from the file: "Act on Round 2 of <span class="nw">reviews/c1-skills.md"</span> makes it read your words exactly where you wrote them.</p>
 </div>
 <div class="watch"><span class="label">Watch out</span>
   <p>Keep every heading exactly as it is, because <code>p3 check</code> finds each part of a review by its heading.
@@ -344,7 +329,7 @@ The full example is in <code>reviews/README.md</code>, and <a href="07-reviews.h
 This is how one round moves across the windows.</p>
 <figure>
   <div class="diagram">
-    <svg viewBox="0 0 760 230" role="img" aria-label="One quick round as a loop of four boxes. 1, a quick run: uv run p3 bench --config live --quick, started by the Builder after your yes, or by you in a plain terminal. 2, you read and try what it made: the lesson, the quiz and the tutor's replies, in bench/runs/_live/. 3, you, in the editor: under Round k you write the Run line and My thoughts in reviews/c1-skills.md. 4, the Builder: you say Act on Round k; it makes one change in tutor/ and writes What changed under your thoughts. An arrow returns from the Builder to the run: round k plus 1 starts with a new run, and your next thoughts begin by saying whether the change helped.">
+    <svg viewBox="0 16 760 214" role="img" aria-label="One quick round as a loop of four boxes. 1, a quick run: uv run p3 bench --config live --quick, started by the Builder after your yes, or by you in a plain terminal. 2, you read and try what it made: the lesson, the quiz and the tutor's replies, in bench/runs/_live/. 3, you, in the editor: under Round k you write the Run line and My thoughts in reviews/c1-skills.md. 4, the Builder: you say Act on Round k; it makes one change in tutor/ and writes What changed under your thoughts. An arrow returns from the Builder to the run: round k plus 1 starts with a new run, and your next thoughts begin by saying whether the change helped.">
       <defs>
         <marker id="round-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
           <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
@@ -417,7 +402,7 @@ So full runs go in a third terminal with no Claude Code in it, where nothing sto
 <p>Open it the same way as the others, with <strong>Terminal &gt; New Terminal</strong> in the VS Code window of <code>work/p3-tutor</code>; on Windows, choose Git Bash, as in P2.
 When a full run is next, the Guide or the Builder gives you the exact command, for example:</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 bench --config c1-skills</pre>
 </div>
 <p>Start it, and keep working in the other windows: the reading and writing of the project goes on while a run goes, and that is how the three weeks fit.
@@ -434,7 +419,7 @@ You do this for the live tries of each major review, for the three learning sess
 <p>In VS Code's Explorer, right-click the <code>tutor</code> folder and choose <strong>Open in Integrated Terminal</strong>, or open a new terminal and type <code>cd tutor</code>.
 Then start Claude Code there:</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a terminal in work/p3-tutor/tutor</div>
+  <div class="cmd-head"><span>Run in a terminal in <span class="nw">work/p3-tutor/tutor</span></span></div>
   <pre class="in">claude</pre>
 </div>
 <p>Then ask it for what you need as a learner, in your own words, for example:</p>

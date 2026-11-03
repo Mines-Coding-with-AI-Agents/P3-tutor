@@ -111,13 +111,17 @@ Then commit the topic before its first run: the bench runs an own topic only whe
 </div>
 <p>Without <code>uv</code>, the same command is <code>python -m p3 new-topic statics-trusses</code> (<code>python3</code> on macOS and Linux). It refuses an id that is not valid, the id of the shared topic, and a folder that already exists. To start a topic over, delete its folder and run it again.</p>
 <p>This is what it writes:</p>
-<pre><code>bench/own/statics-trusses/
-  topic.json                  objectives, facts, misconceptions, and what the bench asks for
-  grading.json                your true grade of every answer in every submission
+<pre class="tree"><code>bench/own/statics-trusses/
+  topic.json                  objectives, facts, misconceptions, and
+                              what the bench asks for
+  grading.json                your true grade of every answer in
+                              every submission
   probes.json                 the messages the tutor scenarios send
-  workspace/                  copied into every scenario's starting folder
+  workspace/                  copied into every scenario's starting
+                              folder
     MISSION.md                why the learner is learning this
-    NOTES.md                  what the learner knows and does not know yet
+    NOTES.md                  what the learner knows and does not
+                              know yet
     learning-records/0001-first-session.md
     quizzes/0001.json         the quiz the learner already took
     keys/0001.json            its answer key
@@ -250,7 +254,7 @@ keys/0001.json
 <p>The Builder can help with the file formats and can draft wording for you to check: turning your notes into valid JSON, checking that ids agree, or suggesting a clearer stem. The facts, the true grades and the expected behaviors are your decisions, so read every line it drafts and change what you would not have written.</p>
 <div class="say builder">
   <div class="say-head">Say to the Builder</div>
-  <pre>Put my quiz items from my notes into bench/own/statics-trusses/workspace/quizzes/0001.json and keys/0001.json in the FORMATS.md format. Do not change my answers or my wording, and do not touch grading.json.</pre>
+  <pre>Put my quiz items from my notes into <span class="nw">bench/own/statics-trusses/</span><wbr><span class="nw">workspace/quizzes/0001.json</span> and keys/0001.json in the FORMATS.md format. Do not change my answers or my wording, and do not touch grading.json.</pre>
   <p>Paste or name your notes first. The Builder makes one change and tells you what it did; then run the check.</p>
 </div>
 
@@ -286,7 +290,7 @@ keys/0001.json
 <p>A test you write after seeing how the tutor does is a test you can shape, even without meaning to: a probe reworded after a reply you did not like, a true grade softened after your tutor missed it. Committing first puts the items on record before any result, and git's history then shows you did not move them.</p>
 </div>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">git add bench/own/statics-trusses
 git commit -m "Test topic statics-trusses"
 git push
@@ -294,7 +298,7 @@ git status</pre>
 </div>
 <p>The last <code>git status</code> should show nothing under <code>bench/own/statics-trusses/</code>. The Builder can make the commit for you if you ask it to. Then note the commit, because <code>EVAL.md</code> section 9 asks for the commit in which you committed each topic's items:</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">git log --oneline -- bench/own/statics-trusses</pre>
 </div>
 <p>The bench enforces the order. <code>p3 bench --topic &lt;id&gt;</code> refuses a test topic unless its folder is tracked by git and has no uncommitted change, a new untracked file included, and every run records the commit and a hash of the topic's files. <code>uv run p3 check --final</code> then confirms, for each run on each topic, that the files in that commit are the ones the run used. A topic you change after its runs makes <code>p3 check</code> report that the topic "has changed since this run", and the fix is to restore it from git.</p>
@@ -319,7 +323,7 @@ git status</pre>
   <li>For the topic from another Mines course: the next unit after the one your items cover, or a harder corner of it. If your items cover the method of joints, the sessions could be on frames and machines.</li>
   <li>For the life skill: the part you are still working on. If your items cover building a monthly budget, the sessions could be on reading a pay stub, or on how credit scores work in general.</li>
 </ul>
-<p>Choose the one you would really like to learn more of, since that is where you find out whether the tutor works for you. The sessions stay on that test topic, so each session's Topic line in <code>reviews/final.md</code> starts with the topic's id, such as <code>statics-trusses, frames and machines</code>, and all three must name the same topic.</p>
+<p>Choose the one you would really like to learn more of, since that is where you find out whether the tutor works for you. The sessions stay on that test topic, so each session's Topic line in <code>reviews/final.md</code> starts with the topic's id, such as <code><span class="nw">statics-trusses,</span> frames and machines</code>, and all three must name the same topic.</p>
 <p>The bench's <code>workspace/</code> is the bench learner's. For your sessions the tutor keeps learner files of your own in <code>tutor/</code>, and you may start from copies of this topic's <code>MISSION.md</code> and <code>NOTES.md</code>, edited to say where you really start. Never copy the topic's <code>keys/</code> or <code>submissions/</code> into <code>tutor/</code>, because they hold the bench's answers. <a href="12-final.html#learning-sessions">The learning sessions</a> on the <code>final</code> page say how to run them.</p>
 
 <h2 id="runs">When the runs happen</h2>
@@ -341,10 +345,11 @@ git status</pre>
 
 Runs: bench/runs/c0-baseline/20261120-090114-statics-trusses-m30-r1 and bench/runs/final/20261120-094502-statics-trusses-m30-r1.
 
-Lesson: final's lesson is better, as on the shared topic. It works joint B before joint C and says why
-(two unknowns at B), where c0-baseline's starts at C, which has three. Grade: no difference; both
-graded s1 q1 wrong with M2, as my true grade says. Tutor: final failed somewhere new. On p03 it
-answered as if the method only worked on symmetric trusses, and corrected that premise only at the end.</code></pre>
+Lesson: final's lesson is better, as on the shared topic.
+It works joint B before joint C and says why (two unknowns at B), where c0-baseline's starts at C, which has three.
+Grade: no difference; both graded s1 q1 wrong with M2, as my true grade says.
+Tutor: final failed somewhere new.
+On p03 it answered as if the method only worked on symmetric trusses, and corrected that premise only at the end.</code></pre>
 </div>
 <p><code>EVAL.md</code> section 9 then asks you to sum the review up and set it beside the shared topic; <a href="14-write-up.html">The inventory and EVAL.md</a> covers that.</p>
 

@@ -133,7 +133,7 @@ git restore tutor/PREFERENCES.md</pre>
   <p><code>final-swap</code> is an example; any name of lowercase letters, digits and hyphens works, except one that starts with <code>final-minus-</code>, because <code>p3 check</code> treats every such config as an ablation and asks for its full run.</p></li>
   <li><p><strong>Run it on the shared topic.</strong> <code>final</code> already has its three runs.</p>
   <div class="cmd">
-    <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+    <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
     <pre class="in">uv run p3 bench --config final-swap</pre>
   </div>
   <p>With one run, you can say whether each objective check of the swap falls inside <code>final</code>'s range over its three runs. With three, add <code>--repeats 3</code>, and you can compare the two ranges, which is a stronger claim and costs three times as much.</p></li>
@@ -159,7 +159,7 @@ git restore tutor/PREFERENCES.md</pre>
   </div></li>
   <li><p><strong>Snapshot it and run it as many times as <code>final</code></strong>, three, so both sides of the comparison have repeats.</p>
   <div class="cmd">
-    <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+    <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
     <pre class="in">uv run p3 snapshot cheaper
 uv run p3 bench --config cheaper --repeats 3</pre>
   </div>
@@ -197,10 +197,11 @@ uv run p3 bench --config cheaper --repeats 3</pre>
 <div class="table-wrap">
 <table>
   <caption>The design is fixed: eighteen teach-only runs on the shared topic, three in each cell.</caption>
-  <thead><tr><th></th><th class="num">10 minutes</th><th class="num">30 minutes</th><th class="num">60 minutes</th></tr></thead>
+  <thead><tr><th></th><th class="num"><code>c1-skills</code></th><th class="num"><code>final</code></th></tr></thead>
   <tbody>
-    <tr><td><code>c1-skills</code></td><td class="num">3 runs</td><td class="num">3 runs</td><td class="num">3 runs</td></tr>
-    <tr><td><code>final</code></td><td class="num">3 runs</td><td class="num">3 runs</td><td class="num">3 runs</td></tr>
+    <tr><td>10 minutes</td><td class="num">3 runs</td><td class="num">3 runs</td></tr>
+    <tr><td>30 minutes</td><td class="num">3 runs</td><td class="num">3 runs</td></tr>
+    <tr><td>60 minutes</td><td class="num">3 runs</td><td class="num">3 runs</td></tr>
   </tbody>
 </table>
 </div>
@@ -239,14 +240,18 @@ uv run p3 bench --config cheaper --repeats 3</pre>
 </div>
 
 <h3 id="prereg-power">Know what three runs can show before you choose Δ</h3>
-<p>Choose a Δ that is large enough to matter and large enough for three runs to see. There are three blind teach pairs at each length, and even 3 of 3 for one config has a two-sided sign-test p-value of 0.25, so no single length can settle a preference on its own. Across all three lengths there are nine pairs: 8 of 9 gives a p-value of about 0.04, and 7 of 9 about 0.18. An objective measure such as <code>teach_facts_correct</code> gives three numbers per cell, and you can see a difference only when it is larger than the spread between the three runs. A Δ of one fact in ten, on a measure whose three runs already spread by two in ten, is a Δ the study cannot see.</p>
+<p>Choose a Δ that is large enough to matter and large enough for three runs to see. There are three blind teach pairs at each length, and even 3 of 3 for one config has a two-sided sign-test <span class="nw">p-value</span> of 0.25, so no single length can settle a preference on its own. Across all three lengths there are nine pairs: 8 of 9 gives a <span class="nw">p-value</span> of about 0.04, and 7 of 9 about 0.18. An objective measure such as <code>teach_facts_correct</code> gives three numbers per cell, and you can see a difference only when it is larger than the spread between the three runs. A Δ of one fact in ten, on a measure whose three runs already spread by two in ten, is a Δ the study cannot see.</p>
 
 <h3 id="prereg-order">Why the order is proved by git</h3>
 <p>Commit sections 1 to 4 <strong>before the first of the eighteen runs</strong>. Git history is how I know the order, and it is also how <code>p3 check --final</code> knows it: it finds the first commit of <code>PREREG.md</code> in which sections 1 to 4 hold no TODO marker, and compares that commit's time with the start time recorded in the <code>run.json</code> of the study's first teach-only run. When the commit came first, you see a line like this:</p>
-<pre>OK    PREREG.md: sections 1 to 4 committed at 2026-11-11T21:04:10Z (3f2a91c0d7e4), before the first length-study run (2026-11-12T15:30:02Z)</pre>
+<pre>OK    PREREG.md: sections 1 to 4
+      committed at 2026-11-11T21:04:10Z
+      (3f2a91c0d7e4), before the first
+      length-study run
+      (2026-11-12T15:30:02Z)</pre>
 <p>When it came after, the line says so with both times in it, as a TODO line in <code>p3 check</code> and a FAIL in <code>p3 check --final</code>. A later commit cannot repair the order, because the run's start time is in the run and the commit's time is in git. If it happens to you, <code>p3 next</code> says what to do: delete the length-study runs made before that commit and make them again, which costs those runs a second time. So write it, commit it, push it, and only then start the first run.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">git add PREREG.md
 git commit -m "Pre-register the length study"
 git push</pre>
@@ -260,13 +265,13 @@ git push</pre>
 <h2 id="length-runs">The eighteen runs</h2>
 <p>Each cell is three teach-only runs of one config at one length, made with <code>--only teach</code> and <code>--minutes</code>. Run them in a plain terminal, because each teach scenario can take up to 45 minutes and must not stop when a Claude Code window closes.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor: week 2, once PREREG.md is committed</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code>: week 2, once <code>PREREG.md</code> is committed</div>
   <pre class="in">uv run p3 bench --config c1-skills --only teach --minutes 10 --repeats 3
 uv run p3 bench --config c1-skills --only teach --minutes 30 --repeats 3
 uv run p3 bench --config c1-skills --only teach --minutes 60 --repeats 3</pre>
 </div>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor: week 3, once final is frozen</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code>: week 3, once <code>final</code> is frozen</div>
   <pre class="in">uv run p3 bench --config final --only teach --minutes 10 --repeats 3
 uv run p3 bench --config final --only teach --minutes 30 --repeats 3
 uv run p3 bench --config final --only teach --minutes 60 --repeats 3</pre>
@@ -276,7 +281,7 @@ uv run p3 bench --config final --only teach --minutes 60 --repeats 3</pre>
 <h3 id="time-limit">The time limit does not grow with the lesson</h3>
 <p>A teach scenario has 45 minutes and 200 turns at every length, set in <code>bench/scenarios.json</code>. A 60-minute lesson through your multi-agent pipeline is the run most likely to reach that limit, and a scenario that reaches it is stopped and recorded as a timeout, which is a result about your tutor: keep it and report it. So start the 60-minute cell of <code>final</code> with one run and see whether its pipeline finishes in time:</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 bench --config final --only teach --minutes 60</pre>
 </div>
 <p>If it finishes well inside the limit, run the other two with <code>--repeats 2</code>. That first run is one of the three, because <code>p3 check</code> counts every scored teach-only run in the cell. If it comes close to the limit or times out, that is a finding about your pipeline at length, and it belongs in your write-up; <code>final</code> is frozen, so the study measures it as it is, and you still make the other two runs.</p>
@@ -287,7 +292,7 @@ uv run p3 bench --config final --only teach --minutes 60 --repeats 3</pre>
 <h2 id="length-comparisons">The three blind comparisons</h2>
 <p>Once all eighteen runs are scored, compare <code>c1-skills</code> with <code>final</code> blind, <strong>within each length, never across</strong>. Never compare a 10-minute lesson with a 60-minute one, because judges also favor longer outputs (lecture 24), and you are the judge here.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in your own plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in your own plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 compare c1-skills final --job teach --teach-only --minutes 10
 uv run p3 compare c1-skills final --job teach --teach-only --minutes 30
 uv run p3 compare c1-skills final --job teach --teach-only --minutes 60</pre>

@@ -245,8 +245,8 @@ It never writes or edits your three fields, even when asked to "finish the inven
   Its Step added is the step whose round built it, its With and without names the rounds that added and removed it, and its Kept in final is <code>no, because</code> and what the next round showed.
   <code>p3 check</code> cannot see such a component, because no snapshot holds it, so keeping its entry is up to you, and it does not count toward the minimums.</li>
 </ul>
-<p>The second kind is often your best example of a change that did not pay, which <code>EVAL.md</code> section 11 asks for.
-An example, made up, in a student's words:</p>
+<p>The second kind is often your best example of a change that did not pay, which <code>EVAL.md</code> section 11 asks for.</p>
+<div class="student"><span class="label">Example: an entry for a component taken out again, made up, in a student's words</span>
 <pre><code>### references-finder
 
 - Kind: subagent
@@ -255,6 +255,7 @@ An example, made up, in a student's words:</p>
 - With and without: reviews/c3-split.md, Round 2 (without; this round added it) and Round 3 (with; this round removed it)
 - Review: With it the lesson had six links instead of two, but two of the six were dead and three pointed at pages far above a novice; the teach scenario took about 1.4M more tokens. Not worth it for this learner.
 - Kept in final: no, because Round 3's run showed more links but not better ones, at a real cost.</code></pre>
+</div>
 
 <h3 id="minimums">The minimums</h3>
 <p>The minimums are counted over what you built across the ladder, not over what <code>final</code> keeps, so dropping a component for a good reason never costs you.</p>
@@ -339,7 +340,7 @@ So leave no TODO anywhere in <code>EVAL.md</code>; until then <code>p3 check</co
 The tables are Markdown, so they show as tables on GitHub.
 <code>p3 report</code> makes no model call, so it costs nothing to run again.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 report --configs c0-baseline,c1-skills</pre>
   <pre class="out">## Results on agent-architecture
 
@@ -364,10 +365,10 @@ Scored full runs (quick runs and --only runs left out); each cell is the mean ov
   <li>Do not send the output to a file with Windows PowerShell's <code>&gt;</code>, which writes UTF-16; copy it from the terminal instead.</li>
 </ul>
 
-<h3 id="eval-1">1. The baseline, c0-baseline</h3>
+<h3 id="eval-1">1. The baseline, <span class="nw">c0-baseline</span></h3>
 <p><strong>When:</strong> week 1, once the baseline's three full runs are scored.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 report --configs c0-baseline</pre>
 </div>
 <p>Paste the table and name the three run ids, which are the folder names of the full runs under <code>bench/runs/c0-baseline/</code> (your quick run from setup is there too, and the report leaves it out).
@@ -376,13 +377,13 @@ Then answer what the section asks: what the baseline did well and where it fell 
 The baseline's ranges are the only measure of run-to-run spread you have until <code>final</code>'s repeats, and steps 1 to 3 are measured on one run each, so say what that spread means for a step measured once.
 Cite your runs, not mine; <code>KNOWN-GAPS.md</code> is what I saw.</p>
 
-<h3 id="eval-2">2. Step 1: c1-skills against c0-baseline</h3>
+<h3 id="eval-2">2. Step 1: <span class="nw">c1-skills</span> against <span class="nw">c0-baseline</span></h3>
 <p><strong>When:</strong> at the end of step 1, after its major review; <code>p3 next</code> asks for this section with no TODO before it moves you to step 2.</p>
 <p><strong>What changed.</strong>
 Name the rounds that built the step, such as <code>c1-skills</code> Rounds 1 to 4, and the inventory entries of the skills they added, without retelling them.
 Then what you put in <code>PREFERENCES.md</code>, and anything about how the four skills work together that no single entry says.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 report --configs c0-baseline,c1-skills</pre>
 </div>
 <p><strong>What the step bought and what it cost.</strong>
@@ -392,7 +393,7 @@ A <code>c1-skills</code> value inside the baseline's range is not a difference y
 And <code>c1-skills</code> is the first config with your <code>PREFERENCES.md</code>, while <code>c0-baseline</code> keeps the neutral one, so this step measures your skills and your preferences together.
 Say so, and say which differences you think came from which, and why.</p>
 
-<h3 id="eval-3">3. Step 2: c2-review against c1-skills</h3>
+<h3 id="eval-3">3. Step 2: <span class="nw">c2-review</span> against <span class="nw">c1-skills</span></h3>
 <p><strong>When:</strong> at the end of step 2, after its major review.</p>
 <p><strong>What changed.</strong>
 The rounds and the reviewers' inventory entries, as in step 1.
@@ -403,7 +404,7 @@ Then one design choice you could have made the other way, such as one reviewer a
 For teach, quiz and grade: how many passes ran in your bench run, what the reviewers flagged, and whether the revisions moved anything you can point at.
 The loops' records in the run's outputs are the evidence; name the files, such as <code>quiz/outputs/review-records/NNNN-quiz.md</code> in the run's folder if you used the folder <a href="09-step2-review-loops.html#records">step 2</a> suggests.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 report --configs c1-skills,c2-review</pre>
 </div>
 <p><strong>What the step bought and what it cost.</strong>
@@ -414,14 +415,14 @@ If a loop ran several passes and the final output was no better than the first d
 A review loop on quiz or grade has little room to raise them, and what it buys shows up in your own reviews and in its cost.
 Say so plainly if that is what you find; it is a real result.</p>
 
-<h3 id="eval-4">4. Step 3: c3-split against c2-review</h3>
+<h3 id="eval-4">4. Step 3: <span class="nw">c3-split</span> against <span class="nw">c2-review</span></h3>
 <p><strong>When:</strong> at the end of step 3, after its major review.</p>
 <p><strong>What changed.</strong>
 The rounds and the pipeline's inventory entries.
 Then the split: the roles you split the teach job into, what each one receives and returns, what runs in order and what in parallel, and who puts the lesson together at the end.
 Why this split and not a smaller one, and what you tried and took out again.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 report --configs c2-review,c3-split</pre>
 </div>
 <p><strong>What the step bought and what it cost.</strong>
@@ -430,14 +431,14 @@ What it cost in tokens, minutes and subagents against <code>c2-review</code>, an
 The teach scenario's entry in the run's <code>run.json</code> gives its tokens, turns and subagents, and its trace, <code>teach/trace.jsonl.gz</code>, holds every subagent's messages, if you want to see where the work went.</p>
 <p><strong>How far the numbers go:</strong> each step has one run, so say how confident you are, and what would change your mind.</p>
 
-<h3 id="eval-5">5. final against c0-baseline, with repeats</h3>
+<h3 id="eval-5">5. final against <span class="nw">c0-baseline</span>, with repeats</h3>
 <p><strong>When:</strong> week 3, once <code>final</code> has its three scored full runs.</p>
 <p><strong>What went into final.</strong>
 First the diagram of <code>final</code>; <a href="#diagram">The diagram of final</a> below says what goes in it.
 Then what you kept from each step, what you dropped, and why, pointing at the inventory entries rather than repeating them.
 Then, if <code>final</code> had to get cheaper tomorrow, which component you would cut first and which last, and what you expect the tutor to lose.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 report --configs c0-baseline,final</pre>
 </div>
 <p><strong>What the repeats let you claim.</strong>
@@ -453,7 +454,7 @@ Like step 1, this comparison measures your skills and your preferences together,
 <p>The section asks what you expected to happen before you ran it.
 A prediction written after you saw the result is not a prediction, so write it into this section, and commit it, before you start the ablation's run.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 report --configs final,final-minus-&lt;x&gt;</pre>
 </div>
 <p>Use your ablation's real name in place of <code>final-minus-&lt;x&gt;</code>, such as <code>final-minus-quiz-review</code>.
@@ -475,7 +476,7 @@ If the ablation's value sits inside <code>final</code>'s range, one run cannot s
   <li>the gap you know of: one way the main conversation could still reach a key, or a case your tests do not cover, and why you accepted it or how you closed it.</li>
 </ul>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">python -m unittest discover -s tests -t .</pre>
 </div>
 <p>That runs every test in <code>tests/</code>, the course's and yours, and none of them calls Claude; on macOS and Linux, use <code>python3</code>.
@@ -488,7 +489,7 @@ Show that it works with its tests and a trace, and do not credit it with a chang
 <p>Paste the four reveals, teach, quiz, grade and tutor, each with its session id.
 <code>uv run p3 compare --list</code> lists your sessions, and running <code>--reveal</code> again on a finished session prints its reveal again, for copying.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 compare --reveal &lt;session-id&gt;</pre>
 </div>
 <p><strong>Your open reviews against your blind picks</strong> is the heart of this section; <a href="#open-vs-blind">its own part of this page</a> walks through it.</p>
@@ -508,7 +509,7 @@ Name each topic and its id, why you chose it, and the commit in which you commit
 <code>git log --oneline -- bench/own/&lt;id&gt;</code> lists a topic's commits, and each run's <code>run.json</code> records the topic's commit.
 If you fixed a real mistake in a topic after its runs, by the procedure in <code>bench/own/README.md</code>, list the run ids you deleted, what you changed and why.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 report --topic &lt;id&gt; --configs c0-baseline,final</pre>
 </div>
 <p><strong>Results.</strong>
@@ -536,7 +537,7 @@ At least one change, anywhere in the project, that cost tokens, time or complexi
 <h3 id="eval-12">12. The trade-offs</h3>
 <p><strong>When:</strong> week 3, last of the big sections, because it looks at the whole ladder.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 report --reviews
 uv run p3 report --configs c0-baseline,c1-skills,c2-review,c3-split,final</pre>
 </div>
@@ -546,7 +547,7 @@ uv run p3 report --configs c0-baseline,c1-skills,c2-review,c3-split,final</pre>
 <p><strong>When:</strong> when your stretch is done.
 For 598E this is the length study, the rider, with <code>PREREG.md</code> beside it.
 Cover the five things the section lists: the option's name; what you did and the files that hold it; the evidence, the reviews, blind comparisons, objective checks and cost it rests on, pasted or named; what that evidence lets you claim and what it does not; and one thing you would do next, with the result that would tell you it worked.
-For the length study, <code>uv run p3 report --configs c1-skills,final --teach-only</code> gives every cell's numbers.
+For the length study, <code>uv run p3 report --configs <span class="nw">c1-skills,final</span> --teach-only</code> gives every cell's numbers.
 <a href="16-stretch-and-598e.html">Stretch options and the 598E length study</a> explains each option and the study, and <code>p3.json</code>'s <code>stretch</code> must name the one you did.</p>
 
 <h2 id="repeats">Reading repeats</h2>
@@ -560,13 +561,13 @@ A cell with no brackets is a single run, or runs that all gave the same value; t
 In my three baseline runs, <code>tutor_behavior_met</code> was 0.33 to 0.50.
 Suppose your report shows:</p>
 <div class="table-wrap">
-<table>
+<table class="stack">
   <caption>A made-up behavior met column, with three runs of each config, and what each reading lets you claim.</caption>
   <thead><tr><th>Config</th><th class="num">runs</th><th class="num">behavior met</th><th>What you can claim</th></tr></thead>
   <tbody>
-    <tr><td><code>c0-baseline</code></td><td class="num">3</td><td class="num">0.44 (0.33-0.50)</td><td>the yardstick</td></tr>
-    <tr><td><code>final</code>, first case</td><td class="num">3</td><td class="num">0.61 (0.50-0.67)</td><td>the ranges meet at 0.50: not distinguishable with three runs, though the mean is higher</td></tr>
-    <tr><td><code>final</code>, second case</td><td class="num">3</td><td class="num">0.78 (0.67-0.83)</td><td>every <code>final</code> run is above every baseline run: a difference you can state, for these runs on this topic</td></tr>
+    <tr><td data-label="Config"><code>c0-baseline</code></td><td class="num" data-label="runs">3</td><td class="num" data-label="behavior met">0.44 (0.33-0.50)</td><td data-label="What you can claim">the yardstick</td></tr>
+    <tr><td data-label="Config"><code>final</code>, first case</td><td class="num" data-label="runs">3</td><td class="num" data-label="behavior met">0.61 (0.50-0.67)</td><td data-label="What you can claim">the ranges meet at 0.50: not distinguishable with three runs, though the mean is higher</td></tr>
+    <tr><td data-label="Config"><code>final</code>, second case</td><td class="num" data-label="runs">3</td><td class="num" data-label="behavior met">0.78 (0.67-0.83)</td><td data-label="What you can claim">every <code>final</code> run is above every baseline run: a difference you can state, for these runs on this topic</td></tr>
   </tbody>
 </table>
 </div>
@@ -607,7 +608,7 @@ The labels are yours to make; no agent makes them for you.</p>
 <p>A layout that works, with your own values in place of the angle brackets:</p>
 <pre><code>| # | run id | scenario | my label | judge | agree |
 |---|---|---|---|---|---|
-| 1 | &lt;run id&gt; | tutor-p01 | &lt;met or not met&gt; | &lt;met or not met&gt; | &lt;yes or no&gt; |</code></pre>
+| 1 | &lt;run id&gt; | tutor-p01 | &lt;met/not met&gt; | &lt;met/not met&gt; | &lt;yes/no&gt; |</code></pre>
 <p>Say which numbers your check covers.
 Ten tutor labels tell you about <code>tutor_behavior_met</code>, and nothing directly about <code>teach_facts_correct</code>; if your argument leans on one judge number more than the others, check that one.</p>
 
@@ -627,9 +628,12 @@ The blind comparison is the check on that bias, the same check lecture 24 makes 
 </ol>
 <p>The blind comparison's four jobs match your reviews' four jobs: teach is the Lesson, quiz the Quiz, grade the Feedback, and tutor the Tutor.
 A small table per job keeps this honest; the words in it are yours:</p>
-<pre><code>| Job | My open view, and where | Blind tally and p-value | Could tell | Agree? |
-|---|---|---|---|---|
-| grade (Feedback) | &lt;what your reviews said, with the review and criterion&gt; | &lt;wins, ties, p&gt; | &lt;k of n&gt; | &lt;yes, no, partly&gt; |</code></pre>
+<pre><code>| Job | grade (Feedback) |
+|---|---|
+| My open view, and where | &lt;what your reviews said, review and criterion&gt; |
+| Blind tally and p-value | &lt;wins, ties, p&gt; |
+| Could tell | &lt;k of n&gt; |
+| Agree? | &lt;yes, no, partly&gt; |</code></pre>
 <p>Remember what each tally can carry.
 Teach and quiz have three pairs each, so there your reasons are the evidence, not the count.
 And a disagreement is not a failure of the project: it is the most interesting thing this section can report, as long as you say what you make of it.</p>
@@ -651,12 +655,10 @@ I ask for it because a measurement that only ever finds wins is not measuring, a
   <li>a whole step you left out of <code>final</code>.</li>
 </ul>
 <p>Answer four questions: what the change was, what you expected, what the evidence showed, and what you did about it.
-Name the round or the inventory entry where it shows.
-An example, made up, in a student's words:</p>
-<pre><code>In c3-split Round 2 I added a references-finder subagent, expecting better external references.
-Round 3's run had six links where Round 2's had two, but two of the six were dead and three were far above a novice,
-and the teach scenario took about 1.4M more tokens.
-I took it out in Round 3; its inventory entry, references-finder, has the evidence.</code></pre>
+Name the round or the inventory entry where it shows.</p>
+<div class="student"><span class="label">Example: a change that did not pay off, made up, in a student's words</span>
+<pre><code>In c3-split Round 2 I added a references-finder subagent, expecting better external references. Round 3's run had six links where Round 2's had two, but two of the six were dead and three were far above a novice, and the teach scenario took about 1.4M more tokens. I took it out in Round 3; its inventory entry, references-finder, has the evidence.</code></pre>
+</div>
 
 <h2 id="trade-offs">The trade-offs</h2>
 <p>Section 12 looks at the whole ladder at once, with your ratings from <code>uv run p3 report --reviews</code> and the cost of each step from <code>uv run p3 report --configs c0-baseline,c1-skills,c2-review,c3-split,final</code>.
@@ -677,7 +679,7 @@ It asks three questions.</p>
 <p>Section 5 opens with a diagram of <code>final</code>: the main conversation, each skill, each subagent and the guard hook, with arrows for who starts whom and which files each one reads and writes.
 ASCII art in a code block or a Mermaid block are both fine, and both show on GitHub.
 <code>EVAL.md</code> gives this example for one job:</p>
-<pre><code>/quiz (skill, main conversation)  writes drafts/0002.json
+<pre class="tree"><code>/quiz (skill, main conversation)  writes drafts/0002.json
   -&gt; quiz-reviewer (subagent, fresh context)  reads drafts/
   &lt;- revise, at most 2 passes
   =&gt; quizzes/NNNN.json, keys/NNNN.json, review-records/NNNN-quiz.md</code></pre>
@@ -690,12 +692,14 @@ A good diagram shows, for each job:</p>
   <li>where the guard sits and what it blocks: which tools, on which folder, for whom, and which subagent it lets through.</li>
 </ul>
 <p>The shape of a grade job with the guard might look like this; your own design is what goes in your diagram:</p>
-<pre><code>/grade (skill, main conversation)  reads submissions/s1.json
-  -&gt; grader (subagent; the guard lets it read keys/)  reads quizzes/0001.json, keys/0001.json
+<pre class="tree"><code>/grade (skill, main conversation)  reads submissions/s1.json
+  -&gt; grader (subagent; the guard lets it read keys/)
+     reads quizzes/0001.json, keys/0001.json
   =&gt; grades/0001-s1.json
 
 guard: PreToolUse hook in tutor/.claude/settings.json
-  blocks Read, Grep, Glob, Bash and PowerShell on keys/ in the main conversation</code></pre>
+  blocks Read, Grep, Glob, Bash and PowerShell on keys/
+  in the main conversation</code></pre>
 <p>Draw it from <code>configs/final/</code>, what you snapshotted, not from memory.
 If you want a check, ask the Builder to list, in the chat, the skills and subagents in <code>configs/final/</code> and which one starts which, and compare its list with your drawing; the drawing stays yours.</p>
 

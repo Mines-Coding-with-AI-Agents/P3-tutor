@@ -91,9 +91,9 @@ So start long runs as early as you can, and do your reading and writing while th
   <caption>The pace I would keep. Long runs go in a plain terminal; the counts are full runs on the shared topic unless the row says otherwise. Lecture dates are the course schedule.</caption>
   <thead><tr><th>Week</th><th>You build, read and write</th><th>Long runs to start</th><th>Lectures</th></tr></thead>
   <tbody>
-    <tr><td><strong>1</strong><br>from the day P3 is released through Mon Nov 9</td><td>setup; the baseline's outputs and <code>KNOWN-GAPS.md</code>; <code>PREFERENCES.md</code>; the four skills in quick rounds; the <code>c1-skills</code> major review</td><td><code>c0-baseline</code> three times, on the first day; then <code>c1-skills</code> once</td><td>20, Thu Nov 5</td></tr>
-    <tr><td><strong>2</strong><br>Tue Nov 10 to Mon Nov 16</td><td>review loops (<code>c2-review</code>) in quick rounds and their major review; the teach split (<code>c3-split</code>) in quick rounds and its major review; your two test topics' items, committed</td><td><code>c2-review</code> once; <code>c3-split</code> once; for the length study, nine teach-only runs of <code>c1-skills</code></td><td>21, Tue Nov 10; 22, Thu Nov 12</td></tr>
-    <tr><td><strong>3</strong><br>Tue Nov 17 to Tue Nov 24</td><td><code>final</code> with the guard; three learning sessions and the <code>final</code> major review; the blind comparison; the test topics' open review; the judge check; the inventory; <code>EVAL.md</code>; the video</td><td><code>final</code> three times; the ablation once; <code>c0-baseline</code> and <code>final</code> on both test topics, four runs; for the length study, nine teach-only runs of <code>final</code>; in any order</td><td>23, Tue Nov 17; 24, Thu Nov 19</td></tr>
+    <tr><td><strong>1</strong><br>from the day P3 is released through <span class="nw">Mon Nov 9</span></td><td>setup; the baseline's outputs and <code>KNOWN-GAPS.md</code>; <code>PREFERENCES.md</code>; the four skills in quick rounds; the <code>c1-skills</code> major review</td><td><code>c0-baseline</code> three times, on the first day; then <code>c1-skills</code> once</td><td><span class="nw">20, Thu Nov 5</span></td></tr>
+    <tr><td><strong>2</strong><br><span class="nw">Tue Nov 10</span> to <span class="nw">Mon Nov 16</span></td><td>review loops (<code>c2-review</code>) in quick rounds and their major review; the teach split (<code>c3-split</code>) in quick rounds and its major review; your two test topics' items, committed</td><td><code>c2-review</code> once; <code>c3-split</code> once; for the length study, nine teach-only runs of <code>c1-skills</code></td><td><span class="nw">21, Tue Nov 10;</span> <span class="nw">22, Thu Nov 12</span></td></tr>
+    <tr><td><strong>3</strong><br><span class="nw">Tue Nov 17</span> to <span class="nw">Tue Nov 24</span></td><td><code>final</code> with the guard; three learning sessions and the <code>final</code> major review; the blind comparison; the test topics' open review; the judge check; the inventory; <code>EVAL.md</code>; the video</td><td><code>final</code> three times; the ablation once; <code>c0-baseline</code> and <code>final</code> on both test topics, four runs; for the length study, nine teach-only runs of <code>final</code>; in any order</td><td><span class="nw">23, Tue Nov 17;</span> <span class="nw">24, Thu Nov 19</span></td></tr>
   </tbody>
 </table>
 </div>
@@ -129,7 +129,7 @@ On the map, that is stages 5 to 8.</p>
 <p>Lecture 21 (Tuesday, November 10) brings the Agent SDK, and lecture 22 (Thursday, November 12) construct validity; <a href="#lectures">The lectures</a> below says what each adds.
 If you are in 498E and taking a stretch other than the length study, pick it early and try a small piece of it first, because most options draw on your Claude plan.</p>
 
-<h2 id="week-3">Week 3: <code>final</code>, its runs, and the writing</h2>
+<h2 id="week-3">Week 3: final, its runs, and the writing</h2>
 <p>Tuesday, November 17, to Tuesday, November 24.
 On the map, that is stages 9 to 12.</p>
 <ol class="steps">
@@ -176,11 +176,11 @@ Lectures 20 to 24 arrive while you work on it, and each one adds something you u
   <caption>Lectures 20 to 24 and where each one shows up in P3.</caption>
   <thead><tr><th>Lecture</th><th>Topic</th><th>What it adds to P3</th></tr></thead>
   <tbody>
-    <tr><td>20, Thu Nov 5</td><td>the agent loop, built from scratch</td><td>What every bench scenario is: a model in a loop with tools, turn by turn, which is what a scenario's turns and its trace record. Many of you will have an <code>ANTHROPIC_API_KEY</code> set in your shell after it; <code>p3</code> removes it from every <code>claude</code> it starts and says so, so the bench keeps using your subscription.</td></tr>
-    <tr><td>21, Tue Nov 10</td><td>the Agent SDK</td><td>Stretch option 5: the grader ported to the Agent SDK and measured against your Claude Code grader, in quality and in cost.</td></tr>
-    <tr><td>22, Thu Nov 12</td><td>construct validity</td><td>Whether a number measures what you mean by it. That is the question behind what your numbers let you claim in <code>EVAL.md</code>: the length ratio is a rough reading-time estimate, and a blind pick measures preference, which is not the same as learning. The length study names its threats to validity from it.</td></tr>
-    <tr><td>23, Tue Nov 17</td><td>repeats and intervals</td><td>How to read repeats: whether a difference between <code>final</code> and <code>c0-baseline</code>, three runs each, is larger than the spread between runs of the same config, in section 5 of <code>EVAL.md</code>, and the intervals that help where a blind tally of three teach or quiz pairs can say little.</td></tr>
-    <tr><td>24, Thu Nov 19</td><td>judges</td><td>How to check a model judge before you trust it: your judge check against ten labels of your own, in section 10 of <code>EVAL.md</code>; judges' bias toward longer outputs, which is why the length study never compares across lengths; and the idea behind your blind comparison, which checks your own bias as the lecture checks a judge's.</td></tr>
+    <tr><td><span class="nw">20, Thu Nov 5</span></td><td>the agent loop, built from scratch</td><td>What every bench scenario is: a model in a loop with tools, turn by turn, which is what a scenario's turns and its trace record. Many of you will have an <code>ANTHROPIC_API_KEY</code> set in your shell after it; <code>p3</code> removes it from every <code>claude</code> it starts and says so, so the bench keeps using your subscription.</td></tr>
+    <tr><td><span class="nw">21, Tue Nov 10</span></td><td>the Agent SDK</td><td>Stretch option 5: the grader ported to the Agent SDK and measured against your Claude Code grader, in quality and in cost.</td></tr>
+    <tr><td><span class="nw">22, Thu Nov 12</span></td><td>construct validity</td><td>Whether a number measures what you mean by it. That is the question behind what your numbers let you claim in <code>EVAL.md</code>: the length ratio is a rough reading-time estimate, and a blind pick measures preference, which is not the same as learning. The length study names its threats to validity from it.</td></tr>
+    <tr><td><span class="nw">23, Tue Nov 17</span></td><td>repeats and intervals</td><td>How to read repeats: whether a difference between <code>final</code> and <code>c0-baseline</code>, three runs each, is larger than the spread between runs of the same config, in section 5 of <code>EVAL.md</code>, and the intervals that help where a blind tally of three teach or quiz pairs can say little.</td></tr>
+    <tr><td><span class="nw">24, Thu Nov 19</span></td><td>judges</td><td>How to check a model judge before you trust it: your judge check against ten labels of your own, in section 10 of <code>EVAL.md</code>; judges' bias toward longer outputs, which is why the length study never compares across lengths; and the idea behind your blind comparison, which checks your own bias as the lecture checks a judge's.</td></tr>
   </tbody>
 </table>
 </div>
@@ -205,7 +205,7 @@ The "When" column places each part in the pace above.</p>
     <tr><td>The component inventory</td><td class="num">1</td><td>each step's entries as you go, finished in week 3</td></tr>
     <tr><td><code>EVAL.md</code></td><td class="num">3</td><td>each step's section as you go, the rest in week 3</td></tr>
     <tr><td>The video</td><td class="num">1.5</td><td>week 3</td></tr>
-    <tr><td><strong>Total</strong></td><td class="num"><strong>about 32</strong></td><td></td></tr>
+    <tr><td><strong>Total</strong></td><td class="num"><strong>about 32</strong></td></tr>
   </tbody>
 </table>
 </div>

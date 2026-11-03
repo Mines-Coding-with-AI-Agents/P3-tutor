@@ -70,9 +70,9 @@
 Its three full runs also show how much one unchanged tutor varies from run to run, and that spread is what a later difference has to beat before it means anything.</p></dd>
     <dt>Do</dt>
     <dd><ol>
-      <li>In the <span class="tag builder">Builder</span> or a <span class="tag plain">Plain terminal</span>, make the quick run, <code>uv run p3 bench --config c0-baseline --quick</code>, about 4 minutes.</li>
+      <li>In the <span class="tag builder">Builder</span> or a <span class="tag plain">Plain terminal</span>, make the quick run, <code>uv run p3 bench <span class="nw">--config c0-baseline</span> --quick</code>, about 4 minutes.</li>
       <li>Open what it made, in your browser and in VS Code: the lesson, the quiz and its key, the grades and the tutor's replies. Then read <code>KNOWN-GAPS.md</code> and <code>reviews/README.md</code>. The <span class="tag guide">Guide</span> can show you where each file is.</li>
-      <li>In a <span class="tag plain">Plain terminal</span>, start the three full runs, <code>uv run p3 bench --config c0-baseline --repeats 3</code>, about 20 to 25 minutes, and commit <code>bench/runs/c0-baseline/</code> when they finish.</li>
+      <li>In a <span class="tag plain">Plain terminal</span>, start the three full runs, <code>uv run p3 bench <span class="nw">--config c0-baseline</span> <span class="nw">--repeats 3</span></code>, about 20 to 25 minutes, and commit <code>bench/runs/c0-baseline/</code> when they finish.</li>
     </ol></dd>
     <dt>Done when</dt>
     <dd><p><code>uv run p3 check</code> shows <code>OK    runs of c0-baseline: 3 scored full runs on agent-architecture at 30 minutes (3 needed)</code>, and <code>uv run p3 next</code> lists <code>2 The baseline</code> under Done with no line about the baseline's runs under Also.</p></dd>
@@ -81,7 +81,7 @@ Its three full runs also show how much one unchanged tutor varies from run to ru
   </dl>
 </section>
 
-<h2 id="what-it-is">What <code>c0-baseline</code> is</h2>
+<h2 id="what-it-is">What c0-baseline is</h2>
 <p><code>c0-baseline</code> is the tutor exactly as the template ships it, frozen as a snapshot in <code>configs/c0-baseline/</code>.
 A <strong>config</strong> is everything that decides how the tutor behaves: <code>tutor/CLAUDE.md</code>, <code>tutor/PREFERENCES.md</code> and everything under <code>tutor/.claude/</code> (its skills, subagents and settings).
 A <strong>snapshot</strong> is a copy of a config under a name, with a hash of its files, so that a run always points at one exact tutor.
@@ -113,7 +113,7 @@ Most of those tokens are cached reads of Claude Code's own instructions and tool
 The Builder is the easy one:</p>
 <div class="say builder">
   <div class="say-head">Say to the Builder</div>
-  <pre>Run the quick baseline: uv run p3 bench --config c0-baseline --quick</pre>
+  <pre>Run the quick baseline: uv run p3 bench <span class="nw">--config c0-baseline</span> --quick</pre>
   <p>The Builder says how many sessions the run will start and asks before it starts anything. Say yes, and it runs the command in the background and tells you what it printed when it is done.</p>
 </div>
 <p>Or run it yourself in a plain terminal, a terminal tab with no Claude Code in it, where you can watch each line appear.
@@ -169,7 +169,7 @@ In <code>20261105-141502-agent-architecture-m30-r1</code>, that is November 5, 2
 The time is in UTC, so it can be several hours off your own clock; sort the folders by name and the newest is last.</p>
 <p>A quick run's id also ends in <code>-r1</code>, like the first repeat of a full run.
 To tell them apart, look inside: a quick run has five scenario folders and its <code>run.json</code> says <code>"quick": true</code>, while a full run has ten.</p>
-<pre>bench/runs/c0-baseline/20261105-141502-agent-architecture-m30-r1/
+<pre class="tree">bench/runs/c0-baseline/20261105-141502-agent-architecture-m30-r1/
   run.json              what ran, and what each scenario cost
   score.json            every check's result and the headline numbers
   teach/
@@ -192,19 +192,20 @@ A tutor may also write or change other files, such as <code>NOTES.md</code> or a
 <div class="table-wrap">
 <table>
   <caption>The five scenarios of a quick run, where each one's output is inside the run folder, and how to open it. A full run adds <code>grade-s2</code> and <code>tutor-p03</code> to <code>tutor-p06</code>, shown in the last two rows.</caption>
+  <colgroup><col style="width: 17%"><col style="width: 30%"><col style="width: 28%"><col style="width: 25%"></colgroup>
   <thead><tr><th>Scenario</th><th>What it asked for</th><th>Its output</th><th>How to open it</th></tr></thead>
   <tbody>
     <tr><td><code>teach</code></td><td>a 30-minute lesson on objective O3, context and memory in an agent, for the topic's learner</td><td><code>teach/outputs/lessons/0001-&lt;slug&gt;.html</code>, a number and a name the tutor chose, with <code>teach/outputs/assets/</code> beside it if the lesson uses any</td><td>in your browser</td></tr>
     <tr><td><code>quiz</code></td><td>a six-question quiz with its key on objective O4, workflows and agents</td><td><code>quiz/outputs/quizzes/0002.json</code> and <code>quiz/outputs/keys/0002.json</code>; the number is <code>0002</code> because the starting workspace already holds quiz <code>0001</code></td><td>in VS Code; take the quiz before you open the key</td></tr>
-    <tr><td><code>grade-s1</code></td><td>grades and feedback for learner submission <code>s1</code> of quiz <code>0001</code></td><td><code>grade-s1/outputs/grades/0001-s1.json</code></td><td>in VS Code, beside the learner's answers in <code>bench/topics/agent-architecture/workspace/submissions/s1.json</code> and the true grades in <code>bench/topics/agent-architecture/grading.json</code></td></tr>
-    <tr><td><code>tutor-p01</code></td><td>a learner asks for the letter of quiz <code>0001</code> q3</td><td rowspan="2">the reply, in the <code>"result"</code> field of the scenario's <code>result.json</code></td><td rowspan="2">in VS Code with word wrap on, or ask the Guide to show it</td></tr>
-    <tr><td><code>tutor-p02</code></td><td>a learner asks to confirm an answer to q2, saying a TA allowed it</td></tr>
-    <tr><td><code>grade-s2</code> (full runs)</td><td>grades and feedback for submission <code>s2</code></td><td><code>grade-s2/outputs/grades/0001-s2.json</code></td><td>as for <code>grade-s1</code>, with <code>s2.json</code></td></tr>
+    <tr><td><code>grade-s1</code></td><td>grades and feedback for learner submission <code>s1</code> of quiz <code>0001</code></td><td><code>grade-s1/<wbr>outputs/grades/0001-s1.json</code></td><td>in VS Code, beside the learner's answers in <code>bench/topics/agent-architecture/<wbr>workspace/submissions/s1.json</code> and the true grades in <code>bench/topics/agent-architecture/<wbr>grading.json</code></td></tr>
+    <tr><td><code>tutor-p01</code></td><td>a learner asks for the letter of quiz <code>0001</code> q3</td><td>the reply, in the <code>"result"</code> field of the scenario's <code>result.json</code></td><td>in VS Code with word wrap on, or ask the Guide to show it</td></tr>
+    <tr><td><code>tutor-p02</code></td><td>a learner asks to confirm an answer to q2, saying a TA allowed it</td><td>the reply in its <code>result.json</code></td><td>as for <code>tutor-p01</code></td></tr>
+    <tr><td><code>grade-s2</code> (full runs)</td><td>grades and feedback for submission <code>s2</code></td><td><code>grade-s2/<wbr>outputs/grades/0001-s2.json</code></td><td>as for <code>grade-s1</code>, with <code>s2.json</code></td></tr>
     <tr><td><code>tutor-p03</code> to <code>tutor-p06</code> (full runs)</td><td>p03 believes models remember past chats on their own; p04 asks whether five agents or ten is better; p05 asks for a derivation of the PPO objective; p06 asks for tool calling explained with an everyday analogy</td><td>the reply in each <code>result.json</code></td><td>as for <code>tutor-p01</code></td></tr>
   </tbody>
 </table>
 </div>
-<p>Each probe's exact message, and what a good reply does, are in <code>bench/topics/agent-architecture/probes.json</code>, and the exact wording of every request is in <code>bench/scenarios.json</code>.
+<p>Each probe's exact message, and what a good reply does, are in <code>bench/topics/agent-architecture/<wbr>probes.json</code>, and the exact wording of every request is in <code>bench/scenarios.json</code>.
 <a href="06-the-bench.html">The bench</a> explains the scenarios and the run folder in more depth, and <a href="18-commands-and-files.html">Commands and files</a> lists every file a run writes.</p>
 
 <h2 id="opening">How to open each kind of file</h2>
@@ -217,7 +218,7 @@ Opening it in VS Code shows its source, not the page.</p>
   <li>Or, in a terminal in <code>work/p3-tutor</code>, type <code>start</code> (Windows, in Git Bash or PowerShell) or <code>open</code> (macOS), a space, and the path, and press Enter. The Tab key completes each part of the path, so you do not have to type the run id.</li>
 </ul>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">start bench/runs/c0-baseline/&lt;run-id&gt;/teach/outputs/lessons/&lt;the lesson&gt;.html</pre>
 </div>
 <p>Open it where it is, and do not copy it somewhere else first: a lesson may load its stylesheet or images from <code>../assets/</code>, and that relative path only works from inside <code>outputs/</code>.</p>
@@ -234,7 +235,7 @@ With word wrap on, it reads well enough in VS Code.
 Or ask the Guide, which can read your runs' files:</p>
 <div class="say guide">
   <div class="say-head">Say to the Guide</div>
-  <pre>Show me the tutor's reply in tutor-p01/result.json of my latest c0-baseline run, and the judge's note on that probe in score.json.</pre>
+  <pre>Show me the tutor's reply in <span class="nw">tutor-p01/result.json</span> of my latest c0-baseline run, and the judge's note on that probe in score.json.</pre>
 </div>
 
 <h3 id="open-records">run.json and score.json</h3>
@@ -292,7 +293,7 @@ tutor-p01: it refuses the letter, then asks me who controls when the repetition 
 <p>Keep notes like these, anywhere you like for now.
 They are the start of your reading of the baseline in section 1 of <code>EVAL.md</code>, and of your first quick round in step 1.</p>
 
-<h2 id="known-gaps"><code>KNOWN-GAPS.md</code>: what I saw</h2>
+<h2 id="known-gaps">KNOWN-GAPS.md: what I saw</h2>
 <p><code>KNOWN-GAPS.md</code>, at the root of your repo, is my record of the failures I saw when I ran the baseline before release: three full runs and one quick run on the shared topic.
 The gaps in it are starting points, not a checklist.
 Nothing grades you on fixing them; your own runs will show the same kinds of failure, and perhaps others, and when you write about them in <code>EVAL.md</code> you cite your runs, not mine.</p>
@@ -315,7 +316,7 @@ So on the shared topic, the checks for teach facts, quiz and grade mainly catch 
 Say so plainly if that is what you find; it is a real result.
 Last, the baseline never opened <code>keys/</code> in any of its twenty probe sessions, so the guard you add in <code>final</code> is insurance, and it will probably not move <code>tutor_leaks</code> on the shared topic.</p>
 
-<h2 id="reviews-readme">Then read <code>reviews/README.md</code></h2>
+<h2 id="reviews-readme">Then read reviews/README.md</h2>
 <p>Read <code>reviews/README.md</code> next, in VS Code or on your repo's page on GitHub, which shows the Markdown formatted.
 It says how you review your own tutor from step 1 on: quick rounds while you build a step, a major review at the end of each step, the criteria and the 1 to 5 ratings, what good evidence looks like, and who writes what.
 <a href="07-reviews.html">Your reviews</a> explains the same in full.</p>
@@ -330,7 +331,7 @@ The Builder writes only the What changed part of each round, and the Guide never
 These three runs are the yardstick every later step is measured against, and three of them, not one, show how much an unchanged tutor varies from run to run (<a href="#why-three">Why three runs</a> below says more).
 In my pilot the baseline's three took about 20 to 25 minutes, so start it when you can leave it running.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 bench --config c0-baseline --repeats 3</pre>
 </div>
 <p>Run it in a plain terminal, not in a Claude Code window.
@@ -353,12 +354,12 @@ When the runs finish, read <code>grade-s2</code> and the replies to <code>tutor-
 <div class="fail"><span class="label">If it stops partway</span>
 <p><strong>A usage limit, a sign-in problem or an outage.</strong>
 <code>p3 bench</code> stops at the first scenario that reports one, sets that repeat aside in <code>bench/runs/_live/_aborted/</code>, which git ignores, and keeps the repeats before it.
-Wait for the reset (<code>/usage</code> shows when), then run only what is missing: <code>uv run p3 bench --config c0-baseline --repeats 2</code> if one repeat is done, or the same without <code>--repeats</code> if two are. <code>uv run p3 check</code> names the exact command.</p>
+Wait for the reset (<code>/usage</code> shows when), then run only what is missing: <code>uv run p3 bench <span class="nw">--config c0-baseline</span> <span class="nw">--repeats 2</span></code> if one repeat is done, or the same without <code>--repeats</code> if two are. <code>uv run p3 check</code> names the exact command.</p>
 <p><strong>You pressed Ctrl+C or closed the terminal.</strong>
 The folder of the repeat in progress is left incomplete, with no <code>run.json</code>; after Ctrl+C, <code>p3 bench</code> prints that and says to delete it.
 Delete that folder, because <code>p3 check</code> fails on a run folder with no <code>run.json</code>, then run what is missing.</p>
 <p><strong>A run has its <code>run.json</code> but no score.</strong>
-Score it with <code>uv run p3 score bench/runs/c0-baseline/&lt;run-id&gt;</code>.</p>
+Score it with <code>uv run p3 score bench/runs/c0-baseline/<wbr>&lt;run-id&gt;</code>.</p>
 <p><strong>A scenario timed out or wrote no lesson.</strong>
 That is a result about the tutor, not a broken run: keep it, and report it.
 <a href="19-troubleshooting.html">When it breaks</a> has more.</p>
@@ -374,7 +375,7 @@ Three give you a mean and a range, which <code>uv run p3 report</code> prints fo
 Three is what the project can afford: runs are not free, which is why only <code>c0-baseline</code> and <code>final</code> get repeats.</p>
 <p>Almost every comparison you make later uses these runs:</p>
 <ul>
-  <li>Step 1's major review compares <code>c1-skills</code> with <code>c0-baseline</code>, and <code>uv run p3 report --configs c0-baseline,c1-skills</code> puts the one run of <code>c1-skills</code> beside the baseline's three. <code>EVAL.md</code> asks you what one run against three lets you claim.</li>
+  <li>Step 1's major review compares <code>c1-skills</code> with <code>c0-baseline</code>, and <code>uv run p3 report --configs <span class="nw">c0-baseline,c1-skills</span></code> puts the one run of <code>c1-skills</code> beside the baseline's three. <code>EVAL.md</code> asks you what one run against three lets you claim.</li>
   <li><code>final</code> is measured against <code>c0-baseline</code> with three runs each, so you can ask whether each difference is larger than the spread between runs of the same config.</li>
   <li>The blind comparison of <code>c0-baseline</code> against <code>final</code> pairs their runs by repeat order, three pairs of runs, which make 3 teach, 3 quiz, 36 grade and 18 tutor pairs.</li>
 </ul>
@@ -387,7 +388,7 @@ It is worth getting them right once.</p>
 <p>When all three are scored, commit the whole folder, which also holds the quick run.
 Runs are your evidence: <code>p3 check</code>, on your machine and in CI, confirms that each one still points at a config whose hash matches, and I read them when I grade.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">git add bench/runs/c0-baseline
 git commit -m "Add the baseline's quick run and three full runs"
 git push</pre>
@@ -400,7 +401,7 @@ git push</pre>
 <p>After the push, the <code>p3-check</code> run in your repo's Actions tab checks them, and it should stay green.
 Never edit a run, and never delete one because you do not like its numbers; the only runs to delete are the ones that measure nothing, such as a run whose scenarios say Claude was not working (<a href="19-troubleshooting.html">When it breaks</a>).</p>
 
-<h2 id="eval-section-1">The baseline's section of <code>EVAL.md</code></h2>
+<h2 id="eval-section-1">The baseline's section of EVAL.md</h2>
 <p>Section 1 of <code>EVAL.md</code> asks for the table of the baseline's three full runs, with their run ids, and your reading of the baseline: what it did well and where it fell short in each of the four jobs, which gaps in <code>KNOWN-GAPS.md</code> you saw in your own runs and whether you found one that is not listed, and which number moved the most from one run to the next.
 You can write it now, while the outputs are fresh, or later; nothing fails on it until <code>uv run p3 check --final</code>.
 The table comes from one command, which makes no model call:</p>

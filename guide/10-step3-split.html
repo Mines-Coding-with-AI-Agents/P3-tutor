@@ -69,12 +69,12 @@
     <dd><p>A lesson is the biggest job your tutor does, and it holds distinct kinds of work: planning to the minutes, writing, figures, sources. This step finds out whether giving each kind of work to a subagent of its own makes a better lesson, and at what price, measured on teach against <code>c2-review</code>.</p></dd>
     <dt>Do</dt>
     <dd><ol>
-      <li>Add one subagent of the pipeline per quick round: run the live teach scenario in the <span class="tag builder">Builder</span> or a plain terminal, write your thoughts under the round in <code>reviews/c3-split.md</code> in the VS Code editor, then say to the <span class="tag builder">Builder</span> "Act on Round k of reviews/c3-split.md.", with k the round's number.</li>
+      <li>Add one subagent of the pipeline per quick round: run the live teach scenario in the <span class="tag builder">Builder</span> or a plain terminal, write your thoughts under the round in <code>reviews/c3-split.md</code> in the VS Code editor, then say to the <span class="tag builder">Builder</span> "Act on Round k of <span class="nw">reviews/c3-split.md.",</span> with k the round's number.</li>
       <li>When the teach job is split across its subagents and you are happy with the lesson, snapshot it in the <span class="tag builder">Builder</span> or a plain terminal with <code>uv run p3 snapshot c3-split</code>, and start its full run in a <span class="tag plain">Plain terminal</span> with <code>uv run p3 bench --config c3-split</code>.</li>
       <li>In the editor, write the major review (the lesson only) in <code>reviews/c3-split.md</code>, section 4 of <code>EVAL.md</code>, and the Purpose and Review of each new subagent in <code>reviews/components.md</code>; then commit and push, in a <span class="tag plain">Plain terminal</span> or through the Builder.</li>
     </ol></dd>
     <dt>Done when</dt>
-    <dd><p><code>uv run p3 next</code> lists 7 Step 3, c3-split under Done, and its Now line has moved on, to 8 Test topics or, if your topics are already in place, to 9 <code>final</code>.</p></dd>
+    <dd><p><code>uv run p3 next</code> lists 7 Step 3, <span class="nw">c3-split</span> under Done, and its Now line has moved on, to 8 Test topics or, if your topics are already in place, to 9 <code>final</code>.</p></dd>
     <dt>Then</dt>
     <dd><p><a href="11-test-topics.html">Your two test topics</a>, then <a href="12-final.html">final: the guard, repeats and the ablation</a>. Whenever you are unsure what comes next, ask the <span class="tag guide">Guide</span>, or run <code>uv run p3 next</code> in a plain terminal.</p></dd>
   </dl>
@@ -182,8 +182,7 @@ maxTurns: 30
 ---
 
 You plan one lesson for the learner in this workspace.
-(The rest of the instructions: what to read, what the plan holds, where it goes,
-and what to report back when you are done.)</code></pre>
+(The rest of the instructions: what to read, what the plan holds, where it goes, and what to report back when you are done.)</code></pre>
 <p>The frontmatter sits between two <code>---</code> lines, and the first one must be the file's first line; the Markdown after it is the subagent's instructions, its system prompt. Only <code>name</code> and <code>description</code> are required. Field names are case-sensitive camelCase, and Claude Code silently ignores a field it does not recognize, so a misspelled field fails without an error.</p>
 <div class="table-wrap">
 <table>
@@ -228,14 +227,14 @@ and what to report back when you are done.)</code></pre>
 </div>
 <p>It goes to <code>bench/runs/_live/&lt;run-id&gt;/</code>, which git ignores. In my pilot a teach scenario with review loops took 4.96 million tokens, and a split adds more, so each round's run is a real cost; a few well-chosen rounds are better than many.</p>
 <div class="table-wrap">
-<table>
+<table class="stack">
   <caption>One plan that works, with three roles. The roles and their order are yours.</caption>
   <thead><tr><th>Round</th><th>The run at its start shows</th><th>The change the Builder makes</th></tr></thead>
   <tbody>
-    <tr><td>Round 1</td><td>the lesson as <code>c2-review</code> makes it</td><td>new subagent: a planner</td></tr>
-    <tr><td>Round 2</td><td>the lesson with the planner</td><td>new subagent: a writer</td></tr>
-    <tr><td>Round 3</td><td>the lesson with the writer</td><td>new subagent: a visual designer</td></tr>
-    <tr><td>The full run</td><td>the lesson with the visual designer</td><td>none: this is the snapshot's run</td></tr>
+    <tr><td data-label="Round">Round 1</td><td data-label="The run at its start shows">the lesson as <code>c2-review</code> makes it</td><td data-label="The change the Builder makes">new subagent: a planner</td></tr>
+    <tr><td data-label="Round">Round 2</td><td data-label="The run at its start shows">the lesson with the planner</td><td data-label="The change the Builder makes">new subagent: a writer</td></tr>
+    <tr><td data-label="Round">Round 3</td><td data-label="The run at its start shows">the lesson with the writer</td><td data-label="The change the Builder makes">new subagent: a visual designer</td></tr>
+    <tr><td data-label="Round">The full run</td><td data-label="The run at its start shows">the lesson with the visual designer</td><td data-label="The change the Builder makes">none: this is the snapshot's run</td></tr>
   </tbody>
 </table>
 </div>
@@ -248,26 +247,24 @@ and what to report back when you are done.)</code></pre>
     <p><strong>Read the lesson and the drafts.</strong> Open the lesson in <code>teach/outputs/lessons/</code> in your browser: right-click it in VS Code, choose "Reveal in File Explorer" (Windows) or "Reveal in Finder" (macOS), and double-click it. Read the pipeline's files in <code>teach/outputs/drafts/</code>, and look at the teach scenario in <code>run.json</code>: its <code>status</code>, its minutes, tokens and turns, its <code>subagents</code>, and its <code>permission_denials</code>.</p>
   </li>
   <li>
-    <p><strong>Write your thoughts in <code>reviews/c3-split.md</code>, in the editor.</strong> Under the round's Run line and <code>**My thoughts:**</code>, begin with whether the last change helped. An example, in a student's words, after a round that added a planner:</p>
+    <p><strong>Write your thoughts in <code>reviews/c3-split.md</code>, in the editor.</strong> Under the round's Run line and <code>**My thoughts:**</code>, begin with whether the last change helped.</p>
+    <div class="student"><span class="label">Example: after a round that added a planner, in a student's words</span>
 <pre><code>### Round 2
 
 **Run:** bench/runs/_live/20261113-094500-agent-architecture-m30-r1, teach only
 
 **My thoughts:**
 
-The planner helped with length: its plan gave six sections a word budget each, and
-the lesson came to about 4,100 words, a length ratio of 0.91, where the c2-review
-lesson was 0.68.
-But the teach skill still writes the text itself, and sections 4 and 5 have no worked
-example although the plan asked for one in each.
-I want a writer subagent that writes each section from the plan, with its example,
-and hands the draft back for the reviewers.</code></pre>
+The planner helped with length: its plan gave six sections a word budget each, and the lesson came to about 4,100 words, a length ratio of 0.91, where the c2-review lesson was 0.68.
+But the teach skill still writes the text itself, and sections 4 and 5 have no worked example although the plan asked for one in each.
+I want a writer subagent that writes each section from the plan, with its example, and hands the draft back for the reviewers.</code></pre>
+    </div>
   </li>
   <li>
     <p><strong>Ask the Builder to act on it.</strong></p>
     <div class="say builder">
       <div class="say-head">Say to the Builder</div>
-      <pre>Act on Round 2 of reviews/c3-split.md.</pre>
+      <pre>Act on Round 2 of <span class="nw">reviews/c3-split.md.</span></pre>
       <p>It builds the one subagent, changes the teach skill to use it, writes the round's What changed (Kind, Files and Why), adds the subagent's inventory entry with the factual fields, and suggests the next run. It asks before starting any run.</p>
     </div>
   </li>
@@ -276,7 +273,7 @@ and hands the draft back for the reviewers.</code></pre>
   </li>
 </ol>
 <div class="note"><span class="label">What p3 next says during the rounds</span>
-<p>The same as in steps 1 and 2, with <code>reviews/c3-split.md</code>: for an untouched round, run the live tutor and write what you noticed under Round k &gt; My thoughts; once your thoughts are written, "In the Builder window, say: Act on Round k of reviews/c3-split.md."; for anything else missing, "Finish Round k in reviews/c3-split.md:" and its first problem; and from two complete rounds on, "When the teach job is split across its subagents and you are happy with the tutor, snapshot it: uv run p3 snapshot c3-split (or add another round first)." Neither <code>p3 next</code> nor <code>p3 check</code> can see whether the split is done, so that part is yours to judge.</p>
+<p>The same as in steps 1 and 2, with <code>reviews/c3-split.md</code>: for an untouched round, run the live tutor and write what you noticed under Round k &gt; My thoughts; once your thoughts are written, "In the Builder window, say: Act on Round k of <span class="nw">reviews/c3-split.md.";</span> for anything else missing, "Finish Round k in <span class="nw">reviews/c3-split.md:"</span> and its first problem; and from two complete rounds on, "When the teach job is split across its subagents and you are happy with the tutor, snapshot it: uv run p3 snapshot <span class="nw">c3-split</span> (or add another round first)." Neither <code>p3 next</code> nor <code>p3 check</code> can see whether the split is done, so that part is yours to judge.</p>
 </div>
 
 <h2 id="snapshot">Snapshot</h2>
@@ -296,7 +293,7 @@ Run it with: p3 bench --config c3-split</pre>
 <h2 id="full-run">The full run</h2>
 <p>Although only teach changed, the step still needs one scored full run, all ten scenarios, because it is the run your major review reviews, <code>p3 check</code> looks for a full run of each step, and <code>p3 report</code> leaves <code>--only</code> runs out. Check <code>/usage</code> first, then start it in a plain terminal, a terminal tab with no Claude Code in it, in <code>work/p3-tutor</code>:</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 bench --config c3-split</pre>
 </div>
 <p>It belongs in a plain terminal because it can take longer than Claude Code lets a foreground command run, ten minutes at most, and it must not stop when you close a Claude Code window. It names the run folder, <code>bench/runs/c3-split/&lt;run-id&gt;</code>, as it starts, and prints a summary table and the scores when it finishes. While it runs, do your live tries (below), and the pipeline's inventory entries, which <code>uv run p3 next</code> usually names on its Also line after "While it runs".</p>
@@ -350,7 +347,7 @@ Run it with: p3 bench --config c3-split</pre>
   <li><strong>Review:</strong> the lesson with it against without it, with evidence: sections, quotes, the length ratio, the cost.</li>
   <li><strong>Kept in final:</strong> later, once <code>final</code> is frozen; until then <code>p3 check</code> lists the entry as not complete, which is expected, and <code>p3 next</code> needs only the Purpose and the Review now.</li>
 </ul>
-<p>A role you added in a round and took out again before the snapshot keeps its entry, with the step whose round built it as Step added and <code>no, because</code> and what the next round showed as Kept in final. <code>p3 check</code> cannot see it, because no snapshot holds it, so keeping its entry is up to you. If a subagent of the snapshot has no entry yet, <code>p3 next</code> gives you the words for the Builder: "Add an entry to reviews/components.md for each component of configs/c3-split/ that has none (...), with Kind, Step added, and With and without." <a href="14-write-up.html">The inventory and EVAL.md</a> explains the inventory in full.</p>
+<p>A role you added in a round and took out again before the snapshot keeps its entry, with the step whose round built it as Step added and <code>no, because</code> and what the next round showed as Kept in final. <code>p3 check</code> cannot see it, because no snapshot holds it, so keeping its entry is up to you. If a subagent of the snapshot has no entry yet, <code>p3 next</code> gives you the words for the Builder: "Add an entry to reviews/components.md for each component of <span class="nw">configs/c3-split/</span> that has none (...), with Kind, Step added, and With and without." <a href="14-write-up.html">The inventory and EVAL.md</a> explains the inventory in full.</p>
 
 <h3 id="minimums">The minimums</h3>
 <p>The minimums are counted over what you built across the ladder, in your snapshots other than <code>c0-baseline</code>, not over what <code>final</code> keeps, so dropping a component for a good reason never costs you. A component taken out before any snapshot keeps its entry but does not count.</p>
@@ -368,7 +365,7 @@ Run it with: p3 bench --config c3-split</pre>
 
 <h2 id="commit">Commit and push</h2>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">git add configs bench/runs reviews EVAL.md
 git commit -m "c3-split: snapshot, full run and major review"
 git push</pre>

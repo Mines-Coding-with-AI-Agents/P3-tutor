@@ -100,7 +100,7 @@
   <li><p><strong>The challenges, and how you solved them.</strong> A real one, in your words. A review-to-change story is a good one to tell: something you noticed in a round, the change it led to, and whether the next run showed that it helped. A time you overruled the agent is another.</p></li>
 </ol>
 
-<div class="student"><span class="label">Example of a review-to-change story, in a student's words</span>
+<div class="student"><span class="label">Example: a review-to-change story, in a student's words</span>
 <p>"In Round 2 of my c2-review file I noticed that q4 asked for the best design without saying best for what. I asked the Builder to give the quiz reviewer a check for an unstated criterion in every stem. In the next run the reviewer flagged two stems and the quiz skill rewrote them, so that change worked. But it cost about half a million tokens per quiz, and in the blind comparison I could not tell the quizzes apart, so I am not sure it was worth it."</p>
 </div>
 <p>A story like that shows the trail from a review to a change to whether the change helped, which is what the whole project is about, and it can admit that the result was mixed. A step that made things worse, or did not pay, makes as good a story as one that won.</p>
@@ -128,14 +128,14 @@
   <li>
     <p><strong>See what is not committed yet.</strong> Read the list before you add it, because your repo is public: no API keys, passwords or private details about anyone.</p>
     <div class="cmd">
-      <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+      <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
       <pre class="in">git status</pre>
     </div>
   </li>
   <li>
     <p><strong>Commit everything you mean to hand in.</strong> That is usually <code>configs/</code>, <code>bench/runs/</code>, <code>bench/compare/</code> (both files of every session), <code>bench/own/</code>, <code>reviews/</code>, <code>tutor/</code>, <code>tests/</code> (your guard's tests), <code>EVAL.md</code>, <code>PREREG.md</code> and <code>p3.json</code>.</p>
     <div class="cmd">
-      <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+      <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
       <pre class="in">git add -A
 git commit -m "Hand in P3"</pre>
     </div>
@@ -148,7 +148,7 @@ git commit -m "Hand in P3"</pre>
   <li>
     <p><strong>Run the last check.</strong></p>
     <div class="cmd">
-      <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+      <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
       <pre class="in">uv run p3 check --final</pre>
     </div>
     <p>The Guide may run this one too, since it only reads: ask it "Run p3 check --final and tell me how many items are left."</p>
@@ -167,7 +167,7 @@ Hand-in: N of N items done, ready to hand in.</pre>
   <li>
     <p><strong>Push, and watch CI.</strong></p>
     <div class="cmd">
-      <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+      <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
       <pre class="in">git push</pre>
     </div>
     <p>Then open the <strong>Actions</strong> tab of your repo on GitHub and wait for the <code>p3-check</code> run on your last commit to go green. If you have the GitHub CLI signed in, the Guide can check it for you with <code>gh run list</code>.</p>

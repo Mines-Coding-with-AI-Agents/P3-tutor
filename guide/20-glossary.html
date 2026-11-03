@@ -259,10 +259,10 @@
 <dd><p>One of the runs that <code>--repeats N</code> makes, one after another, each with its own run id ending in <code>-r1</code>, <code>-r2</code> and so on. <code>c0-baseline</code> and <code>final</code> get three repeats, so you can see how far runs of the same config spread. See <a href="06-the-bench.html">The bench: scenarios, scores and cost</a>.</p></dd>
 
 <dt id="reveal">reveal</dt>
-<dd><p><code>p3 compare --reveal &lt;session-id&gt;</code>, run once every pair of a session has a pick. It prints the tally, the sign-test p-value, how often you could tell, your reasons grouped by the config that won, the objective checks for the job, and only then the cost. See <a href="13-blind-comparison.html">The blind comparison</a>.</p></dd>
+<dd><p><code>p3 compare --reveal &lt;session-id&gt;</code>, run once every pair of a session has a pick. It prints the tally, the sign-test <span class="nw">p-value</span>, how often you could tell, your reasons grouped by the config that won, the objective checks for the job, and only then the cost. See <a href="13-blind-comparison.html">The blind comparison</a>.</p></dd>
 
 <dt id="run-id">run id</dt>
-<dd><p>The name of a run's folder, made of the time, the topic, the minutes and the repeat, such as <code>20261105-141502-agent-architecture-m30-r1</code>. A run of <code>c1-skills</code> lives in <code>bench/runs/c1-skills/&lt;run-id&gt;/</code>. See <a href="06-the-bench.html">The bench: scenarios, scores and cost</a>.</p></dd>
+<dd><p>The name of a run's folder, made of the time, the topic, the minutes and the repeat, such as <code>20261105-141502-<wbr>agent-architecture-m30-r1</code>. A run of <code>c1-skills</code> lives in <code>bench/runs/c1-skills/&lt;run-id&gt;/</code>. See <a href="06-the-bench.html">The bench: scenarios, scores and cost</a>.</p></dd>
 
 <dt id="run-line">Run line</dt>
 <dd><p>The <code>**Run:**</code> line at the top of each quick round and major review, naming the run folder you read. A major review's must name a scored full run of its step on the shared topic. See <a href="07-reviews.html">Your reviews</a>.</p></dd>
@@ -274,7 +274,7 @@
 <dd><p><code>agent-architecture</code>, in <code>bench/topics/agent-architecture/</code>: a generic introduction to agent architecture, written by me for a fixed novice, so my knowledge is the ground truth. You tune your tutor on it and only on it, and every blind comparison is made on it. See <a href="06-the-bench.html">The bench: scenarios, scores and cost</a>.</p></dd>
 
 <dt id="sign-test">sign test</dt>
-<dd><p>How the reveal reads a tally: ties set aside, it asks how often one config would win that many of the rest by chance if the two were equally good. With 10 non-tie picks, 8 for one config gives a two-sided p-value of about 0.11 and 9 about 0.02; with three pairs, even 3 of 3 gives 0.25. See <a href="13-blind-comparison.html">The blind comparison</a>.</p></dd>
+<dd><p>How the reveal reads a tally: ties set aside, it asks how often one config would win that many of the rest by chance if the two were equally good. With 10 non-tie picks, 8 for one config gives a two-sided <span class="nw">p-value</span> of about 0.11 and 9 about 0.02; with three pairs, even 3 of 3 gives 0.25. See <a href="13-blind-comparison.html">The blind comparison</a>.</p></dd>
 
 <dt id="skill">skill</dt>
 <dd><p>A <code>SKILL.md</code> in <code>tutor/.claude/skills/&lt;name&gt;/</code>: instructions your tutor follows when a job starts with <code>/&lt;name&gt;</code>, receiving the rest of the request as its arguments. The four names <code>teach</code>, <code>tutor</code>, <code>quiz</code> and <code>grade</code> are fixed so the bench can start each job; a config without one of them routes that job to <code>/teach</code>. See <a href="05-tutor-and-configs.html">Your tutor, configs and snapshots</a>.</p></dd>

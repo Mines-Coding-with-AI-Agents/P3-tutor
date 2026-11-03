@@ -82,11 +82,12 @@
 
 <h2 id="what-you-set-up">What you are setting up</h2>
 <p>By the end of this page your files sit like this on your machine.</p>
-<pre><code>&lt;course repo&gt;/          your clone of the course repo
+<pre class="tree"><code>&lt;course repo&gt;/          your clone of the course repo
   work/                 your own space, which the course repo's git ignores
     p3-tutor/           your P3 repo: open this folder in VS Code
       README.md         the brief
-      CLAUDE.md         the rules for the Builder, the Claude Code window that builds
+      CLAUDE.md         the rules for the Builder, the Claude Code
+                        window that builds
       p3.json           your section and your stretch
       tutor/            your tutor
       reviews/          your reviews
@@ -170,7 +171,7 @@ PowerShell works for <code>p3</code> too.</p>
   <li><strong>Python on your PATH</strong>, because the guard that keeps the Guide read-only is a small Python script, and it looks for <code>python3</code>, <code>python</code> or <code>py</code> on your PATH. <code>uv</code> can bring its own Python for <code>p3</code>, so a working <code>uv</code> does not prove that Python is on your PATH.</li>
 </ul>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv --version
 claude --version
 python --version</pre>
@@ -213,7 +214,7 @@ Keep the double quotes around <code>"498E"</code> or <code>"598E"</code>, keep t
 <p><code>p3 check</code> is the command you will run more than any other.
 It reads your whole repo, makes no model call and costs nothing, and prints a checklist of the repo's state: whether the course's fixed files are unchanged, whether your snapshots and runs still match each other, and what is still to do for the hand-in, down to which review still holds a marker.</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 check</pre>
   <pre class="out">p3 check: 498E (C:\...\work\p3-tutor)
 
@@ -270,7 +271,7 @@ The Hand-in count goes up as you work, and at the very end, <code>uv run p3 chec
 <p>Your repo comes with a GitHub Actions workflow called <code>p3-check</code>, which runs the same check on GitHub every time you push.
 Commit what you changed and push it:</p>
 <div class="cmd">
-  <div class="cmd-head">Run in a plain terminal in work/p3-tutor</div>
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">git status
 git add -A
 git commit -m "Set my section in p3.json"
@@ -303,7 +304,7 @@ Open <code>guide/index.html</code> in one of these ways:</p>
   <li>From a terminal in <code>work/p3-tutor</code>, run <code>start guide/index.html</code> on Windows (in Git Bash or PowerShell) or <code>open guide/index.html</code> on macOS.</li>
 </ul>
 <p>Bookmark the page in your browser, so it is one click away for the next three weeks.
-The Guide window reads these same pages from your repo, so when it says "see guide/08-step1-skills.html, under Rounds", that is a page you can open here.</p>
+The Guide window reads these same pages from your repo, so when it says "see <code>guide/08-step1-skills.html</code>, under Rounds", that is a page you can open here.</p>
 
 <h2 id="next">What comes next</h2>
 <p>Run <code>uv run p3 next</code> once now.
