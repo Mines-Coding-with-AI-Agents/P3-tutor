@@ -509,6 +509,14 @@ class PageTests(CompareTestCase):
 
 
 class ServerTests(CompareTestCase):
+    def test_starting_the_server_looks_up_no_host_name(self):
+        """socket.getfqdn is a reverse DNS query, which can take many seconds on a Mac."""
+        app = compare.CompareApp(self.session("teach"))
+        with mock.patch("socket.getfqdn", side_effect=AssertionError("getfqdn was called")):
+            server = compare.make_server(app, 0)
+        server.server_close()
+        self.assertEqual(server.server_port, app.port)
+
     def test_over_http(self):
         app = compare.CompareApp(self.session("teach"))
         server = compare.make_server(app, 0)
@@ -656,34 +664,33 @@ class CommandTests(CompareTestCase):
     def test_server_mode_runs_until_done(self):
         """serve() with no browser: answer every pair over HTTP from another thread, and it returns."""
         s = self.session("teach")
-        started = threading.Event()
         real_make_server = compare.make_server
-        holder = {}
+        workers, errors = [], []
+
+        def answer(app):
+            try:
+                for k in (1, 2):
+                    conn = http.client.HTTPConnection("127.0.0.1", app.port, timeout=10)
+                    conn.request("POST", f"/pair/{k}", body=f"token={app.token}&pair_id={k:03d}&choice=left&reason=Fine.&could_tell=no", headers={"Content-Type": "application/x-www-form-urlencoded"})
+                    conn.getresponse().read()
+                    conn.close()
+            except Exception as exc:  # fail the test, rather than leave serve() waiting for answers forever
+                errors.append(exc)
+                app.finished.set()
 
         def spy(app, port=None):
+            # the server listens once it is made, so the answers can start then, however long that took
             server = real_make_server(app, port)
-            holder["app"] = app
-            started.set()
+            workers.append(threading.Thread(target=answer, args=(app,), daemon=True))
+            workers[-1].start()
             return server
-
-        def answer():
-            started.wait(10)
-            app = holder["app"]
-            for k in (1, 2):
-                conn = http.client.HTTPConnection("127.0.0.1", app.port, timeout=10)
-                conn.request("POST", f"/pair/{k}", body=f"token={app.token}&pair_id={k:03d}&choice=left&reason=Fine.&could_tell=no", headers={"Content-Type": "application/x-www-form-urlencoded"})
-                conn.getresponse().read()
-                conn.close()
-
-        worker = threading.Thread(target=answer, daemon=True)
-        worker.start()
-        import contextlib
-        import io
 
         buf = io.StringIO()
         with mock.patch("p3.compare.make_server", spy), mock.patch("p3.compare.DONE_GRACE_S", 0), contextlib.redirect_stdout(buf):
             code = compare.serve(s, open_browser=False)
-        worker.join(10)
+        for worker in workers:
+            worker.join(10)
+        self.assertEqual(errors, [])
         self.assertEqual(code, 0)
         self.assertIn("All 2 pairs are answered", buf.getvalue())
         self.assertTrue(util.read_json(s.path)["complete"])

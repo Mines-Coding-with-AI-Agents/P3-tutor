@@ -4,7 +4,7 @@ Everything here is standard library and works the same on Windows, macOS and Lin
 Paths inside the repo are always handled as POSIX relative strings ("bench/FORMATS.md"), so a hash or
 a record written on one system matches the same files on another.
 
-Hashing (spec sections 0, 2 and 11):
+Hashing:
 
 - `normalized_bytes(path)`: a text file (one that decodes as UTF-8) with every CRLF turned into LF;
   any other file as it is. Every hash in p3 is computed over these bytes, so a checkout with Windows
@@ -432,7 +432,7 @@ def list_runs(
     return records
 
 
-# ---- the fixed files and p3/bench.sha256 (spec section 11) ----
+# ---- the fixed files and p3/bench.sha256 ----
 
 HASH_FILE_HEADER = """\
 # sha256 of every fixed file: bench/FORMATS.md, bench/scenarios.json, bench/judge/, bench/topics/ and p3/*.py.

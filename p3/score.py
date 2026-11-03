@@ -927,7 +927,7 @@ def pooled_grades(subs: list[dict]) -> dict:
 
 
 def summarize(jobs: dict, cost: dict) -> dict:
-    """The headline numbers of a scored run (spec section 7)."""
+    """The headline numbers of a scored run."""
     teach, quiz, grade, tutor = (jobs.get(j) for j in JOBS)
     s: dict = {}
     if teach:

@@ -16,7 +16,7 @@ the repo cannot be read.
   (with its details) and Read guide/19-troubleshooting.html. A run folder with no run.json that
   changed in the last RUNNING_MINUTES is a bench still running (p3 bench writes run.json when the
   last scenario ends), so it is not a failure here, and Also names it.
-- The map is a fixed list of stages, each a list of items in order (spec section 17); the length
+- The map is a fixed list of stages, each a list of items in order; the length
   study's stage and items are on it only for 598E or the length-study stretch. Now is the first
   stage with an item not done, Next that item's action and Read its guide page and anchor.
 - A long run (a full bench run, from minutes to over an hour with repeats, started in a plain terminal) does not hold

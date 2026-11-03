@@ -1,4 +1,4 @@
-"""Topic folders: loading them and checking that they hang together (spec section 6).
+"""Topic folders: loading them and checking that they hang together.
 
 Shared topics live in bench/topics/<id>/ (fixed and hashed), own topics in bench/own/<id>/ (yours).
 Both have the same shape:
@@ -228,7 +228,7 @@ def _load(folder: Path, rel: str, errors: list[str]):
 
 
 def validate(folder: Path, kind: str | None = None) -> Validation:
-    """Check a topic folder against spec section 6 and list its TODO markers.
+    """Check a topic folder against the shape above and bench/FORMATS.md, and list its TODO markers.
 
     Errors: a missing or unparseable file; duplicate ids; a fact or quiz item whose objective does not
     exist; a teach or quiz objective that does not exist; a graded quiz, key or submission that is

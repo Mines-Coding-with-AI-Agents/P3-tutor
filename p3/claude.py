@@ -133,7 +133,7 @@ def bench_tools(allowed_tools: list[str]) -> list[str]:
 
 
 def bench_command(claude: list[str], prompt: str, max_turns: int, model: str, allowed_tools: list[str]) -> list[str]:
-    """The command line of one bench scenario (spec section 5); allowed_tools is the full list from
+    """The command line of one bench scenario; allowed_tools is the full list from
     bench_tools()."""
     cmd = [
         *claude, "-p", prompt,
@@ -146,13 +146,13 @@ def bench_command(claude: list[str], prompt: str, max_turns: int, model: str, al
         "--model", model,
     ]  # fmt: skip
     if allowed_tools:
-        # One --allowedTools followed by every rule, last on the line, as build-log check 6 ran it.
+        # One --allowedTools followed by every rule, last on the line, since it takes every word after it.
         cmd += ["--allowedTools", *allowed_tools]
     return cmd
 
 
 def score_command(claude: list[str], model: str) -> list[str]:
-    """The command line of one scoring call (spec section 7); the prompt goes on standard input."""
+    """The command line of one scoring call; the prompt goes on standard input."""
     return [
         *claude, "-p",
         "--output-format", "json",
@@ -521,7 +521,7 @@ def _num(value) -> float:
 def usage_totals(result: dict | None) -> tuple[dict, float | None, list[str]]:
     """(tokens, cost_usd_list, models) from a result: tokens {"input", "output", "cache_read",
     "cache_write"} and the list-price cost summed over every model in modelUsage (which counts
-    subagents and web search; build-log check 4), falling back on "usage" and "total_cost_usd"."""
+    subagents and web search, which "usage" leaves out), falling back on "usage" and "total_cost_usd"."""
     tokens = {"input": 0, "output": 0, "cache_read": 0, "cache_write": 0}
     if not isinstance(result, dict):
         return tokens, None, []

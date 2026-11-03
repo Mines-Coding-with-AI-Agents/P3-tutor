@@ -2,9 +2,9 @@
 
 Each test runs the guard the way Claude Code does: as a subprocess (`sys.executable guide_guard.py`)
 with the PreToolUse hook input as JSON on stdin. Exit 0 lets the tool call run; exit 2 blocks it and
-prints one line on stderr that starts with "p3-guide guard:". The tests cover every rule of section
-16.3 both ways, the other tools (Read, Grep, Glob and PowerShell), the protocol (agent types,
-unreadable input), and a regression for each hole the hardening pass closed.
+prints one line on stderr that starts with "p3-guide guard:". The tests cover every rule in the guard's
+docstring both ways, the other tools (Read, Grep, Glob and PowerShell), the protocol (agent types,
+unreadable input), and a regression for each way around the guard that was found and closed.
 """
 
 from __future__ import annotations

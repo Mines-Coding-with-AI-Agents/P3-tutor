@@ -118,7 +118,7 @@ class EnvTests(unittest.TestCase):
             claude.child_env(env)
         self.assertEqual(err.getvalue(), "", "the warning is printed once")
 
-    def test_the_spec_warning_text(self):
+    def test_the_warning_names_only_the_key_that_was_set(self):
         err = io.StringIO()
         with contextlib.redirect_stderr(err):
             claude.child_env({"ANTHROPIC_API_KEY": "sk"})

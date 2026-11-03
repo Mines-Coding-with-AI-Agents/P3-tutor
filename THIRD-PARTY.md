@@ -40,3 +40,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## The guide's fonts
+
+The pages in `guide/` load three typefaces from Google Fonts when you open them: Bitter, Public Sans and IBM Plex Mono.
+All three are under the SIL Open Font License 1.1, and none of their files are in this repo.
+Without a network connection the pages use your system's fonts instead.

@@ -42,6 +42,7 @@ from dataclasses import dataclass, field
 from fractions import Fraction
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from socketserver import TCPServer
 from typing import Callable
 from urllib.parse import parse_qs, quote, unquote, urlsplit
 
@@ -1159,6 +1160,12 @@ class _Server(ThreadingHTTPServer):
     # On Windows SO_REUSEADDR lets a second server take a port that is already in use, so it is off there.
     allow_reuse_address = os.name != "nt"
     daemon_threads = True
+
+    def server_bind(self):
+        """HTTPServer's own server_bind looks up the address's host name (socket.getfqdn), a reverse
+        DNS query that can take many seconds on a Mac; nothing here uses that name, so skip it."""
+        TCPServer.server_bind(self)
+        self.server_name, self.server_port = self.server_address[:2]
 
     def handle_error(self, request, client_address):
         """A browser that drops a connection (leaving a page while its frames load) is normal; say

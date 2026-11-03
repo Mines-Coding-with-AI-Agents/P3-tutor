@@ -22,6 +22,10 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 FAKE_CLAUDE = REPO / "tests" / "fake_claude.py"
+# p3 prints and records resolved paths, and the temporary folder is not always one: Windows gives a
+# long user name's TEMP in its 8.3 short form (C:\Users\RUNNER~1), and on macOS /var/folders is a
+# link into /private/var. The tests work under the resolved folder, so the paths p3 reports compare.
+tempfile.tempdir = str(Path(tempfile.gettempdir()).resolve())
 ENV_KEYS = (
     "P3_ROOT", "P3_CLAUDE", "P3_FAKE_SLEEP", "P3_FAKE_NO_RESULT", "P3_FAKE_LOG", "P3_FAKE_LIMIT_AFTER", "P3_FAKE_PIDFILE", "P3_FAKE_SCENARIO_VERSION",
     "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CONFIG_DIR",

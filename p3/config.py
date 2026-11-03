@@ -11,7 +11,7 @@ interactive session and keeps out of git.
 - Each job (teach, tutor, quiz, grade) starts at /<job> when the config has that skill
   (.claude/skills/<job>/SKILL.md), else at /teach.
 - The tools a run may use without asking are the config's .claude/settings.json permissions.allow,
-  passed to claude with --allowedTools (a fresh folder ignores the project's allow rules; build-log check 6).
+  passed to claude with --allowedTools (in claude -p, a fresh folder ignores the project's allow rules).
 - The model is .claude/settings.json "model", else sonnet.
 """
 

@@ -50,7 +50,7 @@ class HashingTests(TempDir):
         (self.dir / "b.txt").rename(self.dir / "c.txt")
         self.assertNotEqual(h1, util.hash_files(self.dir, ["a.txt", "c.txt"]))
 
-    def test_hash_scheme_matches_the_spec(self):
+    def test_hash_scheme_is_path_nul_content_nul(self):
         import hashlib
 
         write(self.dir / "x" / "a.md", "hi\n")

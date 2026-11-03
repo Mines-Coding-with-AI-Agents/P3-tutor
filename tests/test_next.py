@@ -351,8 +351,8 @@ class BaselineTests(NextTestCase):
 
 
 class AlsoTests(NextTestCase):
-    def test_the_spec_example(self):
-        """Spec section 17's example: the baseline's last run left behind, while step 1 goes on."""
+    def test_the_baseline_run_left_behind_shows_under_also(self):
+        """The baseline's last run left behind, while step 1 goes on."""
         self.baseline(full=2)
         self.preferences()
         write(self.root / reviews.step_file("c1-skills"), step_md("c1-skills", round_md(1), round_md(2, changed=False)))
