@@ -181,6 +181,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); color: var(--accent); line-he
 h1 { font-size: var(--step-3); margin: 0.25rem 0 0; font-weight: 700; letter-spacing: -0.01em; }
 h2 { font-size: var(--step-2); margin-top: 2.6rem; padding-top: 0.6rem; border-top: 1px solid var(--rule); font-weight: 700; }
 h3 { font-size: var(--step-1); margin-top: 1.8rem; font-weight: 700; }
+/* a heading that is one long path, such as tutor/.claude/settings.json, breaks inside the path on a narrow phone instead of widening the page */
+h1, h2, h3, h4 { overflow-wrap: anywhere; }
 h4 { font-size: 1.02rem; margin-top: 1.4rem; font-weight: 700; font-family: var(--font-body); }
 h2 + *, h3 + *, h4 + * { margin-top: 0.6rem; }
 /* ".chapter > * + *" is more specific than a bare h2, so the headings' spacing is repeated here. */
