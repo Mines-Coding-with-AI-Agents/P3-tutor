@@ -104,7 +104,7 @@
     </tr>
     <tr>
       <td><span class="tag tutor">Your tutor</span><br>Start it with <code>claude</code>, in a terminal in <code>work/p3-tutor/tutor</code></td>
-      <td>is the tutor you built, for learning with it: live tries in a major review, and the three learning sessions in <code>final</code></td>
+      <td>is the tutor you built, for learning with it: live tries in a major review, and the learning session in <code>final</code></td>
       <td>building: changes to the tutor go through the Builder, in quick rounds</td>
     </tr>
   </tbody>
@@ -282,7 +282,7 @@ Each of its replies ends with what it changed and at most one next action, usual
 <h3 id="neither-writes-reviews">Neither one writes your reviews</h3>
 <p>Your reviews are the measurement in this project.
 A script can check that a fact is present or that a key agrees with two solvers, but only you can say whether a lesson worked for you, and if an agent wrote those words, the review would measure the agent instead of you.
-So neither window writes, drafts, rewords or tidies your parts: the Run lines, your thoughts, your live tries, every rating and its feedback, the comparisons with the previous step, what the next step should fix, your learning sessions, your test-topic reviews, and each inventory entry's Purpose, Review and Kept in final.
+So neither window writes, drafts, rewords or tidies your parts: the Run lines, your thoughts, your live tries, every rating and its feedback, the comparisons with the previous step, what the next step should fix, your learning session, your test-topic review, and each inventory entry's Purpose, Review and Kept in final.
 The Builder writes only the What changed part of each round, and the inventory's Kind, Step added, and With and without, which you then check.</p>
 <p>You can still get help.
 The Guide can explain what a criterion means, ask you a question that helps you notice something, and show what good evidence looks like.
@@ -410,12 +410,12 @@ The run prints a summary table when it finishes.</p>
 <div class="watch"><span class="label">Watch out</span>
   <p>A terminal inside VS Code ends when you quit VS Code, so keep VS Code open, and your computer awake, until the run prints its summary table.
   If you stop a run halfway, its folder in <code>bench/runs/</code> has no <code>run.json</code>; delete that folder rather than commit it.
-  A run that reaches your usage limit stops by itself and sets that repeat aside; <a href="19-troubleshooting.html">When it breaks</a> says what to do next.</p>
+  A run that reaches your usage limit stops by itself and keeps the scenarios that had finished; after the reset, <code>uv run p3 bench --resume</code> finishes that repeat (<a href="06-the-bench.html#usage-limit">The bench</a> has the details, and <a href="19-troubleshooting.html">When it breaks</a> lists the usual causes).</p>
 </div>
 
 <h2 id="your-tutor">Your tutor's window</h2>
 <p>When you learn with your tutor, as a real learner would, you start Claude Code inside <code>tutor/</code>, where the tutor's own <code>CLAUDE.md</code>, skills and settings are.
-You do this for the live tries of each major review, for the three learning sessions in <code>final</code>, and in a quick round whose thoughts are about the tutor job, when you want to talk to it.</p>
+You do this for the live tries of each major review, for the learning session in <code>final</code>, and in a quick round whose thoughts are about the tutor job, when you want to talk to it.</p>
 <p>In VS Code's Explorer, right-click the <code>tutor</code> folder and choose <strong>Open in Integrated Terminal</strong>, or open a new terminal and type <code>cd tutor</code>.
 Then start Claude Code there:</p>
 <div class="cmd">

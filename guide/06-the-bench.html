@@ -61,7 +61,7 @@
 <h1>The bench: scenarios, scores and cost</h1>
 <p class="lede">The bench runs every config through the same scenarios from the same starting state, scores the outputs with fixed checks, and records what each scenario cost.
 This page follows one run from start to finish: what each scenario does, what every number it prints means and what it cannot tell you, where the files land and how to open them, and what a run costs on your Claude plan.</p>
-<p class="meta">About 30 minutes to read.</p>
+<p class="meta">About 32 minutes to read.</p>
 
 <section class="summary" aria-labelledby="on-this-page">
   <h2 id="on-this-page">On this page</h2>
@@ -73,7 +73,7 @@ This page follows one run from start to finish: what each scenario does, what ev
     <li><a href="#failed-jobs">A job that failed counts against the config</a>, and a timeout is a result.</li>
     <li><a href="#run-folder">What a run leaves behind</a>, and <a href="#open-files">how to open each file</a>.</li>
     <li><a href="#cost">What runs cost</a>: about 1.85 million tokens for a baseline full run in my pilot, several times that with review loops.</li>
-    <li><a href="#usage-limit">A usage limit in the middle of a run</a>: <code>p3 bench</code> stops by itself and sets the repeat aside.</li>
+    <li><a href="#usage-limit">A usage limit in the middle of a run</a>: <code>p3 bench</code> stops by itself, keeps the scenarios that had finished, and <code>uv run p3 bench --resume</code> finishes the repeat.</li>
   </ul>
 </section>
 
@@ -202,7 +202,7 @@ Two ask for the answer to quiz <code>0001</code> q3 or q2, one of them claiming 
 You can read the whole topic in <code>bench/topics/agent-architecture/</code>: <code>topic.json</code> (the objectives, facts and misconceptions), <code>grading.json</code> (the true grades), <code>probes.json</code> (each probe and what it expects) and <code>workspace/</code>.</p>
 
 <div class="watch"><span class="label">Watch out</span>
-<p>You tune your tutor on this topic and only this topic, and your two test topics are the held-out check (<a href="11-test-topics.html">Your two test topics</a>).
+<p>You tune your tutor on this topic and only this topic, and your test topic is the held-out check (<a href="11-test-topics.html">the test topics page</a>).
 The bench is public, so a config that recognizes a bench item by its text and treats it specially gets no credit on that topic, and <code>p3 check</code> warns when a config file holds 40 or more characters copied from the shared topic.
 Write your skills for any learner and any topic, not for these items.</p>
 </div>
@@ -275,7 +275,7 @@ In my baseline runs the lessons came in at a ratio of 0.62 to 0.75, just above t
 <p>The judge is a fixed prompt in <code>bench/judge/</code> (<code>teach.md</code> for lessons and <code>tutor.md</code> for replies) and a pinned model, <code>claude-sonnet-5-5</code>, called with no tools.
 It is used only for what a script cannot check: whether the key facts are present and correct, whether a listed misconception is asserted, the lesson's fit to the learner's level, and whether a tutor reply did what the probe expected.
 It is a model, so it can be wrong in ways that repeat.
-After lecture 24, on Thursday, November 19, you check it against ten labels of your own and report how often you agree, because a judge you have not checked is a number you cannot lean on (<a href="14-write-up.html">The inventory and EVAL.md</a>).</p>
+After lecture 24, on Thursday, November 19, you check it against ten labels of your own and report how often you agree, because a judge you have not checked is a number you cannot lean on (<a href="14-write-up.html">the write-up page</a>).</p>
 
 <h3 id="solvers">The solvers, and what their disagreement means</h3>
 <p>The solvers are two models, <code>claude-sonnet-5-5</code> and <code>claude-haiku-5-5</code>, that answer your quiz without seeing your key.
@@ -305,7 +305,7 @@ Give every <code>short</code> item the other wordings a right answer could take.
 
 <h2 id="headline-numbers">The headline numbers</h2>
 <p>Scoring boils each run down to twelve headline numbers and the cost.
-<code>p3 bench</code> prints them after each run, <code>p3 report</code> puts them in tables for <code>EVAL.md</code>, and the reveal of a blind comparison shows the ones for its job.</p>
+<code>p3 bench</code> prints them after each run, <code>p3 report</code> puts them in tables (and <code>p3 report --write</code> saves them as <code>REPORT.md</code>), and the reveal of a blind comparison shows the ones for its job.</p>
 
 <div class="table-wrap">
 <table>
@@ -341,7 +341,7 @@ Give every <code>short</code> item the other wordings a right answer could take.
 </ul>
 
 <p><code>p3 report</code> shows each number as the mean over a config's scored full runs, with the range in brackets.
-With one full run of a step, there is no range, only that run, which is why <code>EVAL.md</code> asks you which number moved most across your three baseline runs, and what that spread means for a step measured once.</p>
+With one full run of a step, there is no range, only that run, so the spread across your three baseline runs is the best sense you will get of how much a number moves by chance, and of what that means for a step measured once.</p>
 
 <h2 id="failed-jobs">A job that failed counts against the config</h2>
 <p>A scenario that times out, stops on an error, or simply does not write its file still gets scored, and the failure counts against the config.</p>
@@ -485,7 +485,7 @@ A split teach pipeline with three reviewers is the most expensive thing in this 
 <p>How to read it:</p>
 <ul>
   <li><strong>The minutes are summed over a run's scenarios</strong>, which is about how long a run takes with the default <code>--jobs 1</code>.
-  <code>--jobs N</code> runs up to N scenarios of a repeat at once, which saves time but not tokens.
+  <code>--jobs N</code> runs up to N scenarios of a repeat at once, which saves time but not tokens: <code>--jobs 4</code> uses the same tokens in about a third of the time.
   The baseline's three full runs, with their scoring, took about 20 to 25 minutes in my pilot.</li>
   <li><strong>A quick run</strong> of the baseline was 1.1M tokens and about 4 minutes; a quick run of my review-loop config would be about 6 million, nearly all of it the teach scenario.</li>
   <li><strong>The token column grows faster than the dollar column.</strong>
@@ -494,7 +494,9 @@ A split teach pipeline with three reviewers is the most expensive thing in this 
   On your plan, the cost is your usage limit.</li>
   <li><strong>Review loops are not free.</strong>
   They made my teach scenario about 6.7 times as expensive in tokens and 3.5 times as slow, and a split teach pipeline adds more on top.
-  If your <code>final</code> costs about what my review-loop config did, its three runs are about 21 million tokens, and with the ablation and the test topics' runs that puts roughly 45 million tokens into week 3, which is why the pace starts <code>final</code>'s runs first (<a href="17-pace.html">A pace that works</a>).</li>
+  The <code>final</code> runs that students have made so far took about 3 to 7 million tokens and 11 to 27 minutes each, and two runs of 7 million tokens fill one 5-hour usage window on a Pro plan.
+  With a <code>final</code> of about 7 million tokens, its two runs, the ablation on the scenarios the removed component touches, and the test topic's two runs come to roughly 27 million tokens, where version 0.1 needed about 45 million.
+  That is still the heaviest part of the project, which is why the pace starts <code>final</code>'s runs first (<a href="17-pace.html">A pace that works</a>).</li>
 </ul>
 
 <div class="table-wrap">
@@ -502,17 +504,17 @@ A split teach pipeline with three reviewers is the most expensive thing in this 
   <caption>The runs the project needs, from the README.</caption>
   <thead><tr><th>What</th><th>Runs</th></tr></thead>
   <tbody>
-    <tr><td>The ladder, on the shared topic</td><td><code>c0-baseline</code> 3, <code>c1-skills</code> 1, <code>c2-review</code> 1, <code>c3-split</code> 1, <code>final</code> 3, each <code>final-minus-&lt;x&gt;</code> 1: at least 10 full runs</td></tr>
-    <tr><td>The quick rounds</td><td>at least two per step, and at least three in <code>c2-review</code> (one reviewer per round, for teach, quiz and grade), each a quick run or an <code>--only</code> run of <code>--config live</code>: with one new component per round, about 9 for 498E and about 14 for 598E</td></tr>
-    <tr><td>The test topics</td><td><code>c0-baseline</code> and <code>final</code>, once each on both topics: 4 full runs</td></tr>
-    <tr><td>The length study (598E, or the stretch)</td><td>18 teach-only runs</td></tr>
+    <tr><td>The ladder, on the shared topic</td><td><code>c0-baseline</code> 3, <code>c1-skills</code> 1, <code>c2-review</code> 1, <code>c3-split</code> 1, <code>final</code> 2, each <code>final-minus-&lt;x&gt;</code> 1: at least 9 scored runs, and the ablation's may be an <code>--only</code> run of the scenarios its component touches</td></tr>
+    <tr><td>The quick rounds</td><td>at least two per step, and at least three in <code>c2-review</code> (one reviewer per round, for teach, quiz and grade), each a quick run or an <code>--only</code> run of <code>--config live</code>: with one new component per round, about 9 for 498E and about 11 for 598E</td></tr>
+    <tr><td>The test topic</td><td><code>c0-baseline</code> and <code>final</code>, once each on your one test topic: 2 full runs</td></tr>
+    <tr><td>The length study (required for 598E, an optional stretch for 498E)</td><td>8 teach-only runs</td></tr>
   </tbody>
 </table>
 </div>
 
 <div class="watch"><span class="label">Watch out, 598E</span>
-<p>Your architecture is larger than mine: at least eight subagents, where my review-loop config had six and took 7 million tokens per full run.
-A 598E <code>final</code> may well take 10 to 15 million tokens per full run, and you run it three times, on top of the ablation, the test topics and the length study's eighteen teach-only runs.
+<p>Your architecture is at least as large as mine: 598E needs at least six subagents, the number my review-loop config had, and that config took 7 million tokens per full run.
+You run <code>final</code> twice, on top of the ablation, the test topic and the length study's eight teach-only runs.
 Spread what can be spread, check <code>/usage</code> before each big run, and try every new subagent on an <code>--only</code> run before a full one (<a href="16-stretch-and-598e.html#cost-warning">the 598E cost warning</a>).</p>
 </div>
 
@@ -528,31 +530,47 @@ Spread what can be spread, check <code>/usage</code> before each big run, and tr
 <h2 id="usage-limit">A usage limit in the middle of a run</h2>
 <p><code>p3 bench</code> stops at the first scenario that reports a usage limit, a sign-in problem or an API outage.
 It stops every scenario still running and starts no new one, because each of them would fail the same way.
-That repeat says nothing about your tutor, so it is not saved as a run.</p>
+The scenario that was stopped says nothing about your tutor, but the scenarios that had already finished do, so they are kept and you do not pay for them again.</p>
 <ul>
-  <li><strong>The stopped repeat</strong> goes to <code>bench/runs/_live/_aborted/&lt;config&gt;/&lt;run-id&gt;/</code>, which git ignores, without a <code>run.json</code>, so nothing counts it.</li>
+  <li><strong>The stopped repeat</strong> goes to <code>bench/runs/_live/_aborted/&lt;config&gt;/&lt;run-id&gt;/</code>, which git ignores, without a <code>run.json</code>, so nothing counts it yet. The finished scenarios are in it, with a <code>partial.json</code> that records what the repeat was meant to run and what it has.</li>
+  <li><strong>The scenario Claude stopped</strong>, and the ones that had not started, run again from the start when you resume.</li>
   <li><strong>The repeats after it</strong> do not run, and <strong>the repeats before it</strong> are complete and kept.</li>
   <li><strong>If the limit comes while a run is being scored</strong>, the run keeps its <code>run.json</code> with no <code>score.json</code>, and <code>p3 report</code>, <code>p3 compare</code> and <code>p3 check</code> ignore it until you score it.</li>
 </ul>
 <p>The message says all of this.
-Here a limit stopped repeat 2 of a <code>--repeats 3</code> run, and your own paths take the place of the ones in angle brackets:</p>
+Here a limit stopped repeat 2 of a <code>--repeats 3</code> run after 6 of its 10 scenarios had finished, and your own ids and paths take the place of the ones in angle brackets:</p>
 <pre><code>p3 bench: Claude stopped working in scenario &lt;id&gt;: &lt;Claude Code's own words&gt;.
-Nothing in repeat 2 measures your tutor, so it was not saved as a run: its files are set aside in bench/runs/_live/_aborted/&lt;config&gt;/&lt;run-id&gt;, which git ignores.
-Repeat 3 did not run.
+6 of 10 scenarios in repeat 2 had finished. They are kept in bench/runs/_live/_aborted/&lt;config&gt;/&lt;run-id&gt;, which git ignores.
+Scenario &lt;id&gt; was the one Claude stopped, and it will run again from the start, together with the 3 scenarios that had not started.
 The repeats before it are complete and kept: bench/runs/&lt;config&gt;/&lt;run-id&gt;.
-Wait until Claude works again (for a usage limit, /usage in Claude Code shows when it resets; for a sign-in problem, run claude once and sign in), then run the bench again.</code></pre>
+Repeat 3 did not run. To run it once repeat 2 is finished, type: uv run p3 bench --config &lt;config&gt; --repeats 1
+Wait until Claude works again (for a usage limit, /usage in Claude Code shows when it resets; for a sign-in problem, run claude once and sign in).
+Then type this to finish repeat 2 without running the finished scenarios again: uv run p3 bench --resume</code></pre>
 <p>What to do:</p>
 <ol class="steps">
   <li><p><strong>Wait for the reset.</strong> <code>/usage</code> in a Claude Code window shows when it comes.
-  In the meantime, do the work that needs no Claude: your test topics, your reviews of runs you already have, the blind comparison once its runs exist, and the write-up.</p></li>
-  <li><p><strong>Run only what is missing.</strong>
-  If you asked for <code>--repeats 3</code> and repeat 2 was stopped, repeat 1 is kept, so the command for the rest is <code>--repeats 2</code>; <code>uv run p3 next</code> and <code>uv run p3 check</code> both count your scored full runs for you.</p></li>
+  In the meantime, do the work that needs no Claude: your test topic, your reviews of runs you already have, the blind comparison once its runs exist, and the write-up.</p></li>
+  <li><p><strong>Finish the stopped repeat</strong>, in a plain terminal in <code>work/p3-tutor</code>:</p>
+  <div class="cmd">
+    <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
+    <pre class="in">uv run p3 bench --resume</pre>
+  </div>
+  <p>It runs only the scenarios that are missing, takes the options of the stopped repeat (the config, the topic, the lesson length, <code>--quick</code> and <code>--only</code>) from the repeat itself, and saves one run in the normal place, with the same run id, the scenarios in their usual order, and a note of when it was resumed, and then scores it like any other run.
+  If you have several stopped repeats it lists them, each with its own command, such as <code>uv run p3 bench --resume &lt;run-id&gt; --config &lt;config&gt;</code>.
+  If another limit stops the resume, the repeat is set aside again and you resume it again.</p></li>
+  <li><p><strong>Then run what never started.</strong>
+  The message also gives the command for the repeats after the stopped one, such as the one with <code>--repeats 1</code> above, and <code>uv run p3 next</code> and <code>uv run p3 check</code> both count your scored full runs for you.</p></li>
   <li><p><strong>Score a run that was stopped while scoring</strong>, once Claude works again:</p>
   <div class="cmd">
     <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
     <pre class="in">uv run p3 score bench/runs/&lt;config&gt;/&lt;run-id&gt;</pre>
   </div></li>
 </ol>
+<div class="watch"><span class="label">Watch out</span>
+<p>Do not change <code>tutor/</code> or a snapshot, the topic or <code>p3</code> itself between the stop and the resume.
+<code>--resume</code> refuses when the config, the topic or the p3 version is no longer the stopped repeat's, because finishing it would mix two tutors, or two sets of items, in one run; its message then tells you to delete the folder and run the bench again, and that repeat starts from scratch.
+A repeat that version 0.1 set aside has no <code>partial.json</code> and cannot be resumed, so delete it and run again.</p>
+</div>
 
 <div class="fail"><span class="label">If a run stops for another reason</span>
 <p>A run that stops partway, because you pressed Ctrl-C or its terminal closed, leaves a folder without <code>run.json</code>.
