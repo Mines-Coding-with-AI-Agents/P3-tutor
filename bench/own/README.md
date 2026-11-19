@@ -1,17 +1,18 @@
-# Your test topics
+# Your test topic
 
-This folder holds your two test topics: one from another Mines course you have taken, and one life skill.
-They are the held-out check on your tutor.
-You tune the tutor on the shared agent-architecture topic only, then freeze `final` and run it and `c0-baseline` once each on both of these topics, to see whether the architecture still pays off where you never tuned it.
-You review the two configs' outputs on each topic openly, in `reviews/final.md`, and not blind.
-You also hold your three real learning sessions with `final` on one of these topics.
+This folder holds your test topic: one from another Mines course you have taken, or a life skill, whichever you know better.
+It is the held-out check on your tutor.
+You tune the tutor on the shared agent-architecture topic only, then freeze `final` and run it and `c0-baseline` once each on this topic, to see whether the architecture still pays off where you never tuned it.
+You review the two configs' outputs on it openly, in `reviews/final.md`, and not blind.
+You also hold your real learning session with `final` on a test topic.
+A second complete test topic is extra work that earns bonus points as the Canvas discussion says, and nothing here requires it.
 
 You write these topics yourself, so your knowledge is the ground truth, not the model's.
 Pick topics you know well enough to grade a learner's answers with confidence.
-Your learning sessions on one of them need something you do not know yet, and "Your learning sessions on one of these topics" below says how to have both.
+Your learning session on a test topic needs something you do not know yet, and "Your learning session on a test topic" below says how to have both.
 The agent can help with the file formats and can draft wording for you to check, but the facts, the true grades and the expected behaviors are your decisions.
 
-When you hand in, this folder holds exactly two topic folders, each in the same shape as `bench/topics/agent-architecture/`, which is the worked example to read first.
+When you hand in, this folder holds at least one complete topic folder, in the same shape as `bench/topics/agent-architecture/`, which is the worked example to read first.
 
 ---
 
@@ -81,12 +82,12 @@ Mirror the shared topic's shape, because it was built so each scenario has somet
 
 The learner can be you, as you were before you learned what your items cover.
 
-### Your learning sessions on one of these topics
+### Your learning session on a test topic
 
-Your three real learning sessions with `final` are on one of these two topics, and they need something you do not know yet, while the items here need what you know well enough to grade.
-So write the items on the part of the topic you know, and in the sessions learn a part you do not: for the topic from another Mines course, the next unit after the one your items cover, or a harder corner of it; for the life skill, the part you are still working on.
-Choose the session topic with that in mind, and keep the items to what you can grade.
-The bench's `workspace/` is the bench learner's, and `reviews/README.md` ("The learning sessions") says how to set up the tutor's own learner files for your sessions; never copy this topic's `keys/` or `submissions/` into `tutor/`.
+Your real learning session with `final` is on a test topic, and it needs something you do not know yet, while the items here need what you know well enough to grade.
+So write the items on the part of the topic you know, and in the session learn a part you do not: for the topic from another Mines course, the next unit after the one your items cover, or a harder corner of it; for the life skill, the part you are still working on.
+Choose the session's topic with that in mind, and keep the items to what you can grade.
+The bench's `workspace/` is the bench learner's, and `reviews/README.md` ("The learning sessions") says how to set up the tutor's own learner files for your session; never copy this topic's `keys/` or `submissions/` into `tutor/`.
 
 ---
 
@@ -105,7 +106,7 @@ If you find a real mistake after the runs, such as a true grade you got wrong, t
 2. Delete that topic's earlier run folders under `bench/runs/`.
    `p3 check --final` fails on a run made from the topic as it was, so none may stay.
 3. Run `c0-baseline` and `final` again on the fixed topic, and write its review in `reviews/final.md` again from the new runs.
-4. In `EVAL.md` section 9, list the run ids you deleted, what you changed in the topic, and why.
+4. In your answer to prompt 7 of `DECISIONS.md`, list the run ids you deleted, what you changed in the topic, and why.
 
 A topic is not fixed because a result looked bad, only because an item was wrong.
 
@@ -118,5 +119,5 @@ A topic is not fixed because a result looked bad, only because an item was wrong
 - **On the life-skill topic, no individualized financial, medical or legal advice**, from your items or from your tutor.
   General knowledge is fine; a decision about one person's money, health or legal situation is not the tutor's to make.
 - **Keep personal details out**, including in `MISSION.md` and `NOTES.md`.
-- **Exactly two topics at the end.**
-  Delete any trial topic folders before you run `uv run p3 check --final`.
+- **One complete topic is needed at the end, and a second is extra work.**
+  Delete any trial topic folders you do not mean to finish before you run `uv run p3 check --final`; once one topic is complete, an unfinished one only draws a warning.

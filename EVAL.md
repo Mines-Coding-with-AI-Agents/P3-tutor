@@ -1,5 +1,8 @@
 # Evaluation report
 
+Since version 0.2 the write-up of the project is `DECISIONS.md`, and this file is no longer needed.
+What you already wrote here still counts, and a prompt in `DECISIONS.md` may point to a section of it.
+
 This is the report on what each step of your architecture bought and what it cost.
 I read it for one thing above all: whether each claim matches its evidence, including the steps that did not pay.
 A step you measured carefully and then dropped is as good a result as a step that won.

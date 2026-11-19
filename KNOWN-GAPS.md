@@ -2,7 +2,7 @@
 
 These are the failures I saw when I ran the baseline, `c0-baseline`, on the bench before release: three full runs and one quick run on the shared topic, with Claude Code 2.1.314 and Sonnet, on November 1.
 They are starting points, not a checklist.
-Your own three baseline runs will show the same kinds of failure, and you should cite your runs, not mine, when you write about them in `EVAL.md`.
+Your own three baseline runs will show the same kinds of failure, and you should cite your runs, not mine, when you write about them in `DECISIONS.md`.
 
 ## Where the baseline fell short
 
