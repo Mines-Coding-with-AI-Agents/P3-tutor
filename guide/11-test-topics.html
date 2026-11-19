@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Your two test topics - P3 Guide</title>
+<title>Your test topic - P3 Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
@@ -58,46 +58,46 @@
 <article class="chapter">
 
 <p class="eyebrow">Part III · The ladder</p>
-<h1>Your two test topics</h1>
-<p class="lede">Two small topics you write yourself, one from another Mines course you have taken and one life skill, which your tutor never sees while you tune it. This page covers choosing them, writing each file, checking and committing them, and what happens to them once <code>final</code> is frozen.</p>
+<h1>Your test topic</h1>
+<p class="lede">A small topic you write yourself, from another Mines course you have taken or a life skill, which your tutor never sees while you tune it. This page covers choosing it, writing each file, checking and committing it, and what happens to it once <code>final</code> is frozen. A second topic is extra work, and the page says where it fits.</p>
 <p class="meta">About 26 minutes to read.</p>
 
 <section class="path" aria-labelledby="short-path">
   <h2 id="short-path">The short path</h2>
   <dl>
     <dt>Why</dt>
-    <dd><p>You tune your tutor on the shared topic only, so its numbers there show your tuning as much as your architecture. Two topics it was never tuned on show whether <code>final</code> still beats <code>c0-baseline</code> where you could not shape the result, and committing them before any run is how you show you did not.</p></dd>
+    <dd><p>You tune your tutor on the shared topic only, so its numbers there show your tuning as much as your architecture. A topic it was never tuned on shows whether <code>final</code> still beats <code>c0-baseline</code> where you could not shape the result, and committing it before any run is how you show you did not.</p></dd>
     <dt>Do</dt>
     <dd><ol>
-      <li>In the <span class="tag builder">Builder</span> or a <span class="tag plain">Plain terminal</span>: <code>uv run p3 new-topic &lt;id&gt;</code>, once for each topic.</li>
+      <li>In the <span class="tag builder">Builder</span> or a <span class="tag plain">Plain terminal</span>: <code>uv run p3 new-topic &lt;id&gt;</code>.</li>
       <li>In the editor: replace every <code>TODO</code> in <code>bench/own/&lt;id&gt;/</code> with items you write yourself, and run <code>uv run p3 check</code> in the <span class="tag builder">Builder</span> or a <span class="tag plain">Plain terminal</span> until the topic has no problem and no <code>TODO</code> left.</li>
-      <li>In a <span class="tag plain">Plain terminal</span>: commit and push both topic folders, before anything runs on them.</li>
+      <li>In a <span class="tag plain">Plain terminal</span>: commit and push the topic folder, before anything runs on it.</li>
     </ol></dd>
     <dt>Done when</dt>
-    <dd><p><code>uv run p3 check</code> prints <code>OK    bench/own/&lt;id&gt;/ is a valid test topic</code> for both, <code>git status</code> shows nothing under <code>bench/own/</code>, and <code>uv run p3 next</code> lists 8 Test topics under Done.</p></dd>
+    <dd><p><code>uv run p3 check</code> prints <code>OK    bench/own/&lt;id&gt;/ is a valid test topic</code>, <code>git status</code> shows nothing under <code>bench/own/</code>, and <code>uv run p3 next</code> lists 8 Test topic under Done.</p></dd>
     <dt>Then</dt>
-    <dd><p>Go on with your step, or with <a href="12-final.html">final</a>, where both topics are run once <code>final</code> is frozen. The Guide can tell you which.</p></dd>
+    <dd><p>Go on with your step, or with <a href="12-final.html">final</a>, where the topic is run once <code>final</code> is frozen. The Guide can tell you which.</p></dd>
   </dl>
 </section>
 
 <h2 id="why">Why the project has test topics</h2>
 <p>All through the ladder you tune your tutor on one topic, agent architecture. You read its lessons, its quizzes and its feedback on that topic, you write reviews about them, and the Builder changes your skills and subagents from what you wrote. That is how a tutor should be built, and it has a cost: by the time you reach <code>final</code>, your tutor has been shaped around one topic and one learner. Some of what looks like a better architecture might only be a better fit to agent architecture.</p>
-<p>A test topic is <strong>held out</strong>: you never tune on it. When <code>final</code> is frozen, you run <code>c0-baseline</code> and <code>final</code> once each on both of your test topics, and you look at whether the architecture still pays off on statics or on cooking, where you never tuned it. If <code>final</code> wins there as it won on the shared topic, the win is more likely to be the architecture's. If it does not, that is a finding too, and <code>EVAL.md</code> section 9 asks you about it.</p>
-<p>You write both topics yourself, so your knowledge is the ground truth, not the model's. That is the same reason I wrote the shared topic myself: a test whose answers come from the model you are testing cannot catch that model's mistakes.</p>
-<div class="why"><span class="label">Why two topics of two kinds</span>
-<p>A topic from a Mines course is technical knowledge with right and wrong answers, close to what the shared topic asks of your tutor. A life skill is practical and personal, and it tests something the shared topic cannot: whether your tutor stays inside general knowledge when a learner asks about their own money, health or legal situation. Between them they show whether your tutor's gains travel to a topic like the one you tuned on and to one quite unlike it.</p>
+<p>A test topic is <strong>held out</strong>: you never tune on it. When <code>final</code> is frozen, you run <code>c0-baseline</code> and <code>final</code> once each on your test topic, and you look at whether the architecture still pays off on statics or on cooking, where you never tuned it. If <code>final</code> wins there as it won on the shared topic, the win is more likely to be the architecture's. If it does not, that is a finding too, and prompt 7 of <code>DECISIONS.md</code> asks you about it.</p>
+<p>You write the topic yourself, so your knowledge is the ground truth, not the model's. That is the same reason I wrote the shared topic myself: a test whose answers come from the model you are testing cannot catch that model's mistakes.</p>
+<div class="why"><span class="label">Why either kind works</span>
+<p>A topic from a Mines course is technical knowledge with right and wrong answers, close to what the shared topic asks of your tutor, so it shows whether your tutor's gains travel to a similar topic. A life skill is practical and personal, and it tests something the shared topic cannot: whether your tutor stays inside general knowledge when a learner asks about their own money, health or legal situation. One topic is enough for the project. If you write a second, one of each kind shows both.</p>
 </div>
 
-<h2 id="choosing">Choosing your two topics</h2>
-<p>You need exactly two at the end: one from another Mines course you have taken, and one life skill.</p>
+<h2 id="choosing">Choosing your topic</h2>
+<p>You need one: a topic from another Mines course you have taken, or a life skill. A second topic, complete with its items committed, its runs and its review, is extra work that earns bonus points as the Canvas discussion says, and nothing here needs it for full marks.</p>
 <ul>
-  <li><strong>Pick what you know well enough to grade.</strong> You write the true grade of every learner answer in the topic, and those grades are what your tutor's grades are scored against. A topic you half know gives you grades you cannot defend. Statics, a unit of circuits or of thermodynamics you did well in, or a programming topic from a course you took and have used for years since, all work for the course topic; cooking, budgeting, first aid, bike repair or anything you have real practice in all work for the life skill.</li>
+  <li><strong>Pick what you know well enough to grade.</strong> You write the true grade of every learner answer in the topic, and those grades are what your tutor's grades are scored against. A topic you half know gives you grades you cannot defend. Statics, a unit of circuits or of thermodynamics you did well in, or a programming topic from a course you took and have used for years since, all work for a course topic; cooking, budgeting, first aid, bike repair or anything you have real practice in all work for a life skill.</li>
   <li><strong>Keep it small.</strong> A test topic is one learner, three to five objectives and one short quiz they already took. A single unit of a course is plenty; a whole course is too much to write and too much to grade.</li>
   <li><strong>Write it in your own words.</strong> Your repo is public, so never copy a course's slides, homework, exam questions or solutions into it, even reworded a little. Write items from what you know, the way you would explain it to a friend.</li>
-  <li><strong>On the life skill, no individualized financial, medical or legal advice.</strong> Your tutor may teach the general knowledge of a topic like budgeting or first aid, and it must not tell a learner what to do with their own money, health or legal situation. Your items must not do it either, and one of your probes tests exactly that ("Probes" below shows one).</li>
-  <li><strong>Think about your learning sessions now.</strong> Your three real learning sessions with <code>final</code> happen on one of these two topics, and they need something you do not know yet, while the items need what you know well. "Which topic for your learning sessions" below says how to have both.</li>
+  <li><strong>On a life skill, no individualized financial, medical or legal advice.</strong> Your tutor may teach the general knowledge of a topic like budgeting or first aid, and it must not tell a learner what to do with their own money, health or legal situation. Your items must not do it either, and one of your probes tests exactly that ("Probes" below shows one).</li>
+  <li><strong>Think about your learning session now.</strong> Your real learning session with <code>final</code> happens on a test topic, and it needs something you do not know yet, while the items need what you know well. "Which topic for your learning session" below says how to have both.</li>
 </ul>
-<p>Each topic has an <strong>id</strong>: a short name in lowercase letters, digits and hyphens, such as <code>statics-trusses</code> or <code>knife-skills</code>. The id becomes the folder name, it is what you pass to <code>--topic</code>, and your learning sessions' Topic lines start with it.</p>
+<p>Each topic has an <strong>id</strong>: a short name in lowercase letters, digits and hyphens, such as <code>statics-trusses</code> or <code>knife-skills</code>. The id becomes the folder name, it is what you pass to <code>--topic</code>, and your learning session's Topic line starts with it.</p>
 <p>The examples on this page use two made-up topics, <code>statics-trusses</code> and <code>budgeting-basics</code>. They are examples only; yours should come from what you know.</p>
 
 <h2 id="new-topic">Make the skeleton</h2>
@@ -238,7 +238,7 @@ keys/0001.json
   <li>a misconception stated as fact;</li>
   <li>a question built on a false premise;</li>
   <li>a question far above the learner's level;</li>
-  <li>on the life-skill topic, a request for individualized financial, medical or legal advice.</li>
+  <li>on a life-skill topic, a request for individualized financial, medical or legal advice.</li>
 </ul>
 <p>Write <code>expected</code> concretely enough that the judge can decide whether a reply met it: "corrects the premise before answering, and does not give the answer to q3", and never "responds helpfully". The shared topic's <code>probes.json</code> shows how far that can go: its first probe's <code>expected</code> lists what the reply must do and what makes it not met.</p>
 <p>The leak check searches the reply for the key's answer: for an <code>mcq</code> item, the correct option's text (when it is at least 12 characters) or a phrase that names its letter as the answer, such as "option b"; for a <code>numeric</code> item, the number; for a <code>short</code> item, the answer or an accepted form. So point the leak check at an item whose answer is distinctive, such as an <code>mcq</code> item with a full-sentence option, rather than a numeric item whose answer is 2. And because a tutor can narrow an item down without naming its answer, as <code>KNOWN-GAPS.md</code> says the baseline did, write the <code>expected</code> of a leak probe so that it also rules out hints that point at one option.</p>
@@ -296,7 +296,7 @@ git commit -m "Test topic statics-trusses"
 git push
 git status</pre>
 </div>
-<p>The last <code>git status</code> should show nothing under <code>bench/own/statics-trusses/</code>. The Builder can make the commit for you if you ask it to. Then note the commit, because <code>EVAL.md</code> section 9 asks for the commit in which you committed each topic's items:</p>
+<p>The last <code>git status</code> should show nothing under <code>bench/own/statics-trusses/</code>. The Builder can make the commit for you if you ask it to. Git's history then shows the commit that holds the items, which is your record that you wrote them before any run:</p>
 <div class="cmd">
   <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">git log --oneline -- bench/own/statics-trusses</pre>
@@ -312,33 +312,33 @@ git status</pre>
   <li><p><strong>Fix the topic and commit the fix.</strong></p></li>
   <li><p><strong>Delete that topic's earlier run folders under <code>bench/runs/</code></strong>, for both configs. <code>p3 check --final</code> fails on a run made from the topic as it was, so none may stay.</p></li>
   <li><p><strong>Run <code>c0-baseline</code> and <code>final</code> again on the fixed topic</strong>, and write its review in <code>reviews/final.md</code> again from the new runs.</p></li>
-  <li><p><strong>In <code>EVAL.md</code> section 9, list the run ids you deleted</strong>, what you changed in the topic, and why.</p></li>
+  <li><p><strong>In prompt 7 of <code>DECISIONS.md</code>, say which run ids you deleted</strong>, what you changed in the topic, and why.</p></li>
 </ol>
 <p>A topic is never fixed because a result looked bad, only because an item was wrong. If you are unsure which it is, ask me before you change anything; the cost of the procedure is two more runs, and the cost of fixing a topic for the wrong reason is a test you shaped.</p>
 
-<h2 id="session-topic">Which topic for your learning sessions</h2>
-<p>In <code>final</code> you hold three real learning sessions with your tutor, all on one of these two topics, and they are the live tries of <code>final</code>'s major review. The two needs differ: the items need what you know well enough to grade, and a real session needs something you do not know yet.</p>
-<p>So write the items on the part of the topic you know, and in the sessions learn a part you do not.</p>
+<h2 id="session-topic">Which topic for your learning session</h2>
+<p>In <code>final</code> you hold one real learning session with your tutor, on a test topic, and it is the live try of <code>final</code>'s major review. The two needs differ: the items need what you know well enough to grade, and a real session needs something you do not know yet.</p>
+<p>So write the items on the part of the topic you know, and in the session learn a part you do not.</p>
 <ul>
-  <li>For the topic from another Mines course: the next unit after the one your items cover, or a harder corner of it. If your items cover the method of joints, the sessions could be on frames and machines.</li>
-  <li>For the life skill: the part you are still working on. If your items cover building a monthly budget, the sessions could be on reading a pay stub, or on how credit scores work in general.</li>
+  <li>For the topic from another Mines course: the next unit after the one your items cover, or a harder corner of it. If your items cover the method of joints, the session could be on frames and machines.</li>
+  <li>For the life skill: the part you are still working on. If your items cover building a monthly budget, the session could be on reading a pay stub, or on how credit scores work in general.</li>
 </ul>
-<p>Choose the one you would really like to learn more of, since that is where you find out whether the tutor works for you. The sessions stay on that test topic, so each session's Topic line in <code>reviews/final.md</code> starts with the topic's id, such as <code><span class="nw">statics-trusses,</span> frames and machines</code>, and all three must name the same topic.</p>
-<p>The bench's <code>workspace/</code> is the bench learner's. For your sessions the tutor keeps learner files of your own in <code>tutor/</code>, and you may start from copies of this topic's <code>MISSION.md</code> and <code>NOTES.md</code>, edited to say where you really start. Never copy the topic's <code>keys/</code> or <code>submissions/</code> into <code>tutor/</code>, because they hold the bench's answers. <a href="12-final.html#learning-sessions">The learning sessions</a> on the <code>final</code> page say how to run them.</p>
+<p>Choose the part you would really like to learn more of, since that is where you find out whether the tutor works for you. The session stays on a test topic, so its Topic line in <code>reviews/final.md</code> starts with the topic's id, such as <code><span class="nw">statics-trusses,</span> frames and machines</code>.</p>
+<p>The bench's <code>workspace/</code> is the bench learner's. For your session the tutor keeps learner files of your own in <code>tutor/</code>, and you may start from copies of this topic's <code>MISSION.md</code> and <code>NOTES.md</code>, edited to say where you really start. Never copy the topic's <code>keys/</code> or <code>submissions/</code> into <code>tutor/</code>, because they hold the bench's answers. <a href="12-final.html#learning-sessions">The learning session</a> on the <code>final</code> page says how to run it.</p>
 
 <h2 id="runs">When the runs happen</h2>
-<p>Nothing runs on a test topic until <code>final</code> is frozen. Then you run <code>c0-baseline</code> and <code>final</code> once each on both topics, four full runs in all, in a plain terminal with <code>--topic &lt;id&gt;</code>. <a href="12-final.html#test-topic-runs">The test topics' runs</a> has the commands and when to start them. There are no blind comparisons on the test topics; you review them openly, as the next section says.</p>
-<p>That leaves you free to write the items whenever suits you. My pace has you write and commit them in week 2, alongside the review loops and the split, so they are ready the moment <code>final</code> is. Writing the items takes about 1.75 hours for each topic.</p>
+<p>Nothing runs on a test topic until <code>final</code> is frozen. Then you run <code>c0-baseline</code> and <code>final</code> once each on the topic, two full runs in all, in a plain terminal with <code>--topic &lt;id&gt;</code>. <a href="12-final.html#test-topic-runs">The test topic's runs</a> has the commands and when to start them. There are no blind comparisons on the test topics; you review them openly, as the next section says.</p>
+<p>That leaves you free to write the items whenever suits you. My pace has you write and commit them alongside the review loops and the split, so they are ready the moment <code>final</code> is. Writing the items takes about 1.75 hours.</p>
 
-<h2 id="open-review">The open review of each topic</h2>
-<p>Once both runs on a topic are done, you review the two configs openly: you read both outputs side by side, knowing which config made which, and that is fine here, because you are judging whether a gain held up and not your own bias. It takes about 45 minutes for each topic.</p>
-<p>The review goes in <code>reviews/final.md</code>, at the end, under <code>## Test topics</code>, in the section headed with the topic's id. The template ships two headings, <code>### TODO: your first test topic's id</code> and <code>### TODO: your second test topic's id</code>; change each to an id, such as <code>### statics-trusses</code>, because <code>p3 check</code> finds the reviews by those headings. Write it in the editor, in your own words, never in a chat for an agent to write.</p>
-<p>For each topic, a short review:</p>
+<h2 id="open-review">The open review of your topic</h2>
+<p>Once both runs on the topic are done, you review the two configs openly: you read both outputs side by side, knowing which config made which, and that is fine here, because you are judging whether a gain held up and not your own bias. It takes about 30 minutes.</p>
+<p>The review goes in <code>reviews/final.md</code>, at the end, under <code>## Test topics</code>, in the section headed with the topic's id. The template ships two headings, <code>### TODO: your first test topic's id</code> and <code>### TODO: your second test topic's id</code>; change one to your topic's id, such as <code>### statics-trusses</code>, because <code>p3 check</code> finds the review by that heading. The other may stay as it is: a placeholder heading left from the template is not a problem once one review is complete, and you use it only if you write a second topic. Write it in the editor, in your own words, never in a chat for an agent to write.</p>
+<p>A short review:</p>
 <ul>
   <li>for each job, which config did better and why, with evidence from both runs, naming the run ids;</li>
   <li>whether <code>final</code> won where it won on the shared topic;</li>
   <li>whether it failed somewhere new;</li>
-  <li>on the life-skill topic, what each config did with the probe that asks for personal advice.</li>
+  <li>on a life-skill topic, what each config did with the probe that asks for personal advice.</li>
 </ul>
 <div class="student"><span class="label">Example: the start of a test-topic review, in a student's words</span>
 <pre><code>### statics-trusses
@@ -351,13 +351,13 @@ Grade: no difference; both graded s1 q1 wrong with M2, as my true grade says.
 Tutor: final failed somewhere new.
 On p03 it answered as if the method only worked on symmetric trusses, and corrected that premise only at the end.</code></pre>
 </div>
-<p><code>EVAL.md</code> section 9 then asks you to sum the review up and set it beside the shared topic; <a href="14-write-up.html">The inventory and EVAL.md</a> covers that.</p>
+<p>Prompt 7 of <code>DECISIONS.md</code> then asks you to sum the review up and set it beside the shared topic; <a href="14-write-up.html">The inventory and DECISIONS.md</a> covers that.</p>
 
 <h2 id="rules">The rules, in one place</h2>
 <ul>
-  <li><strong>Exactly two topics at the end.</strong> Delete any trial topic folders before you run <code>uv run p3 check --final</code>.</li>
+  <li><strong>One topic is needed, and a second is extra.</strong> A second topic that is not finished only draws a warning from <code>uv run p3 check</code>, so finish it or delete its folder.</li>
   <li><strong>Your own words.</strong> No course's slides, homework or solutions in your public repo.</li>
-  <li><strong>No individualized financial, medical or legal advice</strong> on the life-skill topic, from your items or from your tutor.</li>
+  <li><strong>No individualized financial, medical or legal advice</strong> on a life-skill topic, from your items or from your tutor.</li>
   <li><strong>Keep personal details out</strong>, including in <code>MISSION.md</code> and <code>NOTES.md</code>.</li>
   <li><strong>Commit before the first run, and never change a topic after its runs</strong>, except by the procedure in "Fixing a real mistake".</li>
   <li><strong>Never tune on a test topic.</strong> Your quick rounds and your changes to the tutor are on the shared topic only, because the test topics are the held-out check.</li>
@@ -367,7 +367,7 @@ On p03 it answered as if the method only worked on symmetric trusses, and correc
 <p><a href="19-troubleshooting.html">When it breaks</a> has the symptoms and fixes, including a topic the bench refuses and a file in the wrong encoding. If you are not sure whether a topic you have in mind fits the rules, ask the Guide, or ask me in office hours (Tuesday and Thursday, 9 to 10 am and 2 to 3 pm, CTLM 246L).</p>
 <div class="say guide">
   <div class="say-head">Say to the Guide</div>
-  <pre>I want to use statics-trusses and budgeting-basics as my test topics. Do they fit the rules, and which part of each should my items cover?</pre>
+  <pre>I want to use statics-trusses as my test topic. Does it fit the rules, and which part of it should my items cover?</pre>
   <p>The Guide explains the rules and asks questions that help you decide; it does not write items for you.</p>
 </div>
 
