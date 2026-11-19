@@ -553,9 +553,10 @@ def _later_command(config_name: str, remaining: int, args, topic_id: str, minute
     return " ".join(parts)
 
 
-def _resume_command(root: Path, run_id: str) -> str:
-    """`uv run p3 bench --resume`, with the run id when more than one partial repeat is waiting."""
-    return "uv run p3 bench --resume" + (f" {run_id}" if len(pending_resumes(root)) > 1 else "")
+def _resume_command(root: Path, run_id: str, config_name: str) -> str:
+    """`uv run p3 bench --resume`, with the run id and its config when more than one partial repeat
+    is waiting (two configs may hold a repeat of the same run id, started in the same second)."""
+    return "uv run p3 bench --resume" + (f" {run_id} --config {config_name}" if len(pending_resumes(root)) > 1 else "")
 
 
 def _stop_message(exc: claude.InfraError, root: Path, aside: Path, record: dict, ids: list[str], done: int, repeats: int, previous: list[Path], later: str | None) -> str:
@@ -577,7 +578,7 @@ def _stop_message(exc: claude.InfraError, root: Path, aside: Path, record: dict,
         n = _not_run(k, repeats)
         lines.append(f"{n.capitalize()} did not run. To run {'it' if n == f'repeat {repeats}' else 'them'} once repeat {k} is finished, type: {later}")
     lines.append("Wait until Claude works again (for a usage limit, /usage in Claude Code shows when it resets; for a sign-in problem, run claude once and sign in).")
-    lines.append(f"Then type this to finish repeat {k} without running the finished scenarios again: {_resume_command(root, record['run_id'])}")
+    lines.append(f"Then type this to finish repeat {k} without running the finished scenarios again: {_resume_command(root, record['run_id'], record['config'])}")
     return "\n".join(lines)
 
 
@@ -695,12 +696,13 @@ def _pick_partial(root: Path, wanted: str, config_name: str | None) -> dict:
     if wanted:
         pending = [p for p in pending if p["run_id"] == wanted]
         if not pending:
-            raise P3Error(f"there is no stopped repeat {wanted} to resume; `uv run p3 bench --resume` lists the ones that are waiting")
+            which = f"{wanted} of {config_name}" if config_name else wanted
+            raise P3Error(f"there is no stopped repeat {which} to resume; `uv run p3 bench --resume` lists the ones that are waiting")
     if not pending:
         raise P3Error(f"there is no stopped repeat to resume (none under {ABORTED_DIR}/ has a {PARTIAL_FILE}); start the bench with `uv run p3 bench --config <name>`")
     if len(pending) > 1:
-        lines = [f"{len(pending)} stopped repeats are waiting; say which one to finish with `uv run p3 bench --resume <run-id>`:"]
-        lines += [f"  {p['run_id']}  config {p['config']}, {_plural(p['done'], 'scenario')} done, {p['missing']} missing" for p in pending]
+        lines = [f"{len(pending)} stopped repeats are waiting; finish one of them with its command:"]
+        lines += [f"  uv run p3 bench --resume {p['run_id']} --config {p['config']}   ({_plural(p['done'], 'scenario')} done, {p['missing']} missing)" for p in pending]
         raise P3Error("\n".join(lines))
     return pending[0]
 

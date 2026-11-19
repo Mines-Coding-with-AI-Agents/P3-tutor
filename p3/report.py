@@ -1,4 +1,4 @@
-"""`p3 report`: Markdown tables of the scored runs, for pasting into EVAL.md.
+"""`p3 report`: Markdown tables of the scored runs; --write saves them as REPORT.md.
 
     p3 report [--topic t] [--configs a,b,...] [--minutes M] [--quick] [--teach-only]
     p3 report --reviews

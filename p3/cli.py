@@ -4,7 +4,7 @@
     p3 snapshot   copy the tutor's config (tutor/) into configs/<name>/
     p3 bench      run a config on a topic's scenarios with claude -p, and score the run
     p3 score      score a run again (the objective checks and the model-scored ones)
-    p3 report     Markdown tables of the scored runs, for EVAL.md; --write saves them as REPORT.md
+    p3 report     Markdown tables of the scored runs; --write saves them as REPORT.md
     p3 compare    blind side-by-side comparison of two configs' outputs, then the reveal
     p3 check      is everything in place and unchanged (CI runs this)
     p3 next       where you are on the project's map, and the one next thing to do
@@ -56,7 +56,7 @@ def parser() -> argparse.ArgumentParser:
     sc.add_argument("--offline", action="store_true", help="skip the link checks")
     sc.add_argument("--no-model", action="store_true", help="skip the model-scored checks (the judge and the solvers); the deterministic checks still run")
 
-    re_ = sub.add_parser("report", help="Markdown tables of the scored runs, for EVAL.md; --write saves them all as REPORT.md")
+    re_ = sub.add_parser("report", help="Markdown tables of the scored runs; --write saves them all as REPORT.md")
     re_.add_argument("--topic", help=f"the topic (default {util.SHARED_TOPIC})")
     re_.add_argument("--configs", metavar="A,B,...", help="only these configs, in this order (default: every config with a scored run)")
     re_.add_argument("--minutes", type=int, metavar="M", help="only runs at this lesson length (default: every length, one row each)")

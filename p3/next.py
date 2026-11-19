@@ -56,6 +56,7 @@ MAX_ALSO = 2
 MAX_DETAILS = 5
 TOPIC_CONFIGS = ("c0-baseline", "final")  # the two configs run on a test topic
 DECISIONS = check.DOCS[0]  # the decision log, DECISIONS.md
+EVAL_SECTION = {1: 2, 2: 3, 3: 4}  # the section of EVAL.md, the write-up of version 0.1, that answers a step's prompt
 LIVE_TRY = "Run the live tutor (uv run p3 bench --config live --quick, or --only with the scenarios you are working on)"
 # (stage number, step number, step, guide page) of the three steps of the ladder; prompts 1 to 3
 # of DECISIONS.md are steps 1 to 3
@@ -237,14 +238,24 @@ class Repo:
     own: list[str]  # the test topics in bench/own/
     integrity_ok: bool
     parsed: dict[str, reviews.StepReview | None] = field(default_factory=dict)
-    ready_topics: list[str] | None = None
+    topic_state: tuple[list[str], list[str]] | None = None
+    eval_done: list[int] | None = None
 
-    def ready(self) -> list[str]:
-        """The test topics that are valid and have their runs, as p3 check judges them."""
-        if self.ready_topics is None:
+    def topics(self) -> tuple[list[str], list[str]]:
+        """(the test topics that are valid and have their runs, the ones that count for the hand-in),
+        as p3 check judges them."""
+        if self.topic_state is None:
             validations = {tid: topic.validate(self.root / "bench" / "own" / tid, topic.OWN) for tid in self.own}
-            self.ready_topics = check.check_own_topics(self.root, True, validations, [])[1]
-        return self.ready_topics
+            _own, ready, counted = check.check_own_topics(self.root, True, validations, [])
+            self.topic_state = (ready, counted)
+        return self.topic_state
+
+    def eval_written(self) -> list[int]:
+        """The sections of EVAL.md, the write-up of version 0.1, that are written."""
+        if self.eval_done is None:
+            path = self.root / check.EVAL
+            self.eval_done = check.eval_sections_written(util.read_text(path)) if path.is_file() and not util.utf8_problem(path) else []
+        return self.eval_done
 
     def review(self, step: str) -> reviews.StepReview | None:
         if step not in self.parsed:
@@ -451,8 +462,14 @@ def _major(repo: Repo, step: str, page: str, committed: bool = False) -> Item:
 
 
 def _decision(repo: Repo, number: int, page: str) -> Item:
-    """A prompt of DECISIONS.md, found by its heading (## 2. ...), with no TODO marker in it."""
+    """A prompt of DECISIONS.md, found by its heading (## 2. ...), with no TODO marker in it. A
+    step's prompt is also done when the section of EVAL.md that covered the step under version 0.1
+    is written, so the map never sends anyone back to write it twice; DECISIONS.md then only needs
+    a sentence that points there, which the write-up stage asks for."""
     name = f"prompt {number} of {DECISIONS}"
+    section = EVAL_SECTION.get(number)
+    if section in repo.eval_written():
+        return Item(f"{name} (section {section} of {check.EVAL} answers it)", True, page=page, waits=True)
     path = repo.root / DECISIONS
     if not path.is_file():
         action = f"{DECISIONS} is new in version 0.2 of the project, and your decision log goes in it: copy it from the template, as the guide's start page says under the update."
@@ -742,7 +759,7 @@ def _writeup(repo: Repo) -> Stage:
         topics = Item(f"{name} ({problem[0]})", False, problem[1], page, waits=True)
     else:
         scratch: list[check.Item] = []
-        check._check_topic_reviews(True, repo.review("final"), repo.own, repo.ready(), scratch)
+        check._check_topic_reviews(True, repo.review("final"), repo.own, *repo.topics(), scratch)
         found = scratch[0]
         detail = _without(reviews.TEST_TOPICS, found.details[0]) if found.details else found.text
         topics = Item(name, found.status == check.OK, f"Finish ## {reviews.TEST_TOPICS} in {rel}: {_sentence(detail)}", page, waits=True, needs=("topic-runs",))
@@ -765,6 +782,8 @@ def _writeup(repo: Repo) -> Stage:
         docs.action = _sentence(bad[0].text)
     elif bad:
         docs.action = f"Write the rest of {_sentence(bad[0].text)}"
+        if bad[0].text.startswith(DECISIONS) and repo.eval_written():
+            docs.action += f" Where a section of {check.EVAL} you already wrote answers a prompt, one sentence that gives the answer and points to that section is enough."
     return Stage(11, "The write-up", [topics, inventory, docs])
 
 

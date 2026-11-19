@@ -945,12 +945,13 @@ class ResumeTests(RepoTestCase):
     def test_a_different_p3_version_is_refused(self):
         import p3
 
+        made_by = p3.__version__
         self.stop_after(4)
         self.no_limit()
         with mock.patch.object(p3, "__version__", "9.9.9"):
             code, out, err = self.p3("bench", "--resume")
         self.assertEqual(code, 1)
-        self.assertIn("was made by p3 0.1.0, and this is p3 9.9.9", err)
+        self.assertIn(f"was made by p3 {made_by}, and this is p3 9.9.9", err)
         self.assertIn("Delete", err)
 
     def test_several_partials_are_listed_and_need_an_id(self):
@@ -962,13 +963,13 @@ class ResumeTests(RepoTestCase):
         code, out, err = self.p3("bench", "--resume")
         self.assertEqual(code, 1)
         self.assertIn("2 stopped repeats are waiting", err)
-        self.assertIn(f"{a.name}  config c0-baseline, 4 scenarios done, 6 missing", err)
-        self.assertIn(f"{b.name}  config live, 2 scenarios done, 8 missing", err)
+        self.assertIn(f"uv run p3 bench --resume {a.name} --config c0-baseline   (4 scenarios done, 6 missing)", err)
+        self.assertIn(f"uv run p3 bench --resume {b.name} --config live   (2 scenarios done, 8 missing)", err)
         self.assertEqual(self.runs("live"), [])
         code, out, err = self.p3("bench", "--resume", "no-such-id")
         self.assertEqual(code, 1)
         self.assertIn("there is no stopped repeat no-such-id", err)
-        code, out, err = self.p3("bench", "--resume", b.name, "--offline")
+        code, out, err = self.p3("bench", "--resume", b.name, "--config", "live", "--offline")  # the two may share a run id
         self.assertEqual(code, 0, out + err)
         self.assertEqual(len(self.runs("live")), 1)
         self.assertEqual(len(self.aside_dirs("c0-baseline")), 1, "the other partial waits")

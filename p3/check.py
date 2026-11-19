@@ -6,6 +6,8 @@ It prints a checklist, one line per item:
     TODO  hand-in work not done yet (only without --final; it never fails the check)
     WARN  worth a look, never a failure
     FAIL  something is broken, or, with --final, something the hand-in needs is missing
+    PLUS  work in the repo beyond what the hand-in needs (the "Extra work" section, shown only
+          when there is some; it earns bonus points as the Canvas discussion says)
 
 Integrity (always; any FAIL exits non-zero):
 - p3/bench.sha256 matches the fixed files, and tutor/FORMATS.md is identical to bench/FORMATS.md.
@@ -52,6 +54,12 @@ version 0.2, which asks for less than 0.1 did and accepts everything 0.1 called 
   minutes, a complete blind comparison of their teach-only runs at each of the two lengths (p3
   compare --teach-only), and PREREG.md committed with sections 1 to 4 filled in before the first
   run.
+
+Extra work (PLUS lines; never a failure and never needed): what version 0.1 asked for and 0.2 does
+not, when it is there: written feedback on every criterion of a major review, sections of EVAL.md,
+Purpose and Review in the inventory, a third run of final, a full run of the ablation, a second
+complete test topic, more learning sessions than one, length-study runs beyond the eight, and for
+598E the larger architecture of six skills and eight subagents.
 """
 
 from __future__ import annotations
@@ -63,10 +71,11 @@ from datetime import datetime
 from pathlib import Path
 
 import p3
-from p3 import compare, config, reviews, topic, util
+from p3 import compare, config, reviews, runner, topic, util
 from p3.util import P3Error
 
 OK, TODO, WARN, FAIL = "OK", "TODO", "WARN", "FAIL"
+PLUS = "PLUS"  # work beyond what the hand-in needs
 SECTIONS = ("498E", "598E")
 LENGTH_STUDY = "length-study"
 LADDER = ("c0-baseline", "c1-skills", "c2-review", "c3-split", "final")
@@ -82,10 +91,13 @@ BLIND_COMPARE = ("c0-baseline", "final")
 BLIND_COMPARE_JOBS = ("teach", "quiz", "grade", "tutor")
 # (skills, subagents) at least, over every snapshot other than c0-baseline; SKILLS among the skills
 MINIMUMS = {"498E": (4, 5), "598E": (5, 6)}
+EARLIER_MINIMUMS = {"598E": (6, 8)}  # what version 0.1 asked of 598E; building that much is extra work now
 OWN_TOPICS = 1  # a second complete test topic is a bonus
 STUDY_CONFIGS = ("c1-skills", "final")
 STUDY_MINUTES = (10, 60)  # the 30-minute point is the ladder's full runs
 STUDY_RUNS = 2
+EARLIER_STUDY_MINUTES = (30,)  # a length version 0.1 also asked for; runs at it are extra work now
+EVAL = "EVAL.md"  # the write-up of version 0.1; what is written in it is extra work now
 COPY_RUN = 40
 MAX_DETAILS = 12
 TODO_MARK = "TODO"
@@ -124,6 +136,8 @@ class Checklist:
         width = max(len(s) for s in (OK, TODO, WARN, FAIL))
         out = [self.header, ""] if self.header else []
         for title, items in self.sections:
+            if title == EXTRAS and not items:
+                continue
             out.append(title)
             for item in items:
                 out.append(f"  {item.status.ljust(width)}  {item.text}")
@@ -145,11 +159,15 @@ class Checklist:
                 out.append(f"Hand-in: {done} of {len(handin)} items done" + (f"; {missing} still missing." if missing else ", ready to hand in."))
             else:
                 out.append(f"Hand-in: {done} of {len(handin)} items done (TODO lines are work still to do; p3 check --final fails on them).")
+        extras = self.items(EXTRAS)
+        if extras:
+            out.append(f"Extra work: {_plural(len(extras), 'thing')} beyond what the hand-in needs (the PLUS lines; the Canvas discussion says what the bonus is).")
         return "\n".join(out) + "\n"
 
 
 INTEGRITY = "Integrity"
 HANDIN = "Hand-in"
+EXTRAS = "Extra work"
 
 
 def _plural(n: int, word: str, plural: str | None = None) -> str:
@@ -590,6 +608,10 @@ def check_shared_runs(root: Path, final: bool, ablations: list[str], items: list
             hint = f"p3 bench --config {name}" + (f" --repeats {n - have}" if n - have > 1 else "")
             text = f"runs of {name}: {have} of the {_plural(n, 'scored full run')} needed {where} ({hint})"
         _need(items, final, have >= n, text)
+    for waiting in runner.pending_resumes(root):
+        if waiting["config"] != util.LIVE_RUNS_DIR and waiting["config"] != "live":
+            done, total = waiting["done"], waiting["done"] + waiting["missing"]
+            items.append(Item(WARN, f"a repeat of {waiting['config']} that a limit stopped is waiting, with {done} of its {total} scenarios done; finish it with: uv run p3 bench --resume"))
     for name in ablations:
         have = len(_ablation_runs(root, name))
         if have >= ABLATION_RUNS:
@@ -599,11 +621,12 @@ def check_shared_runs(root: Path, final: bool, ablations: list[str], items: list
         _need(items, final, have >= ABLATION_RUNS, text)
 
 
-def check_own_topics(root: Path, final: bool, validations: dict[str, topic.Validation], items: list[Item]) -> tuple[list[str], list[str]]:
+def check_own_topics(root: Path, final: bool, validations: dict[str, topic.Validation], items: list[Item]) -> tuple[list[str], list[str], list[str]]:
     """The test topics: one is needed, valid with no TODO, run by c0-baseline and final from
-    committed items. Returns (the ids of every own topic, the ids of those that are ready: valid,
-    with both runs, every run from the committed items). Once one topic is ready, what is missing
-    in another is a warning, because a second test topic is a bonus."""
+    committed items. Returns (the ids of every own topic; the ids of those that are ready: valid,
+    with both runs, every run from the committed items; the ids of the OWN_TOPICS that count for
+    the hand-in: the ready ones first, then the ones nearest to it). What is missing in a topic
+    that does not count is a warning, because a second test topic is a bonus."""
     own = [tid for tid, kind, _ in topic.list_topics(root) if kind == topic.OWN]
     git_ok = util.git_available(root)
     committed: dict[tuple[str, str], str | None] = {}  # (commit, folder): its hash then; a topic's runs often share a commit
@@ -645,6 +668,8 @@ def check_own_topics(root: Path, final: bool, validations: dict[str, topic.Valid
                 )
         needs.append((not problems, f"{rel}/: " + ("every run used the committed items" if not problems else f"{_plural(len(problems), 'run')} not made from the committed items as they are now"), problems))
     ready = [tid for tid in own if all(done for done, _, _ in found[tid])]
+    nearest = sorted((tid for tid in own if tid not in ready), key=lambda tid: -sum(done for done, _, _ in found[tid]))
+    counted = (ready + nearest)[:OWN_TOPICS]
     if len(own) >= OWN_TOPICS:
         extra = "" if len(own) == OWN_TOPICS else "; a second one is a bonus once it is complete"
         count = f"test topics in bench/own/: {len(own)} ({', '.join(own)}; {OWN_TOPICS} needed{extra})"
@@ -652,14 +677,13 @@ def check_own_topics(root: Path, final: bool, validations: dict[str, topic.Valid
         count = f"test topics in bench/own/: {len(own)} of the {OWN_TOPICS} needed (p3 new-topic <id>)"
     _need(items, final, len(own) >= OWN_TOPICS, count)
     for tid in own:
-        optional = len(ready) >= OWN_TOPICS and tid not in ready  # another topic already covers the hand-in
         for done, text, details in found[tid]:
-            if optional and not done:
-                items.append(Item(WARN, text + f"; a second test topic is optional, so finish it for the bonus or delete bench/own/{tid}/", details))
+            if tid not in counted and not done:  # another topic covers the hand-in
+                items.append(Item(WARN, text + "; a second test topic is optional, so this is only needed for the bonus", details))
             else:
                 _need(items, final, done, text, details)
     items += notes
-    return own, ready
+    return own, ready, counted
 
 
 def complete_sessions(root: Path, teach_only: bool = False) -> dict[tuple[frozenset, str, str, int | None], str]:
@@ -830,10 +854,10 @@ def _check_sessions(final: bool, review: reviews.StepReview, own: list[str], ite
     _need(items, final, not started, text, details)
 
 
-def _check_topic_reviews(final: bool, review: reviews.StepReview, own: list[str], ready: list[str], items: list[Item]) -> None:
+def _check_topic_reviews(final: bool, review: reviews.StepReview, own: list[str], ready: list[str], counted: list[str], items: list[Item]) -> None:
     """A complete review of one test topic: of one that is ready (valid, with its runs) when one
-    is. A second topic, ready and reviewed, is the bonus; a review still missing for an extra
-    topic, or a placeholder heading left from the template, is no problem once one review is done."""
+    is. A review still missing for an extra topic, or a placeholder heading left from the template,
+    is no problem once one review is done (a second topic, ready and reviewed, is extra work)."""
     rel = review.path
     if not own:
         _need(items, final, False, f"{rel}, test topics: no test topic in bench/own/ yet to review", [review.topics_problem] if review.topics_problem else [])
@@ -844,36 +868,30 @@ def _check_topic_reviews(final: bool, review: reviews.StepReview, own: list[str]
     reviewed = [tid for tid in own if tid in sections and not sections[tid].problems]
     targets = ready or own  # the topics a review can cover
     done = [tid for tid in targets if tid in reviewed]
-    stray = []
-    for t in review.topics:
-        if t.topic in own:
-            continue
-        if reviews.has_todo(t.title):
-            if not done:
-                stray.append(f"{reviews.TEST_TOPICS} > {t.title}: the heading is still TODO; make it the id of a test topic ({', '.join(own)})")
-        else:
-            stray.append(f"{reviews.TEST_TOPICS} > {t.title}: names no test topic in bench/own/ ({', '.join(own)}); rename it to a topic's id, or delete it")
+    placeholders = [t for t in review.topics if t.topic not in own and reviews.has_todo(t.title)]  # the template's headings, not renamed yet
+    stray = [
+        f"{reviews.TEST_TOPICS} > {t.title}: names no test topic in bench/own/ ({', '.join(own)}); rename it to a topic's id, or delete it"
+        for t in review.topics if t.topic not in own and not reviews.has_todo(t.title)
+    ]  # fmt: skip
     if not done:
         details = [review.topics_problem] if review.topics_problem else []
-        for tid in targets:
+        for tid in [t for t in counted if t in targets] or targets[:OWN_TOPICS]:
             t = sections.get(tid)
-            if t is None:
-                if not review.topics_problem:
-                    details.append(f"{reviews.TEST_TOPICS} > {tid}: missing; add ### {tid}, comparing c0-baseline and final on it")
-            else:
+            if t is not None:
                 details += t.problems
+            elif placeholders and not review.topics_problem:
+                details.append(f"{reviews.TEST_TOPICS} > {placeholders[0].title}: make this heading the topic's id, ### {tid}, and compare c0-baseline and final on it there")
+            elif not review.topics_problem:
+                details.append(f"{reviews.TEST_TOPICS} > {tid}: missing; add ### {tid}, comparing c0-baseline and final on it")
         _need(items, final, False, f"{rel}, test topics: no complete review of a test topic yet ({OWN_TOPICS} needed)", details + stray)
         return
     _need(items, final, True, f"{rel}, test topics: a complete review of {' and '.join(done)} ({OWN_TOPICS} needed)")
-    bonus = [tid for tid in done if tid in ready][OWN_TOPICS:]
-    if bonus:
-        items.append(Item(OK, f"bonus: a second test topic is complete, with its runs and its review ({', '.join(bonus)})"))
     tidy = stray + [f"{reviews.TEST_TOPICS} > {tid}: no complete review; a second test topic is optional, so review it for the bonus or leave it" for tid in own if tid not in reviewed]
     if tidy:
         items.append(Item(WARN, f"{rel}, test topics: {_plural(len(tidy), 'thing')} you may tidy", tidy))
 
 
-def check_reviews(root: Path, final: bool, own: list[str], ready: list[str], items: list[Item]) -> None:
+def check_reviews(root: Path, final: bool, own: list[str], ready: list[str], counted: list[str], items: list[Item]) -> None:
     """Each step's review file: its quick rounds, its major review and when that was committed, and
     in final the learning session and the test-topic review."""
     for step in reviews.STEPS:
@@ -891,7 +909,7 @@ def check_reviews(root: Path, final: bool, own: list[str], ready: list[str], ite
             _check_review_order(root, final, review, rec, items)
         if step == "final":
             _check_sessions(final, review, own, items)
-            _check_topic_reviews(final, review, own, ready, items)
+            _check_topic_reviews(final, review, own, ready, counted, items)
 
 
 def _config_order(name: str) -> tuple:
@@ -1079,6 +1097,83 @@ def check_length_study(root: Path, final: bool, items: list[Item]) -> None:
         items.append(Item(WARN, "PREREG.md: sections 1 to 4 have changed since that commit; leave them as they were and add a dated entry in section 6 instead"))
 
 
+# ---- extra work ----
+
+
+def eval_sections_written(text: str) -> list[int]:
+    """The numbers of the sections of EVAL.md (## 1. to ## 13.) that hold text and no TODO marker."""
+    lines = text.replace("\r\n", "\n").split("\n")
+    heads = [(n, int(m.group(1))) for n, line in enumerate(lines) if (m := re.match(r"^##\s+(\d+)\.", line))]
+    written = []
+    for k, (start, number) in enumerate(heads):
+        end = heads[k + 1][0] if k + 1 < len(heads) else len(lines)
+        body = "\n".join(lines[start + 1:end])
+        if body.strip() and TODO_MARK not in body:
+            written.append(number)
+    return written
+
+
+def _numbers(found: list[int]) -> str:
+    """"1", "1 and 2", "1, 2 and 3"."""
+    words = [str(n) for n in found]
+    return words[0] if len(words) == 1 else ", ".join(words[:-1]) + f" and {words[-1]}"
+
+
+def check_extras(root: Path, settings: dict, ablations: list[str], own: list[str], ready: list[str], study: bool, items: list[Item]) -> None:
+    """What the repo holds beyond what version 0.2 needs: one PLUS line for each. Version 0.1 asked
+    for all of it, so a student who had done it by then is ahead, not behind."""
+    final_review = None
+    for step in reviews.STEPS:
+        review = reviews.read_step(step, root)
+        if review is None or util.utf8_problem(root / review.path):
+            continue
+        if step == "final":
+            final_review = review
+        wanted = [(job, name) for job in reviews.STEP_JOBS[step] for name in reviews.CRITERIA[job]]
+        found = [review.major.criteria.get(key) for key in wanted]
+        if all(c is not None and c.rating is not None and reviews.written(c.feedback) for c in found):
+            items.append(Item(PLUS, f"{review.path}: written feedback on every criterion of the major review ({len(wanted)} of {len(wanted)})"))
+    path = root / EVAL
+    if path.is_file() and not util.utf8_problem(path):
+        written = eval_sections_written(util.read_text(path))
+        if written:
+            items.append(Item(PLUS, f"{EVAL}: section{'s' if len(written) != 1 else ''} {_numbers(written)} written ({len(written)} of 13)"))
+    entries = reviews.read_components(root) if not util.utf8_problem(root / reviews.COMPONENTS_PATH) else None
+    built = built_components(root)
+    if entries:
+        keys = {reviews.name_key(name) for _kind, name in built}
+        full = [e for e in entries if e.key in keys and reviews.written(e.values.get("Purpose")) and reviews.written(e.values.get("Review"))]
+        if full:
+            items.append(Item(PLUS, f"{reviews.COMPONENTS_PATH}: Purpose and Review written for {len(full)} of {_plural(len(built), 'component')}"))
+    have, need = len(_full_runs(root, "final", util.SHARED_TOPIC, BENCH_MINUTES)), SHARED_RUNS["final"]
+    if have > need:
+        items.append(Item(PLUS, f"runs of final: {_plural(have, 'scored full run')} on {util.SHARED_TOPIC}, {have - need} more than needed"))
+    for name in ablations:
+        if any(util.run_kind(r.run) == util.FULL for r in _ablation_runs(root, name)):
+            items.append(Item(PLUS, f"runs of {name}: a full run, where a run made with --only would do"))
+    if final_review is not None:
+        reviewed = {t.topic for t in final_review.topics if not t.problems}
+        more = [tid for tid in ready if tid in reviewed][OWN_TOPICS:]
+        if more:
+            items.append(Item(PLUS, f"a second test topic, complete with its runs and its review ({', '.join(more)})"))
+        sessions = [s for s in final_review.sessions if not _session_problems(s, own)]
+        if len(sessions) > reviews.SESSIONS:
+            items.append(Item(PLUS, f"{final_review.path}, learning sessions: {len(sessions)} complete, {len(sessions) - reviews.SESSIONS} more than needed"))
+    if study:
+        for name in STUDY_CONFIGS:
+            counts = {m: len([r for r in util.list_runs(name, util.SHARED_TOPIC, scored=True, quick=False, minutes=m, root=root) if _teach_only(r)]) for m in sorted(STUDY_MINUTES + EARLIER_STUDY_MINUTES)}
+            more = sum(max(0, c - STUDY_RUNS) if m in STUDY_MINUTES else c for m, c in counts.items())
+            if more:
+                cells = ", ".join(f"{c} at {m}" for m, c in counts.items())
+                items.append(Item(PLUS, f"length study, {name}: {_plural(more, 'teach-only run')} beyond the {STUDY_RUNS * len(STUDY_MINUTES)} needed ({cells} minutes)"))
+    earlier = EARLIER_MINIMUMS.get(settings.get("section") or "")
+    if earlier:
+        skills = [n for k, n in built if k == reviews.SKILL]
+        agents = [n for k, n in built if k == reviews.SUBAGENT]
+        if len(skills) >= earlier[0] and len(agents) >= earlier[1]:
+            items.append(Item(PLUS, f"components built: {_plural(len(skills), 'skill')} and {_plural(len(agents), 'subagent')}, the larger architecture of at least {earlier[0]} and {earlier[1]}"))
+
+
 # ---- the command ----
 
 
@@ -1105,12 +1200,13 @@ def run_checks(root: Path | None = None, final: bool = False) -> Checklist:
     check_docs(root, final, study, handin)
     ablations = check_configs(root, final, handin)
     check_shared_runs(root, final, ablations, handin)
-    own, ready = check_own_topics(root, final, validations, handin)
+    own, ready, counted = check_own_topics(root, final, validations, handin)
     check_compares(root, final, handin)
-    check_reviews(root, final, own, ready, handin)
+    check_reviews(root, final, own, ready, counted, handin)
     check_inventory(root, final, settings.get("section"), handin)
     if study:
         check_length_study(root, final, handin)
+    check_extras(root, settings, ablations, own, ready, study, report.section(EXTRAS))
     section = settings.get("section") or "no section"
     stretch = settings.get("stretch")
     report.header = f"p3 {p3.__version__} check{' --final' if final else ''}: {section}" + (f", stretch {stretch}" if stretch else "") + f" ({root})"
