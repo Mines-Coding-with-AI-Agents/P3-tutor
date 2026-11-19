@@ -202,19 +202,36 @@ full path of the claude program.</pre>
 <p>And if the message starts <code>`claude --version` did not answer, so nothing was run</code>, <code>p3</code> found a program but it did not answer; the message quotes what it said, and its advice is to check that Claude Code is installed and signed in. Signing in is the next section.</p>
 
 <h3 id="sign-in">claude -p fails, or asks you to sign in</h3>
-<p><strong>Fix.</strong> Open <code>claude</code> once in a terminal and sign in, then run the command again. The bench stops at the first scenario that fails this way, as it does at a usage limit (below), so no half-made run is kept.</p>
+<p><strong>Fix.</strong> Open <code>claude</code> once in a terminal and sign in, then run the command again. The bench stops at the first scenario that fails this way, as it does at a usage limit (below), and keeps the scenarios that had finished; after you sign in, <code>uv run p3 bench --resume</code> finishes the repeat.</p>
 
 <h3 id="api-key">You see "removed ANTHROPIC_API_KEY so the bench uses your Claude subscription"</h3>
 <p>That is <code>p3</code> protecting you, and nothing needs fixing. In headless mode an API key in your shell silently replaces your subscription login, and after lecture 20 many of you have one set. So <code>p3</code> removes <code>ANTHROPIC_API_KEY</code> and <code>ANTHROPIC_AUTH_TOKEN</code> from every <code>claude</code> it starts, and says so. It also removes Claude Code's own session variables, so running the bench from inside a Claude Code session is fine. You never need an API key in this project.</p>
 
 <h3 id="usage-limit">A run hits your usage limit</h3>
-<p><strong>What happens.</strong> <code>p3 bench</code> stops at the first scenario that reports a usage limit, a sign-in problem or an API outage, stops every scenario still running, and starts no new one. Its message begins with what went wrong and then says <code>Nothing in repeat k measures your tutor, so it was not saved as a run</code>.</p>
+<p><strong>What happens.</strong> <code>p3 bench</code> stops at the first scenario that reports a usage limit, a sign-in problem or an API outage, stops every scenario still running, and starts no new one. Its message begins <code>Claude stopped working in &lt;scenario&gt;: ...</code> with what Claude Code reported, and goes on to say how many scenarios of the repeat had finished and where they are kept, for example:</p>
+<pre>3 of 7 scenarios in repeat 1 had finished.
+They are kept in bench/runs/_live/_aborted/
+final/&lt;run-id&gt;, which git ignores.
+Teach was the one Claude stopped, and it will
+run again from the start, together with the 3
+scenarios that had not started.
+Then type this to finish repeat 1 without
+running the finished scenarios again:
+uv run p3 bench --resume</pre>
 <ul>
-  <li>That repeat says nothing about your tutor, so it is not saved as a run: its files go to <code>bench/runs/_live/_aborted/</code>, which git ignores.</li>
-  <li>The repeats after it do not run, and the repeats before it are complete and kept.</li>
+  <li>The scenarios that had finished are results about your tutor, so they are kept, with a <code>partial.json</code> that records what the repeat was meant to run. The one the limit stopped, and any that never started, run again on a resume.</li>
+  <li>The repeats before it are complete and kept. The repeats after it did not run, and the message gives the command to type for them once this repeat is finished.</li>
   <li>If the limit comes while a run is being scored, the run keeps its <code>run.json</code> with no <code>score.json</code>. <code>p3 report</code>, <code>p3 compare</code> and <code>p3 check</code> ignore it until you score it with <code>uv run p3 score &lt;run-dir&gt;</code>.</li>
+  <li>While a stopped repeat is waiting, <code>uv run p3 check</code> prints a WARN line: <code>a repeat of final that a limit stopped is waiting, with 3 of its 7 scenarios done; finish it with: uv run p3 bench --resume</code>.</li>
 </ul>
-<p><strong>Fix.</strong> Wait for the reset (<code>/usage</code> in any Claude Code window shows when), then run the bench again, with <code>--repeats</code> set to the number still missing. In the meantime, do the work that needs no Claude: your test topics, your reviews of runs you already have, the blind comparison once its runs exist, and the write-up.</p>
+<p><strong>Fix.</strong> Wait for the reset (<code>/usage</code> in any Claude Code window shows when), then type <code>uv run p3 bench --resume</code> in a plain terminal. It runs only the missing scenarios, saves the repeat as one run at its normal place, and scores it like any other run. A few details:</p>
+<ul>
+  <li>With no value it takes the newest stopped repeat. When several are waiting, it lists them with the command for each, such as <code>uv run p3 bench --resume &lt;run-id&gt; --config final</code>.</li>
+  <li>It takes <code>--quick</code>, <code>--only</code>, <code>--minutes</code>, <code>--topic</code> and <code>--repeats</code> from the stopped repeat, so passing one of them is an error. <code>--jobs</code>, <code>--no-score</code>, <code>--offline</code> and <code>--keep</code> are allowed.</li>
+  <li>It refuses when the config's hash, the topic's hash or the version of <code>p3</code> is no longer what it was when the repeat stopped, because finishing it would mix two sets of files in one run. Put the changed file back with <code>git restore</code>, or, if you cannot, delete the stopped repeat's folder under <code>bench/runs/_live/_aborted/</code> and run the repeat again.</li>
+  <li>If a limit stops the resume too, the repeat is set aside again, with everything finished so far, and you resume it again.</li>
+</ul>
+<p>In the meantime, do the work that needs no Claude: your test topic, your reviews of runs you already have, the blind comparison once its runs exist, and the write-up.</p>
 <div class="watch"><span class="label">Watch out</span>
 <p>If you ever find a committed run whose <code>result.json</code> files say Claude was not working, delete that run, because it measures nothing. A scenario that failed for any other reason, such as a timeout or a lesson that was never written, is a result about your tutor: keep it and report it.</p>
 </div>
@@ -252,6 +269,7 @@ full path of the claude program.</pre>
   <pre class="in">rm -r bench/runs/&lt;config&gt;/&lt;run-id&gt;</pre>
 </div>
 <p>In PowerShell, <code>Remove-Item -Recurse bench/runs/&lt;config&gt;/&lt;run-id&gt;</code>. Then start the run again in a plain terminal, where closing a Claude Code window cannot stop it; that is why full runs go there.</p>
+<p>A repeat that a usage limit stopped is different: it is not under <code>bench/runs/&lt;config&gt;/</code> but under <code>bench/runs/_live/_aborted/</code>, and it is meant to be finished with <code>uv run p3 bench --resume</code> (<a href="#usage-limit">A run hits your usage limit</a>). If you press Ctrl-C while a resume runs, <code>p3 bench</code> prints that the repeat is still a partial repeat and that <code>--resume</code> runs its missing scenarios, so nothing is lost.</p>
 
 <h3 id="claude-md-warning">p3 bench warns about a CLAUDE.md above the scenario folders</h3>
 <p><strong>What you see.</strong> <code>warning: &lt;path&gt; sits in a folder above the scenario folders, so Claude Code reads it in every scenario and it shapes your results; move it or rename it before you make runs you will commit (run.json records it as ancestor_memory)</code></p>
@@ -275,7 +293,7 @@ full path of the claude program.</pre>
 git commit -m "Test topic &lt;id&gt;"
 git status bench/own/</pre>
 </div>
-<p>The commit rule exists so your items are on record before any result: a test you write after seeing how the tutor does is a test you can shape, even without meaning to. <a href="11-test-topics.html">Your two test topics</a> says more.</p>
+<p>The commit rule exists so your items are on record before any result: a test you write after seeing how the tutor does is a test you can shape, even without meaning to. <a href="11-test-topics.html">Your test topic</a> says more.</p>
 <p>When git itself cannot be used, the message says why instead:</p>
 <ul>
   <li><strong>git is missing from your PATH:</strong> install it, or open a terminal where <code>git --version</code> works.</li>
@@ -318,11 +336,11 @@ git status bench/own/</pre>
 <p>Its line names the file and the heading, such as <code>reviews/<span class="nw">c1-skills.md,</span> quick rounds</code> with <code>Quick rounds &gt; Round 2: ...</code> under it. <code>p3 check</code> finds each part of a review by its heading, so most causes are about headings and the exact form of a few lines. The usual causes:</p>
 <ul>
   <li><strong>A heading that no longer matches the template's word for word</strong>, such as <code>#### Wording and misreadings</code> for <code>#### Wording and possible misreadings</code>. Copy the heading back from the template.</li>
-  <li><strong>One of the template's marker lines left somewhere in the part</strong>, such as a <code>TODO</code> under your text. A marker word inside code you quote, in backticks or a code block, is your quote and does not count.</li>
+  <li><strong>One of the template's marker lines left somewhere in a part that is needed</strong>, such as a <code>TODO</code> under your text. A marker word inside code you quote, in backticks or a code block, is your quote and does not count. A <code>TODO</code> in a part that version 0.2 made optional is ignored: the feedback under a rating, Live tries, Compared with the previous step, and an inventory entry's Step added, Purpose, With and without and Review.</li>
   <li><strong>A rating that is not a whole number from 1 to 5 on its own line</strong>: <code>Rating: 4.5</code>, <code>Rating: four</code> or <code>Rating: 3-4</code> instead of <code>Rating: 4</code>.</li>
   <li><strong>A major review whose Run line does not name a scored full run of that step on the shared topic</strong> under <code>bench/runs/</code>. It should look like <code>**Run:** bench/runs/c1-skills/20261105-141502-<wbr>agent-architecture-m30-r1</code>, with your own run id.</li>
   <li><strong>A major review that is complete on your disk but in no commit yet:</strong> <code>complete here but in no commit yet; commit it</code>. <code>p3 check</code> compares the time of that commit with when the run finished, so commit a review when you finish it.</li>
-  <li><strong>A learning session whose Topic line does not start with the id of one of your test topics</strong>, such as <code>**Topic:** <span class="nw">statics-trusses,</span> the method of joints</code>; all three sessions must name the same test topic.</li>
+  <li><strong>A learning session whose Topic line does not start with the id of one of your test topics</strong>, such as <code>**Topic:** <span class="nw">statics-trusses,</span> the method of joints</code>. One session is needed, and the template's other two session sections may stay as they are or be deleted.</li>
   <li><strong>A skill or subagent in one of your snapshots whose name matches no heading in <code>reviews/components.md</code></strong>. The heading is the skill's folder name or the subagent's <code>name</code> from its frontmatter, exactly.</li>
   <li><strong>A review file saved as UTF-16</strong>, which Windows PowerShell's <code>&gt;</code> and <code>Out-File</code> write, or in another encoding than UTF-8. <code>p3 check</code> names the encoding. In VS Code, click the encoding in the status bar, choose <strong>Save with Encoding</strong>, then <strong>UTF-8</strong>.</li>
 </ul>
@@ -348,6 +366,16 @@ git status bench/own/</pre>
 <div class="watch"><span class="label">Watch out</span>
 <p>Never run <code>p3 rehash</code> in your repo. It is the instructor's command for rewriting the hash file after I change a course file, and in your repo it would hide the change instead of fixing it.</p>
 </div>
+
+<h3 id="check-version">My p3 check does not show version 0.2</h3>
+<p><strong>What you see.</strong> The first line of <code>uv run p3 check</code> does not start <code>p3 0.2.0 check</code>: it reads <code>p3 check: ...</code> with no version, or names another number.</p>
+<p><strong>Why.</strong> Your repo was made from the template before version 0.2, and a repo made from a template never receives the template's later changes by itself. Your copy of <code>p3/</code>, and the guide, are still the old ones, so the checklist asks for what version 0.1 asked.</p>
+<p><strong>Fix.</strong> Pull the update with the git commands on the start page, <a href="index.html#update">Start here, under the update</a>. They add and replace the course's files (<code>p3/</code>, <code>guide/</code>, <code>tests/</code> and the others the page lists) and never touch your own: your reviews, <code>tutor/</code>, <code>configs/</code>, your runs and your test topic stay as they are. Then run <code>uv run p3 check</code> again, and its first line should read <code>p3 0.2.0 check: ...</code>. Nothing you already wrote or ran needs redoing, and version 0.2 accepts everything that version 0.1 called complete.</p>
+
+<h3 id="decisions-missing">DECISIONS.md is missing</h3>
+<p><strong>What you see.</strong> <code>p3 check</code> prints <code>DECISIONS.md is missing (it is new in version 0.2; copy it from the template)</code>, as a TODO line, and as a FAIL line with <code>--final</code>. <code>p3 next</code> says the same under the prompt it is asking for.</p>
+<p><strong>Why.</strong> <code>DECISIONS.md</code> is new in version 0.2, so a repo made before it has no copy.</p>
+<p><strong>Fix.</strong> The update on the start page, <a href="index.html#update">Start here, under the update</a>, brings it in with the rest of the course's files, and it leaves every file of yours alone. Then answer its nine prompts, as <a href="14-write-up.html">The inventory and DECISIONS.md</a> explains. If the file is there but <code>p3 next</code> cannot find a prompt, put back the heading that starts <code>## 4.</code> (or the number it names) as the template has it, because <code>p3 next</code> finds each prompt by its heading.</p>
 
 <h3 id="ci-red">CI is red, but p3 check passes on your machine</h3>
 <p>CI runs <code>python -m p3 check</code> on the files you pushed, not on your disk. So the cause is a difference between what you pushed and what is on your disk, such as something committed without what it depends on: runs pushed without the snapshot they name in <code>configs/</code>, a blind comparison's session file without its key file, or a change you made and never committed. Run <code>git status</code>, commit what belongs together (<code>configs/</code> with <code>bench/runs/</code>, both files of every session in <code>bench/compare/</code>), and push again. Then open the failed run in the <strong>Actions</strong> tab: its FAIL lines are the same as the ones <code>p3 check</code> would print.</p>

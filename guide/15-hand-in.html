@@ -60,7 +60,7 @@
 <p class="eyebrow">Part III · The ladder</p>
 <h1>Hand in</h1>
 <p class="lede">The last stage of Project 3: the video, the check that confirms your repo holds everything, the one Canvas post, the deadline, and how I plan to grade the 150 points.</p>
-<p class="meta">About 13 minutes to read.</p>
+<p class="meta">About 14 minutes to read.</p>
 
 <section class="path" aria-labelledby="short-path">
   <h2 id="short-path">The short path</h2>
@@ -74,7 +74,7 @@
       <li>On Canvas, make one post in the Project 3 discussion, with your repo's URL and your video.</li>
     </ol></dd>
     <dt>Done when</dt>
-    <dd><p><code>uv run p3 check --final</code> ends with <code>Integrity: no failures.</code> and <code>Hand-in: N of N items done, ready to hand in.</code>, the Actions tab shows a green <code>p3-check</code> run on your last commit, and your post is in the discussion before Tuesday, November 24, at 11:59 pm.</p></dd>
+    <dd><p><code>uv run p3 check --final</code> ends with <code>Integrity: no failures.</code> and <code>Hand-in: N of N items done, ready to hand in.</code>, the Actions tab shows a green <code>p3-check</code> run on your last commit, and your post is in the discussion by Wednesday, December 9, at 11:59 pm.</p></dd>
     <dt>Then</dt>
     <dd><p>You are done with P3. If <code>p3 check --final</code> fails, <a href="19-troubleshooting.html">When it breaks</a> has the usual causes, and the Guide can help you read the FAIL lines.</p></dd>
   </dl>
@@ -84,7 +84,7 @@
 <p>You hand in three things, and they all go in one Canvas post.</p>
 <ol>
   <li><strong>A public GitHub repo</strong> made from the template, named <code>p3-tutor</code>, whose URL you post.</li>
-  <li><strong>The work inside it</strong>: your tutor in <code>tutor/</code> with its skills and subagents, every snapshot of the ladder in <code>configs/</code>, your runs in <code>bench/runs/</code> and your blind comparisons in <code>bench/compare/</code>, your two test topics in <code>bench/own/</code>, your reviews and the component inventory in <code>reviews/</code>, and <code>EVAL.md</code> in your own words, plus <code>PREREG.md</code> for 598E or the length-study stretch.</li>
+  <li><strong>The work inside it</strong>: your tutor in <code>tutor/</code> with its skills and subagents, every snapshot of the ladder in <code>configs/</code>, your runs in <code>bench/runs/</code> and your blind comparisons in <code>bench/compare/</code>, your test topic in <code>bench/own/</code>, your reviews and the component inventory in <code>reviews/</code>, <code>DECISIONS.md</code> in your own words and <code>REPORT.md</code> from <code>uv run p3 report --write</code>, plus <code>PREREG.md</code> for 598E or the length-study stretch.</li>
   <li><strong>A 5 to 10 minute video.</strong></li>
 </ol>
 <p>When you reach this stage, <code>uv run p3 next</code> shows <code>Now: 12 Hand in</code>, and once everything <code>p3 check --final</code> can see is done, its Next line says that the video, the push and the Canvas post remain. Those three are the parts no command in the repo can check for you, which is why this page is about them.</p>
@@ -95,8 +95,8 @@
 <h3 id="video-what">What to cover</h3>
 <p>Cover three things, in whatever order feels natural to you.</p>
 <ol>
-  <li><p><strong>The project.</strong> What you built and what you found. Show your tutor's architecture (the diagram of <code>final</code> in section 5 of <code>EVAL.md</code> is a good thing to have on screen), one review that changed your tutor, the reveal of your blind comparison, and one cost table from <code>p3 report</code>. Then say what they do and do not let you claim: three runs of each config against each other, one person's blind picks, a judge you checked on ten labels.</p></li>
-  <li><p><strong>Your observations.</strong> Which machinery paid for itself and which did not, what surprised you, whether your blind picks agreed with your open reviews, and what your three real learning sessions taught you that the bench could not.</p></li>
+  <li><p><strong>The project.</strong> What you built and what you found. Show your tutor's architecture (a diagram of <code>final</code> is a good thing to have on screen), one review that changed your tutor, the reveal of your blind comparison, and one cost table from <code>REPORT.md</code>. Then say what they do and do not let you claim: two runs of <code>final</code> against the baseline's three, one person's blind picks, a judge you checked on ten labels.</p></li>
+  <li><p><strong>Your observations.</strong> Which machinery paid for itself and which did not, what surprised you, whether your blind picks agreed with your open reviews, and what your real learning session taught you that the bench could not.</p></li>
   <li><p><strong>The challenges, and how you solved them.</strong> A real one, in your words. A review-to-change story is a good one to tell: something you noticed in a round, the change it led to, and whether the next run showed that it helped. A time you overruled the agent is another.</p></li>
 </ol>
 
@@ -109,7 +109,7 @@
 <p>The skills, the subagents and the runs can come from an agent, and the video cannot. It is the one place where I hear, in your own voice, why you made the choices you made and what you think the numbers mean. That is also why you should not have an agent write a script for you to read out: a read-out script sounds like what it is, and it would put an agent's words where I asked for yours. Notes to glance at are fine.</p>
 
 <h3 id="video-prepare">Getting ready to record</h3>
-<p>Open what you want to show before you start, so you are not searching for files on camera: the diagram in <code>EVAL.md</code>, the review file with the round you will talk about, the output of <code>uv run p3 compare --reveal &lt;session-id&gt;</code> for one of your sessions, and a table from <code>uv run p3 report</code>. Neither command calls a model, so you can rerun them as often as you like at no cost. Then talk through it once, out loud, and keep an eye on the clock: 5 minutes is the floor and 10 the ceiling.</p>
+<p>Open what you want to show before you start, so you are not searching for files on camera: a diagram of <code>final</code> if you drew one, the review file with the round you will talk about, the output of <code>uv run p3 compare --reveal &lt;session-id&gt;</code> for one of your sessions, and a table from <code>REPORT.md</code>. Neither command calls a model, so you can rerun them as often as you like at no cost. Then talk through it once, out loud, and keep an eye on the clock: 5 minutes is the floor and 10 the ceiling.</p>
 <p>If you want help finding the files to show, the Guide can point you at them; picking the story and telling it are yours.</p>
 <div class="say guide">
   <div class="say-head">Say to the Guide</div>
@@ -133,7 +133,7 @@
     </div>
   </li>
   <li>
-    <p><strong>Commit everything you mean to hand in.</strong> That is usually <code>configs/</code>, <code>bench/runs/</code>, <code>bench/compare/</code> (both files of every session), <code>bench/own/</code>, <code>reviews/</code>, <code>tutor/</code>, <code>tests/</code> (your guard's tests), <code>EVAL.md</code>, <code>PREREG.md</code> and <code>p3.json</code>.</p>
+    <p><strong>Commit everything you mean to hand in.</strong> That is usually <code>configs/</code>, <code>bench/runs/</code>, <code>bench/compare/</code> (both files of every session), <code>bench/own/</code>, <code>reviews/</code>, <code>tutor/</code>, <code>tests/</code> (your guard's tests), <code>DECISIONS.md</code>, <code>REPORT.md</code>, <code>PREREG.md</code> and <code>p3.json</code>.</p>
     <div class="cmd">
       <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
       <pre class="in">git add -A
@@ -150,15 +150,39 @@ git commit -m "Hand in P3"</pre>
     <div class="cmd">
       <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
       <pre class="in">uv run p3 check --final</pre>
+      <pre class="out">p3 0.2.0 check --final: 498E (/home/you/work/p3-tutor)
+
+Integrity
+  OK    p3/bench.sha256 matches the 31 fixed files
+  ...
+
+Hand-in
+  OK    DECISIONS.md is written
+  OK    REPORT.md: there (p3 report --write writes it again after new runs)
+  OK    config final: the four skills and a PreToolUse hook
+  OK    ablation: final-minus-quiz-review
+  OK    runs of c0-baseline: 3 scored full runs on agent-architecture at 30 minutes (3 needed)
+  OK    runs of final: 3 scored full runs on agent-architecture at 30 minutes (2 needed)
+  OK    runs of final-minus-quiz-review: 1 scored run on agent-architecture at 30 minutes (1 needed, a full run or one made with --only)
+  OK    test topics in bench/own/: 1 (statics-trusses; 1 needed)
+  OK    reviews/final.md, learning sessions: 1 complete (1 needed), on statics-trusses
+  ...
+
+Extra work
+  PLUS  runs of final: 3 scored full runs on agent-architecture, 1 more than needed
+
+Integrity: no failures.
+Hand-in: 30 of 30 items done, ready to hand in.
+Extra work: 1 thing beyond what the hand-in needs (the PLUS lines; the Canvas discussion says what the bonus is).</pre>
     </div>
-    <p>The Guide may run this one too, since it only reads: ask it "Run p3 check --final and tell me how many items are left."</p>
+    <p>The first line names the tool's version, here 0.2.0; if yours does not, <a href="19-troubleshooting.html#check-version">your copy of <code>p3</code> is older than this guide</a>. The Guide may run this one too, since it only reads: ask it "Run p3 check --final and tell me how many items are left."</p>
   </li>
   <li>
     <p><strong>Read the last two lines.</strong> They are the verdict.</p>
     <div class="you-see"><span class="label">What you will see when it passes</span>
 <pre>Integrity: no failures.
 Hand-in: N of N items done, ready to hand in.</pre>
-<p>N depends on your section, your stretch and your test topics, so it is not the same for everyone; what matters is that both numbers are the same and the line ends with <code>ready to hand in</code>. The command then exits with code 0.</p>
+<p>N depends on your section, your stretch and your test topic, so it is not the same for everyone; what matters is that both numbers are the same and the line ends with <code>ready to hand in</code>. The command then exits with code 0. A last line that starts with <code>Extra work:</code> may follow, and the next part explains it.</p>
     </div>
     <div class="fail"><span class="label">If it fails</span>
 <p>The last line reads <code>Hand-in: k of N items done; m still missing.</code>, and each missing item is a FAIL line above it that names the file and what is wrong. Fix them one at a time, commit, and run the check again. <a href="19-troubleshooting.html#check-review">A review p3 check will not count</a> and <a href="19-troubleshooting.html#check-fails">p3 check fails</a> list the usual causes.</p>
@@ -174,9 +198,23 @@ Hand-in: N of N items done, ready to hand in.</pre>
   </li>
 </ol>
 
+<h3 id="extra-work">Extra work</h3>
+<p>Version 0.2 asks for less than version 0.1 did, and I do not want anyone punished for having done more. So <code>p3 check</code> prints a third section, <strong>Extra work</strong>, with one <code>PLUS</code> line for each thing your repo holds beyond what the hand-in needs. The section appears only when it has a line, it never fails the check, and none of it is needed for full marks. It earns bonus points as the Canvas discussion says, and the tool names no amount. It lists:</p>
+<ul>
+  <li>written feedback on every criterion of a major review;</li>
+  <li>sections of <code>EVAL.md</code> that you wrote under version 0.1;</li>
+  <li>Purpose and Review in the inventory;</li>
+  <li>a third run of <code>final</code>;</li>
+  <li>a full run of the ablation, where a run made with <code>--only</code> would do;</li>
+  <li>a second complete test topic, with its runs and its review;</li>
+  <li>more learning sessions than one;</li>
+  <li>length-study runs beyond the eight (third runs at 10 or 60 minutes, and any run at 30);</li>
+  <li>for 598E, the larger architecture of at least 6 skills and 8 subagents.</li>
+</ul>
+
 <div class="watch"><span class="label">Watch out: what green does and does not mean</span>
 <p>CI runs plain <code>python -m p3 check</code> on the files you pushed, not <code>--final</code>. A green run means nothing is broken, such as a changed fixed file or a run whose snapshot no longer matches, and it says nothing about whether you are finished. Completeness is <code>p3 check --final</code>, on your machine.</p>
-<p>And <code>p3 check --final</code> counts what it can count, not how good it is. It cannot see your video or your Canvas post, whether your repo is public, whether your ratings are justified, or, for a stretch other than the length study, whether the stretch work is there beyond section 13 of <code>EVAL.md</code>.</p>
+<p>And <code>p3 check --final</code> counts what it can count, not how good it is. It cannot see your video or your Canvas post, whether your repo is public, whether your ratings are justified, or, for a stretch other than the length study, whether the stretch work is there beyond prompt 9 of <code>DECISIONS.md</code>.</p>
 </div>
 
 <div class="note"><span class="label">Run it before the last evening</span>
@@ -192,20 +230,20 @@ Hand-in: N of N items done, ready to hand in.</pre>
 <p>Run <code>uv run p3 check --final</code> and push your last commit before you post, so the repo I open is the repo you checked.</p>
 <p>Before you post, check that I can see the repo: open its URL in a private browser window where you are not signed in to GitHub. If the page shows your files, it is public. If it says the page is not found, your repo is private; you can change that under the repo's <strong>Settings</strong> on GitHub.</p>
 
-<h2 id="deadline">The deadline and late work</h2>
+<h2 id="deadline">The deadline</h2>
 <div class="table-wrap">
 <table>
   <caption>From the README's "The deadline". Canvas is the system of record.</caption>
   <tbody>
-    <tr><th scope="row">Due</th><td>Tuesday, November 24, at 11:59 pm, one deadline for everything: the repo, the video and the post</td></tr>
+    <tr><th scope="row">Due</th><td>Wednesday, December 9, at 11:59 pm, one deadline for everything: the repo, the video and the post</td></tr>
     <tr><th scope="row">Checkpoints</th><td>none; nothing is checked before the deadline</td></tr>
-    <tr><th scope="row">Late work</th><td>loses 20%, and nothing is accepted more than a week late</td></tr>
+    <tr><th scope="row">After the deadline</th><td>nothing is accepted; the date is firm, and the course's late rule (20% off for up to a week) does not apply to P3</td></tr>
     <tr><th scope="row">If they disagree</th><td>Canvas wins over the README and this guide</td></tr>
   </tbody>
 </table>
 </div>
 <p>There are no checkpoints because I would rather you finish the whole thing by the deadline than turn something in halfway. The cost of that choice is that nobody checks your pace for you, which is what <code>uv run p3 next</code>, the Guide and <a href="17-pace.html">A pace that works</a> are for.</p>
-<p>The deadline is two days before Thanksgiving, so plan to be done before the holiday traffic starts. If Canvas and the README ever disagree about a date, Canvas wins, and please tell me so I can fix the README.</p>
+<p>Because nothing is accepted after December 9, leave yourself a margin: a usage limit or a FAIL line that needs a new run is a problem on the last evening and an inconvenience a few days earlier. If Canvas and the README ever disagree about a date, Canvas wins, and please tell me so I can fix the README.</p>
 
 <h2 id="points">How the 150 points are planned</h2>
 <p>This is how I plan to grade the 150 points for the project; the video is the other 50 of the 200 on Canvas. Canvas is the record, and if I change this table before the deadline I will announce it there.</p>
@@ -219,10 +257,10 @@ Hand-in: N of N items done, ready to hand in.</pre>
     <tr><td><code>c1-skills</code>: the four skills, measured (objective checks and cost)</td><td class="num">10</td></tr>
     <tr><td><code>c2-review</code>: review loops on teach, quiz and grade, measured</td><td class="num">10</td></tr>
     <tr><td><code>c3-split</code>: the teach job split across subagents, measured</td><td class="num">10</td></tr>
-    <tr><td><code>final</code>: the guard with its tests, three repeats, the ablation, the blind comparison against <code>c0-baseline</code></td><td class="num">15</td></tr>
-    <tr><td>Component inventory: a purpose and a with/without review for every skill and subagent, minimums met</td><td class="num">10</td></tr>
-    <tr><td>Test topics: items written before the first run, <code>c0-baseline</code> and <code>final</code> run on both, reviewed</td><td class="num">15</td></tr>
-    <tr><td><code>EVAL.md</code>: the trade-offs, the judge check, open reviews against blind picks, the change that did not pay</td><td class="num">15</td></tr>
+    <tr><td><code>final</code>: the guard with its tests, two repeats, the ablation, the blind comparison against <code>c0-baseline</code></td><td class="num">15</td></tr>
+    <tr><td>Component inventory: every skill and subagent listed with its kind and whether <code>final</code> kept it, minimums met</td><td class="num">10</td></tr>
+    <tr><td>Test topic: items written before the first run, <code>c0-baseline</code> and <code>final</code> run on it, reviewed (a second complete topic earns bonus points as the Canvas discussion says)</td><td class="num">15</td></tr>
+    <tr><td><code>DECISIONS.md</code>: the nine decisions, with the judge check, open reviews against blind picks, and the change that did not pay</td><td class="num">15</td></tr>
     <tr><td>One stretch (498E: any one; 598E: the length study, required)</td><td class="num">25</td></tr>
     <tr><td><strong>Total</strong></td><td class="num"><strong>150</strong></td></tr>
   </tbody>
@@ -230,16 +268,16 @@ Hand-in: N of N items done, ready to hand in.</pre>
 </div>
 
 <h3 id="measured">What "measured" means</h3>
-<p>Three rows say "measured". A step is measured when its objective checks and its cost, from <code>uv run p3 report</code>, are set beside your major review of the step and written up in <code>EVAL.md</code> with what they let you claim. A table on its own is not a measurement, and neither is a review on its own: the points are for putting the two side by side and saying, honestly, what one run of a step against the step before it can and cannot show.</p>
+<p>Three rows say "measured". A step is measured when its objective checks and its cost, from <code>uv run p3 report</code>, are set beside your major review of the step and written up in <code>DECISIONS.md</code> with what they let you claim. A table on its own is not a measurement, and neither is a review on its own: the points are for putting the two side by side and saying, honestly, what one run of a step against the step before it can and cannot show.</p>
 
 <h3 id="did-not-pay">A step that did not pay still earns its points</h3>
-<p>A step that did not pay for itself earns its points when you measured it and said so. If your <code>c3-split</code> pipeline cost three times as much as <code>c2-review</code> and your Lesson ratings did not move, that is a real result about your system, and saying it with the numbers behind it is exactly what I am grading. Dropping that step from <code>final</code> for that reason is a good decision, not a lost one. As the top of <code>EVAL.md</code> says, what I read for above all is whether each claim matches its evidence, including the steps that did not pay.</p>
+<p>A step that did not pay for itself earns its points when you measured it and said so. If your <code>c3-split</code> pipeline cost three times as much as <code>c2-review</code> and your Lesson ratings did not move, that is a real result about your system, and saying it with the numbers behind it is exactly what I am grading. Dropping that step from <code>final</code> for that reason is a good decision, not a lost one. As the top of <code>DECISIONS.md</code> says, "it did not pay off" is a full answer when you measured it, and what I read for above all is whether each claim matches its evidence, including the steps that did not pay.</p>
 
 <h3 id="reviews-graded">How the reviews are graded</h3>
-<p>The reviews are 30 points, the largest single part. I look for four things in them: specific evidence, such as quotes and item ids; ratings that the written feedback justifies; feedback that someone could act on; and a visible trail from each review to the change it caused to whether that change helped. <a href="07-reviews.html">Your reviews</a> says more, with examples.</p>
+<p>The reviews are 30 points, the largest single part. I look for four things in them: specific evidence, such as quotes and item ids; ratings that the evidence you give justifies; a closing section that someone could act on; and a visible trail from each review to the change it caused to whether that change helped. <a href="07-reviews.html">Your reviews</a> says more, with examples.</p>
 
 <h3 id="why-stretch">Why an A needs a stretch</h3>
-<p>I would rather say this now than have you find out later. The core work is 125 of the 150 points, so complete core work with the video, and no stretch, is 175 of 200, which is 87.5%. So in this project an A needs a stretch. The stretch is worth doing properly and not worth doing in the last hour: pick it early, try a small piece first, and plan about 4 to 6 extra hours. <a href="16-stretch-and-598e.html">Stretch options and the 598E length study</a> describes each option.</p>
+<p>I would rather say this now than have you find out later. The core work is 125 of the 150 points, so complete core work with the video, and no stretch, is 175 of 200, which is 87.5%. So in this project an A needs a stretch. The stretch is worth doing properly and not worth doing in the last hour: pick it early, try a small piece first, and plan about 4 to 6 extra hours. Extra work, which the section above lists, earns bonus points as the Canvas discussion says. <a href="16-stretch-and-598e.html">Stretch options and the 598E length study</a> describes each option.</p>
 
 <h2 id="if-it-fails">If something goes wrong</h2>
 <p>If <code>p3 check --final</code> fails and the FAIL line does not tell you enough, look it up in <a href="19-troubleshooting.html">When it breaks</a>, or paste the line to the Guide and ask what it means and who fixes it. If you are stuck for more than 20 minutes, come to office hours, Tuesday and Thursday, 9 to 10 am and 2 to 3 pm, in CTLM 246L, and bring the exact output. And if anything on this page seems wrong or unclear, tell me; that is a bug too, and I would rather fix it than have you guess.</p>
