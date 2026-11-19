@@ -19,15 +19,15 @@ reviews/<step>.md, for c1-skills, c2-review, c3-split and final:
     ## Major review
     **Run:** bench/runs/<step>/<run-id>
     **Live tries:**
-    <what the student tried in tutor/>
+    <what the student tried in tutor/>  optional
     ### Lesson                         one per job of the step (STEP_JOBS)
     #### Pedagogy                      one per criterion of the job (CRITERIA)
     Rating: 4
-    <feedback>
-    ### Compared with the previous step
+    <feedback>                         optional
+    ### Compared with the previous step  optional
     ### What the next step should fix  (in final: What I would do next)
     ## Learning sessions               final only
-    ### Session 1                      to 3, each with **Date:**, **Topic:**, then the text
+    ### Session 1                      one is needed (SESSIONS), each with **Date:**, **Topic:**, then the text
     ## Test topics                     final only
     ### <topic-id>                     one per test topic in bench/own/
 
@@ -36,7 +36,7 @@ reviews/components.md:
     # Components
     ### <name>                         the skill's folder name, or the subagent's frontmatter name
     - Kind: skill | subagent
-    - Step added: <step>
+    - Step added: <step>               optional, like Purpose, With and without and Review
     - Purpose: ...
     - With and without: ...
     - Review: ...
@@ -46,14 +46,18 @@ A text is written when it is not empty and holds no TODO outside code (a TODO in
 block or an inline code span, such as a lesson's exercise the student quotes, is not a marker). A
 round is complete when My thoughts, Kind, Files and Why are written and Kind is one of the four
 kinds (its Run line is not part of that, and p3 check only warns when it is left unwritten); a major
-review when its Run names a run of the step, Live tries is written (the text from its label up to
-the first job or closing section, sub-headings included), every criterion of the step's jobs has a
-whole-number rating from 1 to 5 and written feedback (words after the rating on its line count as
-feedback), and both closing sections are written; a learning session when Date, Topic and its text
-are written; a test-topic section when its text is; an inventory entry when its six fields are, Kind
-is skill or subagent and Kept in final starts with yes or no (a no with its reason). A ### section of
-components.md with none of the six field labels is prose, unless its heading names a component that
-was built. What needs the rest of the repo is for p3 check: whether the named run exists and is a
+review when its Run names a run of the step, every criterion of the step's jobs has a whole-number
+rating from 1 to 5, and its last closing section (What the next step should fix, in final What I
+would do next) is written; a learning session when Date, Topic and its text are written; a
+test-topic section when its text is; an inventory entry when Kind is skill or subagent and Kept in
+final starts with yes or no (a no with its reason). A ### section of components.md with none of the
+six field labels is prose, unless its heading names a component that was built.
+
+Since version 0.2 the rest is optional, and a TODO marker left in an optional part is not a
+problem: the feedback under a rating (words after the rating on its line count as feedback), Live
+tries (the text from its label up to the first job or closing section, sub-headings included),
+Compared with the previous step, and an entry's Step added, Purpose, With and without and Review.
+A file written under 0.1, with all of those filled in, is complete as it is. What needs the rest of the repo is for p3 check: whether the named run exists and is a
 scored full run of the step on the shared topic, and whether each learning session's Topic starts
 with the id of a test topic in bench/own/, the same one in all three.
 
@@ -103,11 +107,12 @@ COMPARED = "Compared with the previous step"
 NEXT_FIX = "What the next step should fix"
 NEXT_DO = "What I would do next"
 MIN_ROUNDS = {"c1-skills": 2, "c2-review": 2, "c3-split": 2, "final": 0}
-SESSIONS = 3
+SESSIONS = 1  # the learning sessions the hand-in needs; reviews/final.md has room for three
 KINDS = ("modified skill", "new skill", "new subagent", "other")
 NEW_SUBAGENT = "new subagent"
 SKILL, SUBAGENT = "skill", "subagent"
 COMPONENT_FIELDS = ("Kind", "Step added", "Purpose", "With and without", "Review", "Kept in final")
+REQUIRED_FIELDS = ("Kind", "Kept in final")  # what makes an entry complete; the other fields are optional
 RATING_MIN, RATING_MAX = 1, 5
 TODO_MARK = "TODO"
 
@@ -118,8 +123,13 @@ def step_file(step: str) -> str:
 
 
 def closing_sections(step: str) -> tuple[str, str]:
-    """The two sections that end a step's major review."""
+    """The two sections that end a step's major review; the second is the required one."""
     return (COMPARED, NEXT_DO if step == "final" else NEXT_FIX)
+
+
+def required_closing(step: str) -> str:
+    """The closing section a complete major review needs: what the next step should fix."""
+    return closing_sections(step)[1]
 
 
 def written(text: str | None) -> bool:
@@ -611,11 +621,7 @@ def _parse_criterion(section: Section, job: str, where: str) -> Criterion:
     rating, problem = parse_rating(rating_text, f.counts.get("Rating", 0))
     remark = rating_remark(rating_text) if rating is not None else ""
     feedback = "\n".join(t for t in (remark, f.rest_text()) if t)
-    problems = [f"{where}: {problem}"] if problem else []
-    if not feedback:
-        problems.append(f"{where}: no feedback below the rating (say why, with quotes or item ids)")
-    elif has_todo(feedback):
-        problems.append(f"{where}: the feedback is still TODO")
+    problems = [f"{where}: {problem}"] if problem else []  # the feedback below the rating is optional
     return Criterion(job, section.title, rating, rating_text, feedback, problems)
 
 
@@ -665,9 +671,6 @@ def _parse_major(doc: Section, step: str) -> MajorReview:
             problems.append(f"{where}: Run names a run of {ref[0]}; the major review of {step} reviews a full run of {step} ({example})")
         else:
             run_id = ref[1]
-    p = _problem(where, "Live tries", live, _bold_missing("Live tries") + " (what you tried in tutor/ yourself)")
-    if p:
-        problems.append(p)
     criteria: dict[tuple[str, str], Criterion] = {}
     for job, names in CRITERIA.items():
         required = job in STEP_JOBS[step]
@@ -690,13 +693,15 @@ def _parse_major(doc: Section, step: str) -> MajorReview:
                 problems += criterion.problems
     closing: dict[str, str | None] = {}
     for name in closing_sections(step):
+        required = name == required_closing(step)
         c_section = section.child(name, 3)
         if c_section is None:
             closing[name] = None
-            problems.append(f"{where} > {name}: missing; add ### {name}" + _misplaced(doc, name, 3, f"## {MAJOR_REVIEW}"))
+            if required:
+                problems.append(f"{where} > {name}: missing; add ### {name}" + _misplaced(doc, name, 3, f"## {MAJOR_REVIEW}"))
             continue
         closing[name] = c_section.text()
-        p = _problem(f"{where} > {name}", "the text", closing[name], "")
+        p = _problem(f"{where} > {name}", "the text", closing[name], "") if required else None
         if p:
             problems.append(p)
     return MajorReview(True, run, run_id, live, criteria, closing, problems)
@@ -821,7 +826,7 @@ def _parse_entry(section: Section) -> Entry:
     shown = re.sub(r"[*`]", "", title).strip()
     if not shown or TODO_MARK in shown or _PLACEHOLDER.search(shown):
         problems.append(f"{where}: give the entry its component's name (the skill's folder name, or the subagent's name)")
-    for name in COMPONENT_FIELDS:
+    for name in REQUIRED_FIELDS:
         p = _problem(where, name, values[name], _bullet_missing(name))
         if p:
             problems.append(p)

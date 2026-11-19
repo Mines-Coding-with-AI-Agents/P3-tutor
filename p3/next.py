@@ -24,7 +24,7 @@ the repo cannot be read.
   as soon as an item of a later stage is done. Within a stage the items stay in order, because a
   major review needs its run. An item that needs runs left behind sends you back to the first of
   them instead (Item.needs): a blind comparison pairs only the runs there are when it starts, the
-  open review of the test topics reads their runs, and EVAL.md reports on every run.
+  open review of a test topic reads its runs, and DECISIONS.md reports on every run.
 - Also lists at most two items not done from the stages before the current one (the long runs
   left behind), and, when Next is a long run, the first later item that waits for no run, as
   "While it runs: ...".
@@ -54,10 +54,11 @@ TEMPLATE_URL_RE = re.compile(r"[:/]Mines-Coding-with-AI-Agents/P3-tutor(?:\.git)
 RUNNING_MINUTES = 90
 MAX_ALSO = 2
 MAX_DETAILS = 5
-TOPIC_CONFIGS = ("c0-baseline", "final")  # the two configs run on each test topic
+TOPIC_CONFIGS = ("c0-baseline", "final")  # the two configs run on a test topic
+DECISIONS = check.DOCS[0]  # the decision log, DECISIONS.md
 LIVE_TRY = "Run the live tutor (uv run p3 bench --config live --quick, or --only with the scenarios you are working on)"
-# (stage number, step number, step, guide page) of the three steps of the ladder; EVAL.md's
-# sections 2 to 4 are steps 1 to 3
+# (stage number, step number, step, guide page) of the three steps of the ladder; prompts 1 to 3
+# of DECISIONS.md are steps 1 to 3
 STEP_STAGES = ((4, 1, "c1-skills", "08-step1-skills.html"), (5, 2, "c2-review", "09-step2-review-loops.html"), (7, 3, "c3-split", "10-step3-split.html"))
 WORDS = {1: "one", 2: "two", 3: "three"}
 ALL_RUNS = "*"  # in Item.needs: every long run of the map
@@ -202,7 +203,7 @@ def _runs_item(root: Path, name: str, need: int, page: str, label: str, topic_id
 
 
 def _study_item(root: Path, name: str, page: str) -> Item:
-    """The length study's runs of a config: three scored teach-only runs at each length."""
+    """The length study's runs of a config: check.STUDY_RUNS scored teach-only runs at each length."""
     need = check.STUDY_RUNS
     counts = {m: len(util.list_runs(name, util.SHARED_TOPIC, scored=True, quick=False, minutes=m, kind=util.TEACH_ONLY, root=root)) for m in check.STUDY_MINUTES}
     cells = ", ".join(f"{c} at {m}" for m, c in counts.items())
@@ -218,7 +219,7 @@ def _study_item(root: Path, name: str, page: str) -> Item:
     else:
         what = f"the {minutes}-minute runs" if not have else f"the last {minutes}-minute run" if need - have == 1 else f"the last {_word(need - have)} {minutes}-minute runs"
         item.action = _start(what, _bench(name, minutes=minutes, repeats=need - have))
-    item.also = f"the length study's runs of {name}: {cells} minutes, of {need} each (start the rest in a plain terminal)"
+    item.also = f"the length study's runs of {name}: {cells} minutes, {need} needed at each (start the rest in a plain terminal)"
     return item
 
 
@@ -236,6 +237,14 @@ class Repo:
     own: list[str]  # the test topics in bench/own/
     integrity_ok: bool
     parsed: dict[str, reviews.StepReview | None] = field(default_factory=dict)
+    ready_topics: list[str] | None = None
+
+    def ready(self) -> list[str]:
+        """The test topics that are valid and have their runs, as p3 check judges them."""
+        if self.ready_topics is None:
+            validations = {tid: topic.validate(self.root / "bench" / "own" / tid, topic.OWN) for tid in self.own}
+            self.ready_topics = check.check_own_topics(self.root, True, validations, [])[1]
+        return self.ready_topics
 
     def review(self, step: str) -> reviews.StepReview | None:
         if step not in self.parsed:
@@ -423,7 +432,7 @@ def _major(repo: Repo, step: str, page: str, committed: bool = False) -> Item:
         if review.major.present and not review.major.touched:
             runs = check._full_runs(repo.root, step, util.SHARED_TOPIC)
             target = util.posix(runs[-1].dir, repo.root) if runs else f"a scored full run of {step}"
-            action = f"Write the major review of {target} in {rel}, under ## Major review: its Run line, your live tries of the tutor, then each criterion rated from 1 to 5 with feedback."
+            action = f"Write the major review of {target} in {rel}, under ## Major review: its Run line, a rating from 1 to 5 for every criterion, and what the next step should fix, in a few sentences with one quote or item id."
             return Item(f"{name} (not written yet)", False, action, page, waits=True)
         problems = scratch[0].details
         action = f"Finish the major review in {rel}: {_sentence(_without(reviews.MAJOR_REVIEW, problems[0]))}"
@@ -441,33 +450,33 @@ def _major(repo: Repo, step: str, page: str, committed: bool = False) -> Item:
     return Item(f"{name} (not committed after its run)", False, _sentence(order.text), page, waits=True)
 
 
-def _eval_section(repo: Repo, number: int, step_number: int, page: str) -> Item:
-    """A section of EVAL.md, found by its heading (## 2. Step 1), with no TODO marker in it."""
-    name = f"section {number} of EVAL.md"
-    path = repo.root / "EVAL.md"
+def _decision(repo: Repo, number: int, page: str) -> Item:
+    """A prompt of DECISIONS.md, found by its heading (## 2. ...), with no TODO marker in it."""
+    name = f"prompt {number} of {DECISIONS}"
+    path = repo.root / DECISIONS
     if not path.is_file():
-        return Item(f"{name} (EVAL.md is missing)", False, "Copy EVAL.md back from the template; your write-up goes in it.", page, waits=True)
+        action = f"{DECISIONS} is new in version 0.2 of the project, and your decision log goes in it: copy it from the template, as the guide's start page says under the update."
+        return Item(f"{name} ({DECISIONS} is missing)", False, action, page, waits=True)
     text = util.read_text(path)
     lines = text.split("\n")
-    heading = re.compile(rf"^##\s+{number}\.\s*Step\s+{step_number}\b", re.I)
+    heading = re.compile(rf"^##\s+{number}\.\s")
     start = next((n for n, line in enumerate(lines) if heading.match(line)), None)
     if start is None:
         if not check._todo_lines(text):
             return Item(name, True, page=page, waits=True)
-        action = f"Put back the heading of section {number} of EVAL.md, which starts with ## {number}. Step {step_number}, as the template has it; p3 next finds the section by it."
+        action = f"Put back the heading of prompt {number} of {DECISIONS}, which starts with ## {number}. as the template has it; p3 next finds the prompt by it."
         return Item(f"{name} (its heading is not there)", False, action, page, waits=True)
     end = next((n for n in range(start + 1, len(lines)) if re.match(r"^#{1,2}\s", lines[n])), len(lines))
     todo = [start + n for n in check._todo_lines("\n".join(lines[start:end]))]
     if not todo:
         return Item(name, True, page=page, waits=True)
-    markers = _plural(len(todo), "TODO marker")
-    action = f"Write section {number} of EVAL.md in your own words: {markers} left ({_lines(todo)})."
-    return Item(f"{name} ({markers} left)", False, action, page, waits=True)
+    action = f"Answer prompt {number} of {DECISIONS} in your own words, in two to four sentences with one number or quote ({_lines(todo)})."
+    return Item(f"{name} (not answered yet)", False, action, page, waits=True)
 
 
 def _inventory(repo: Repo, step: str, page: str) -> Item:
-    """An entry in reviews/components.md for each skill and subagent of the step's snapshot, with
-    its Purpose and Review written (Kept in final waits for final)."""
+    """An entry in reviews/components.md for each skill and subagent of the step's snapshot. The
+    Builder writes an entry's factual fields; its Kept in final waits for final."""
     rel = reviews.COMPONENTS_PATH
     name = "the inventory entries"
     if step not in repo.configs:
@@ -478,21 +487,15 @@ def _inventory(repo: Repo, step: str, page: str) -> Item:
     folder = repo.root / "configs" / step
     built = [(reviews.SKILL, n) for n in reviews.skill_names(folder)] + [(reviews.SUBAGENT, n) for n in sorted(reviews.subagents(folder))]
     entries = reviews.read_components(repo.root) or []
-    missing, unwritten = [], []
+    missing = []
     for kind, component in built:
         key = reviews.name_key(component)
-        entry = next((e for e in entries if e.key == key and e.kind in (kind, None)), None)
-        if entry is None:
+        if not any(e.key == key and e.kind in (kind, None) for e in entries):
             missing.append(component)
-        elif not (reviews.written(entry.values.get("Purpose")) and reviews.written(entry.values.get("Review"))):
-            unwritten.append(component)
-    state = f"{len(built) - len(missing) - len(unwritten)} of {_plural(len(built), 'component')} of configs/{step}/ with Purpose and Review written"
-    if missing:
-        action = f"In the Builder window, say: Add an entry to {rel} for each component of configs/{step}/ that has none ({_and(missing)}), with Kind, Step added, and With and without."
-    elif unwritten:
-        action = f"Write Purpose and Review for {_and(unwritten)} in {rel}; they are yours to write, and reviews/README.md says what each holds."
-    else:
+    state = f"{len(built) - len(missing)} of {_plural(len(built), 'component')} of configs/{step}/ with an entry"
+    if not missing:
         return Item(f"{name} ({state})", True, page=page)
+    action = f"In the Builder window, say: Add an entry to {rel} for each component of configs/{step}/ that has none ({_and(missing)}), with Kind, Step added, and With and without."
     return Item(f"{name} ({state})", False, action, page)
 
 
@@ -511,7 +514,7 @@ def _step(repo: Repo, number: int, step_number: int, step: str, page: str) -> St
         _snapshot(repo, step, f"{page}#snapshot", snapshot),
         _runs_item(repo.root, step, check.SHARED_RUNS[step], f"{page}#full-run", f"the run of {step}"),
         _major(repo, step, f"{page}#major-review"),
-        _eval_section(repo, step_number + 1, step_number, f"{page}#eval"),
+        _decision(repo, step_number, f"{page}#decision"),
         _inventory(repo, step, f"{page}#inventory"),
     ]
     return Stage(number, f"Step {step_number}, {step}", items)
@@ -547,73 +550,88 @@ def _study(repo: Repo) -> Stage:
 
 
 def _test_topics(repo: Repo) -> Stage:
+    """A test topic written, valid and committed (check.OWN_TOPICS of them; one more is a bonus and
+    never holds the map back)."""
     page = "11-test-topics.html"
     own, need = repo.own, check.OWN_TOPICS
+    what = "a test topic" if need == 1 else f"{_word(need)} test topics"
     start = "Start a test topic with uv run p3 new-topic <id> (lowercase letters, digits and hyphens), then write its items yourself, as bench/own/README.md says."
     if len(own) < need:
-        count = Item(f"{_word(need)} test topics in bench/own/ ({len(own)} so far)", False, start, page)
-    elif len(own) > need:
-        count = Item(f"{_word(need)} test topics in bench/own/ ({len(own)}: {_and(own)})", False, f"Keep exactly {_word(need)} test topics in bench/own/: the hand-in needs {_word(need)}, so delete the others ({_and(own)} are there now).", page)
+        count = Item(f"{what} in bench/own/ ({'none yet' if not own else f'{len(own)} so far'})", False, start, page)
     else:
-        count = Item(f"{_word(need)} test topics in bench/own/ ({_and(own)})", True, page=page)
-    bad = []
-    for tid in own:
-        v = topic.validate(repo.root / "bench" / "own" / tid, topic.OWN)
-        if not v.ok(allow_todo=False):
-            bad.append((tid, v))
+        count = Item(f"{what} in bench/own/ ({_and(own)})", True, page=page)
+    checked = {tid: topic.validate(repo.root / "bench" / "own" / tid, topic.OWN) for tid in own}
+    good = [tid for tid in own if checked[tid].ok(allow_todo=False)]
     if not own:
-        valid = Item("each valid, with no TODO left (no test topic yet)", False, start, page)
-    elif bad:
-        tid, v = bad[0]
+        valid = Item("valid, with no TODO left (no test topic yet)", False, start, page)
+    elif len(good) < need:
+        tid = next(t for t in own if t not in good)
+        v = checked[tid]
         verb = "Fix" if v.errors else "Finish"
-        valid = Item(f"each valid, with no TODO left (bench/own/{tid}/ is not yet)", False, f"{verb} bench/own/{tid}/: {_sentence((v.errors or v.todos)[0])}", page)
+        valid = Item(f"valid, with no TODO left (bench/own/{tid}/ is not yet)", False, f"{verb} bench/own/{tid}/: {_sentence((v.errors or v.todos)[0])}", page)
     else:
-        valid = Item("each valid, with no TODO left", True, page=page)
-    dirty = [tid for tid in own if not util.path_clean_and_tracked(f"bench/own/{tid}", repo.root)]
+        valid = Item("valid, with no TODO left", True, page=page)
+    clean = [tid for tid in good if util.path_clean_and_tracked(f"bench/own/{tid}", repo.root)]
     if not own:
-        committed = Item("each committed, with no change since (no test topic yet)", False, start, page)
-    elif dirty:
-        tid = dirty[0]
+        committed = Item("committed, with no change since (no test topic yet)", False, start, page)
+    elif len(clean) < need:
+        tid = next((t for t in good if t not in clean), own[0])
         if util.list_runs(None, tid, root=repo.root):
             action = f"bench/own/{tid}/ has changed since it was committed, and it has runs, so restore it from git (git restore bench/own/{tid}); to fix a real mistake in it, follow \"Commit before the first run\" in bench/own/README.md."
         else:
             action = f"Commit and push bench/own/{tid}/ before any run on it, so the runs show its items were written first."
-        committed = Item(f"each committed, with no change since (bench/own/{tid}/ is not)", False, action, page)
+        committed = Item(f"committed, with no change since (bench/own/{tid}/ is not)", False, action, page)
     else:
-        committed = Item("each committed, with no change since", True, page=page)
-    return Stage(8, "Test topics", [count, valid, committed])
+        committed = Item("committed, with no change since", True, page=page)
+    return Stage(8, "Test topic", [count, valid, committed])
 
 
 def _ablation_runs(repo: Repo, page: str, names: list[str]) -> Item:
+    """A scored run of each ablation snapshot: a full run, or one made with --only for the
+    scenarios the removed component touches."""
     if not names:
-        return Item(f"the full run of a {check.ABLATION_PREFIX}<x> snapshot (no snapshot yet)", False, page=page, long=True)
+        return Item(f"a scored run of a {check.ABLATION_PREFIX}<x> snapshot (no snapshot yet)", False, page=page, long=True)
     for name in names:
-        if len(check._full_runs(repo.root, name, util.SHARED_TOPIC, check.BENCH_MINUTES)) < check.ABLATION_RUNS:
-            return _runs_item(repo.root, name, check.ABLATION_RUNS, page, f"the run of {name}")
-    return Item(f"the full run of {_and(names)}", True, page=page, long=True)
+        if len(check._ablation_runs(repo.root, name)) >= check.ABLATION_RUNS:
+            continue
+        item = Item(f"a scored run of {name} (none yet)", False, page=page, long=True, key=f"runs:{name}")
+        unscored = util.list_runs(name, util.SHARED_TOPIC, scored=False, quick=False, minutes=check.BENCH_MINUTES, root=repo.root)
+        if unscored:
+            item.action = _score(repo.root, unscored[0])
+        else:
+            item.action = (
+                f"In a plain terminal at the repo root, run the ablation on the scenarios the component you removed touches, and leave it running: "
+                f"{_bench(name)} --only <scenarios>, such as --only teach or --only quiz (leave --only out for a full run)."
+            )
+        item.also = f"the run of {name}: none yet (start it in a plain terminal)"
+        return item
+    return Item(f"a scored run of {_and(names)}", True, page=page, long=True)
 
 
 def _topic_runs(repo: Repo, page: str) -> Item:
-    """A scored full run of c0-baseline and of final on each test topic."""
-    pairs = [(tid, name) for tid in repo.own for name in TOPIC_CONFIGS]
-    missing = [(tid, name) for tid, name in pairs if not check._full_runs(repo.root, name, tid)]
-    total = max(len(pairs), check.OWN_TOPICS * len(TOPIC_CONFIGS))
-    have = len(pairs) - len(missing)
-    item = Item(f"runs of {_and(list(TOPIC_CONFIGS))} on both test topics ({have} of {total} so far)", len(repo.own) >= check.OWN_TOPICS and not missing, page=page, long=True, key="topic-runs")
-    item.also = f"the test topics' runs: {have} of {total} (start the rest in a plain terminal)"
-    if not missing:
+    """A scored full run of c0-baseline and of final on a test topic (check.OWN_TOPICS of them): the
+    topics that count are the ones with the most of their runs."""
+    need = check.OWN_TOPICS
+    have = {tid: [name for name in TOPIC_CONFIGS if check._full_runs(repo.root, name, tid)] for tid in repo.own}
+    counted = sorted(repo.own, key=lambda tid: -len(have[tid]))[:need]
+    got, total = sum(len(have[tid]) for tid in counted), need * len(TOPIC_CONFIGS)
+    what = "a test topic" if need == 1 else f"{_word(need)} test topics"
+    item = Item(f"runs of {_and(list(TOPIC_CONFIGS))} on {what} ({got} of {total} so far)", len(counted) >= need and got == total, page=page, long=True, key="topic-runs")
+    item.also = f"the test topic's runs: {got} of {total} (start the rest in a plain terminal)"
+    behind = [(tid, name) for tid in counted for name in TOPIC_CONFIGS if name not in have[tid]]
+    if not behind:
         return item
-    tid, name = missing[0]
+    tid, name = behind[0]
     unscored = util.list_runs(name, tid, scored=False, quick=False, kind=util.FULL, root=repo.root)
     item.action = _score(repo.root, unscored[0]) if unscored else _start(f"the run of {name} on {tid}", _bench(name, tid))
     return item
 
 
 def _sessions(repo: Repo, page: str) -> Item:
-    """Three complete learning sessions in reviews/final.md, all on one test topic."""
+    """A complete learning session in reviews/final.md, on a test topic (reviews.SESSIONS of them)."""
     rel = reviews.step_file("final")
     need = reviews.SESSIONS
-    name = f"{_word(need)} learning sessions"
+    name = "a learning session" if need == 1 else f"{_word(need)} learning sessions"
     problem = repo.review_problem(rel)
     if problem:
         return Item(f"{name} ({problem[0]})", False, problem[1], page)
@@ -622,7 +640,7 @@ def _sessions(repo: Repo, page: str) -> Item:
     check._check_sessions(True, review, repo.own, scratch)
     problems = {id(s): check._session_problems(s, repo.own) for s in review.sessions}
     complete = [s for s in review.sessions if not problems[id(s)]]
-    state = f"{len(complete)} of {need} complete"
+    state = f"{len(complete)} of {need} complete" if len(complete) < need else f"{len(complete)} complete"
     if scratch[0].status == check.OK:
         return Item(f"{name} ({state})", True, page=page)
     if review.sessions_problem:
@@ -631,13 +649,14 @@ def _sessions(repo: Repo, page: str) -> Item:
     if first is None and len(complete) < need:
         k = max((_number(s.title) for s in review.sessions), default=0) + 1
         action = f"Add Session {k} to {rel} by copying the last session with its Date and Topic lines."
-    elif first is None:  # enough complete sessions, on more than one test topic
-        action = f"Fix {rel}: {_sentence(_without(reviews.LEARNING_SESSIONS, scratch[0].details[-1]))}"
+    elif first is None:
+        action = f"Fix {rel}: {_sentence(scratch[0].text)}"
     elif not first.touched:
-        on = sorted({s.topic_id for s in complete})  # all three on one topic, so the one the others are on
-        others = "as your other session was" if len(complete) == 1 else "as your other sessions were"
-        where = f"on {on[0]}, {others}" if len(on) == 1 else f"on one of your test topics ({_and(repo.own)})" if repo.own else "on one of your test topics"
-        action = f"Hold learning session {_number(first.title)}: open a terminal in tutor/, start claude there with tutor/ as you snapshotted final, and learn something {where}; then write it up under {first.title} in {rel}."
+        where = f"on your test topic, {repo.own[0]}" if len(repo.own) == 1 else f"on one of your test topics ({_and(repo.own)})" if repo.own else "on your test topic"
+        action = (
+            f"Hold a learning session: open a terminal in tutor/, start claude there with tutor/ as you snapshotted final, and learn something {where}; "
+            f"then write it up in three or four sentences under {first.title} in {rel}."
+        )
     else:
         action = f"Finish {first.title} in {rel}: {_sentence(_without(f'{reviews.LEARNING_SESSIONS} > {first.title}', problems[id(first)][0]))}"
     return Item(f"{name} ({state})", False, action, page)
@@ -717,13 +736,13 @@ def _blind(repo: Repo) -> Stage:
 def _writeup(repo: Repo) -> Stage:
     page = "14-write-up.html"
     rel = reviews.step_file("final")
-    name = f"your open review of each test topic in {rel}"
+    name = f"your open review of a test topic in {rel}"
     problem = repo.review_problem(rel)
     if problem:
         topics = Item(f"{name} ({problem[0]})", False, problem[1], page, waits=True)
     else:
         scratch: list[check.Item] = []
-        check._check_topic_reviews(True, repo.review("final"), repo.own, scratch)
+        check._check_topic_reviews(True, repo.review("final"), repo.own, repo.ready(), scratch)
         found = scratch[0]
         detail = _without(reviews.TEST_TOPICS, found.details[0]) if found.details else found.text
         topics = Item(name, found.status == check.OK, f"Finish ## {reviews.TEST_TOPICS} in {rel}: {_sentence(detail)}", page, waits=True, needs=("topic-runs",))
@@ -738,9 +757,14 @@ def _writeup(repo: Repo) -> Stage:
     scratch = []
     check.check_docs(repo.root, True, repo.study, scratch)
     bad = [i for i in scratch if i.status != check.OK]
-    docs = Item(("EVAL.md and PREREG.md" if repo.study else "EVAL.md") + " with no TODO left", not bad, page=page, waits=True, needs=(ALL_RUNS,))
-    if bad:
-        docs.action = f"{bad[0].text}; copy it back from the template." if bad[0].text.endswith("is missing") else f"Write the rest of {_sentence(bad[0].text)}"
+    written = f"{DECISIONS} and PREREG.md" if repo.study else DECISIONS
+    docs = Item(f"{written} with no TODO left, and {check.REPORT} written", not bad, page=page, waits=True, needs=(ALL_RUNS,))
+    if bad and bad[0].text.startswith(check.REPORT):
+        docs.action = f"Write {check.REPORT}, the tables of your runs, in a terminal at the repo root: uv run p3 report --write"
+    elif bad and "is missing" in bad[0].text:
+        docs.action = _sentence(bad[0].text)
+    elif bad:
+        docs.action = f"Write the rest of {_sentence(bad[0].text)}"
     return Stage(11, "The write-up", [topics, inventory, docs])
 
 
