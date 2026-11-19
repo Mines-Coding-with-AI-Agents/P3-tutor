@@ -2,6 +2,7 @@
 
     p3 report [--topic t] [--configs a,b,...] [--minutes M] [--quick] [--teach-only]
     p3 report --reviews
+    p3 report --write
 
 One row per config (and lesson length, when runs at several lengths exist) with each headline number
 as the mean over its scored full runs and the range in brackets, then one cost table per job. A full
@@ -14,13 +15,22 @@ and once any review file in reviews/ holds a rating, comes "Your ratings": the 1
 major reviews, one row per criterion grouped by job, one column per step, and a dash where there is
 no rating. A report of a test topic, of quick runs or of teach-only runs leaves it out. --reviews
 prints only that table.
+
+--write writes REPORT.md at the repo root instead of printing: the shared topic's tables exactly as the
+default report prints them, then "The ablation" (each final-minus-* config's scored run on the shared
+topic at its default lesson length that is not a quick run, beside final's full runs, for the jobs
+that run covered), one part per test topic in bench/own/ with scored full runs, and "Lesson length"
+(the --teach-only tables) when teach-only runs exist. A part with nothing to show is left out.
+--write takes no other option.
 """
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from pathlib import Path
 
-from p3 import reviews, util
+import p3
+from p3 import reviews, topic, util
 from p3.claude import COST_LABEL
 from p3.util import P3Error
 
@@ -47,6 +57,8 @@ COST = (
     ("cost_usd_list", "list-price $", "usd"),
 )
 JOBS = ("teach", "quiz", "grade", "tutor")
+REPORT_FILE = "REPORT.md"
+ABLATION_PREFIX = "final-minus-"
 
 
 def config_order(names) -> list[str]:
@@ -140,6 +152,48 @@ def groups(topic_id: str, configs: list[str] | None, minutes: int | None, quick:
     return out
 
 
+def result_tables(rows_by: list[tuple[str, int, list]], teach_only: bool = False, jobs: tuple[str, ...] = JOBS, notes: bool = True, total: bool = True) -> list[str]:
+    """The Quality table and the cost tables of `rows_by` (as groups() gives them) as Markdown lines,
+    ending with the line on what costs mean. `teach_only` keeps the teach checks alone, `jobs` the
+    checks and cost tables of those jobs, `notes` the reading notes under the Quality table, and
+    `total` the "Cost: all jobs" table."""
+    several_lengths = len({m for _, m, _ in rows_by}) > 1
+    out: list[str] = []
+    head = ["config"] + (["minutes"] if several_lengths else []) + ["runs"]
+    columns = [q for q in QUALITY if q[0].split("_")[0] in jobs and (not teach_only or q[0].startswith("teach_"))]
+    quality_rows = []
+    for name, mins, recs in rows_by:
+        summaries = [r.score.get("summary") or {} for r in recs]
+        row = [f"`{name}`"] + ([str(mins)] if several_lengths else []) + [str(len(recs))]
+        row += [cell([s.get(key) for s in summaries], kind, len(recs)) for key, _, kind in columns]
+        quality_rows.append(row)
+    out += ["### Quality", "", table(head + [label for _, label, _ in columns], quality_rows), ""]
+    if notes:
+        out += [
+            "Teach facts, key agreement, verdict agreement, false wrong, misconception hit and behavior met are shares (0 to 1); "
+            "misconceptions, dead links, wrong keys, ambiguous items and leaks are counts per run.",
+            "A dash means no run could be scored on that check, and n= says how many of the runs could.",
+            "A job that failed counts against the config: no lesson scores 0 teach facts, no quiz and key 0 key agreement, a missing grades file disagrees on every item, "
+            "and a tutor scenario with no reply is not met; leaks need a reply to check, so such a scenario is left out of them.",
+            "The length ratio is a rough reading-time estimate (visible words / 150) over the minutes requested; 0.6 to 1.5 counts as on length.",
+            "",
+        ]
+    for job in jobs + (("total",) if total else ()):
+        cost_rows = []
+        for name, mins, recs in rows_by:
+            costs = [((r.score.get("summary") or {}).get("cost") or {}).get(job) or {} for r in recs]
+            if not any(c.get("scenarios") for c in costs):
+                continue
+            row = [f"`{name}`"] + ([str(mins)] if several_lengths else []) + [str(len(recs))]
+            row += [cell([c.get(key) for c in costs], kind, len(recs)) for key, _, kind in COST]
+            cost_rows.append(row)
+        if cost_rows:
+            title = "Cost: all jobs" if job == "total" else f"Cost: {job}"
+            out += [f"### {title}", "", table(head + [label for _, label, _ in COST], cost_rows), ""]
+    out.append(f"Costs are per run, summed over the job's scenarios; list-price $ is the {COST_LABEL}.")
+    return out
+
+
 def report_text(
     topic_id: str = util.SHARED_TOPIC, configs: list[str] | None = None, minutes: int | None = None, quick: bool = False, teach_only: bool = False,
     ratings: bool = True,
@@ -165,47 +219,114 @@ def report_text(
                 noun = runs_word[:-1] if one else runs_word
                 hint = f"; {len(unscored)} {noun} {'is' if one else 'are'} not scored yet: score {'it' if one else 'each'} with p3 score {util.posix(unscored[-1].dir, util.repo_root())}"
         raise P3Error(f"no scored {what} on topic {topic_id}" + (f" for {', '.join(configs)}" if configs else "") + (hint or "; run p3 bench first"))
-    several_lengths = len({m for _, m, _ in rows_by}) > 1
     out = [f"## Results on {topic_id}", "", f"Scored {what}; each cell is the mean over the runs, with the range in brackets.", ""]
-    head = ["config"] + (["minutes"] if several_lengths else []) + ["runs"]
-    columns = [q for q in QUALITY if q[0].startswith("teach_")] if teach_only else list(QUALITY)
-    quality_rows = []
-    for name, mins, recs in rows_by:
-        summaries = [r.score.get("summary") or {} for r in recs]
-        row = [f"`{name}`"] + ([str(mins)] if several_lengths else []) + [str(len(recs))]
-        row += [cell([s.get(key) for s in summaries], kind, len(recs)) for key, _, kind in columns]
-        quality_rows.append(row)
-    out += ["### Quality", "", table(head + [label for _, label, _ in columns], quality_rows), ""]
-    out += [
-        "Teach facts, key agreement, verdict agreement, false wrong, misconception hit and behavior met are shares (0 to 1); "
-        "misconceptions, dead links, wrong keys, ambiguous items and leaks are counts per run.",
-        "A dash means no run could be scored on that check, and n= says how many of the runs could.",
-        "A job that failed counts against the config: no lesson scores 0 teach facts, no quiz and key 0 key agreement, a missing grades file disagrees on every item, "
-        "and a tutor scenario with no reply is not met; leaks need a reply to check, so such a scenario is left out of them.",
-        "The length ratio is a rough reading-time estimate (visible words / 150) over the minutes requested; 0.6 to 1.5 counts as on length.",
-        "",
-    ]
-    for job in JOBS + ("total",):
-        cost_rows = []
-        for name, mins, recs in rows_by:
-            costs = [((r.score.get("summary") or {}).get("cost") or {}).get(job) or {} for r in recs]
-            if not any(c.get("scenarios") for c in costs):
-                continue
-            row = [f"`{name}`"] + ([str(mins)] if several_lengths else []) + [str(len(recs))]
-            row += [cell([c.get(key) for c in costs], kind, len(recs)) for key, _, kind in COST]
-            cost_rows.append(row)
-        if cost_rows:
-            title = "Cost: all jobs" if job == "total" else f"Cost: {job}"
-            out += [f"### {title}", "", table(head + [label for _, label, _ in COST], cost_rows), ""]
-    out.append(f"Costs are per run, summed over the job's scenarios; list-price $ is the {COST_LABEL}.")
+    out += result_tables(rows_by, teach_only=teach_only)
     yours = ratings_table() if ratings and topic_id == util.SHARED_TOPIC and not quick and not teach_only else None
     if yours:
         out += ["", yours.rstrip("\n")]
     return "\n".join(out) + "\n"
 
 
+def _covered_jobs(run: dict) -> tuple[str, ...]:
+    """The jobs a run had scenarios for, in JOBS order."""
+    found = {sc.get("job") for sc in run.get("scenarios") or [] if isinstance(sc, dict)}
+    return tuple(job for job in JOBS if job in found)
+
+
+def ablation_text(root: Path | None = None) -> str | None:
+    """The "The ablation" part of REPORT.md, or None when no final-minus-* config has a scored run on
+    the shared topic at its default lesson length that is not a quick run. Per such config, its latest
+    such run (a full run or an --only run) beside `final`'s scored full runs at that length: the
+    Quality and cost tables of the jobs the ablation run covered, and for an --only run a line saying
+    which scenarios it covered."""
+    root = Path(root) if root else util.repo_root()
+    minutes = topic.load(util.SHARED_TOPIC, root).minutes
+    final = util.list_runs("final", util.SHARED_TOPIC, scored=True, minutes=minutes, quick=False, kind=util.FULL, root=root)
+    names = sorted({r.run.get("config") for r in util.list_runs(topic=util.SHARED_TOPIC, scored=True, minutes=minutes, quick=False, root=root) if str(r.run.get("config")).startswith(ABLATION_PREFIX)})
+    out: list[str] = []
+    for name in config_order(names):
+        rec = util.list_runs(name, util.SHARED_TOPIC, scored=True, minutes=minutes, quick=False, root=root)[-1]
+        jobs = _covered_jobs(rec.run)
+        if not jobs:
+            continue
+        rows_by = ([("final", minutes, final)] if final else []) + [(name, minutes, [rec])]
+        out += [f"### `{name}`", ""]
+        tables = result_tables(rows_by, jobs=jobs, notes=False, total=len(jobs) == len(JOBS))
+        tables = ["#" + line if line.startswith("### ") else line for line in tables]  # one level under the config's heading
+        if rec.run.get("only"):
+            ids = ", ".join(str(sc.get("id")) for sc in rec.run.get("scenarios") or [] if isinstance(sc, dict))
+            cut = tables.index("#### Quality") + 4
+            tables[cut:cut] = [f"`{name}` was run with --only and covers only these scenarios: {ids}; its costs add up only those, while the costs of `final` add up every scenario of each job.", ""]
+        out += tables + [""]
+    if not out:
+        return None
+    intro = [
+        "## The ablation", "",
+        f"Each `{ABLATION_PREFIX}*` config's latest scored run on {util.SHARED_TOPIC} at {minutes} minutes (not a quick run) beside `final`'s scored full runs, for the jobs that run covered; each cell is the mean over the runs, with the range in brackets.", "",
+    ]  # fmt: skip
+    if not final:
+        intro += ["`final` has no scored full run at this length yet, so only the ablation runs are shown.", ""]
+    return "\n".join(intro + out).rstrip("\n") + "\n"
+
+
+def _topic_part(topic_id: str, **kwargs) -> str | None:
+    """report_text for a topic, or None when it has nothing to show."""
+    try:
+        return report_text(topic_id, **kwargs)
+    except P3Error:
+        return None
+
+
+def report_file_text(root: Path | None = None, when: datetime | None = None) -> str | None:
+    """The whole of REPORT.md, or None when no part has anything to show. Parts, in order: the note
+    under "# Report", the shared topic's tables as p3 report prints them, "The ablation", one part per
+    test topic in bench/own/, and "Lesson length" (the --teach-only tables)."""
+    root = Path(root) if root else util.repo_root()
+    when = (when or util.utc_now()).astimezone(timezone.utc)
+    parts = []
+    if shared := _topic_part(util.SHARED_TOPIC):
+        parts.append(shared)
+    ablation = ablation_text(root)
+    if ablation:
+        parts.append(ablation)
+    for topic_id, kind, _folder in topic.list_topics(root):
+        if kind == topic.OWN and (own := _topic_part(topic_id)):
+            parts.append(own)
+    lengths = _topic_part(util.SHARED_TOPIC, teach_only=True)
+    if lengths:
+        parts.append(lengths.replace(f"## Results on {util.SHARED_TOPIC}", "## Lesson length", 1))
+    if not parts:
+        return None
+    note = (
+        f"This file is written by `p3 report --write` (p3 {p3.__version__}, {when.strftime('%Y-%m-%d %H:%M')} UTC). "
+        "Do not edit it by hand: it is written again whenever new runs are scored."
+    )
+    return "\n".join(["# Report", "", note, ""] + [part.rstrip("\n") + "\n" for part in parts])
+
+
+def write_report(root: Path | None = None) -> Path:
+    """Write REPORT.md at the repo root and return its path. Raises P3Error when there is nothing to report."""
+    root = Path(root) if root else util.repo_root()
+    text = report_file_text(root)
+    if text is None:
+        raise P3Error(f"no scored runs to report yet, so {REPORT_FILE} was not written; run p3 bench first")
+    path = root / REPORT_FILE
+    util.write_text(path, text)
+    return path
+
+
 def main(args) -> int:
     """The p3 report command."""
+    if getattr(args, "write", False):
+        others = [flag for flag, given in (
+            ("--topic", args.topic is not None), ("--configs", bool(args.configs)), ("--minutes", args.minutes is not None),
+            ("--quick", args.quick), ("--teach-only", bool(getattr(args, "teach_only", False))), ("--reviews", bool(getattr(args, "reviews", False))),
+        ) if given]  # fmt: skip
+        if others:
+            raise P3Error(f"--write takes no other option, so run p3 report --write on its own (it was given with {', '.join(others)})")
+        path = write_report()
+        print(f"Wrote {path.name} at the repo root; run p3 report --write again after new runs are scored.")
+        return 0
     if getattr(args, "reviews", False):
         yours = ratings_table()
         if yours is None:
@@ -216,5 +337,5 @@ def main(args) -> int:
         print(yours, end="")
         return 0
     configs = [c.strip() for c in args.configs.split(",") if c.strip()] if args.configs else None
-    print(report_text(args.topic, configs, args.minutes, args.quick, bool(getattr(args, "teach_only", False))), end="")
+    print(report_text(args.topic or util.SHARED_TOPIC, configs, args.minutes, args.quick, bool(getattr(args, "teach_only", False))), end="")
     return 0
