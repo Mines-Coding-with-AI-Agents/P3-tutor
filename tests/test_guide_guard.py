@@ -332,6 +332,10 @@ class BashP3Tests(GuardTestCase):
                 with self.subTest(command=f"{base} {sub}"):
                     self.assertBlock(bash(f"{base} {sub}"))
 
+    def test_report_write_is_blocked_because_it_writes_a_file(self):
+        self.block_bash("uv run p3 report --write", "python -m p3 report --write", "p3 --root . report --write")
+        self.allow_bash("uv run p3 report", "uv run p3 report --teach-only", "uv run p3 report --help")
+
     def test_compare_list_cannot_smuggle_reveal(self):
         self.block_bash("uv run p3 compare --list --reveal s", "p3 compare --reveal s --list")
 

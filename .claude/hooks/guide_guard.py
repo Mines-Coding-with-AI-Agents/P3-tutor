@@ -128,6 +128,8 @@ def check_p3(args: list[str]) -> None:
     sub, rest = args[0], args[1:]
     if rest and all(a in P3_HELP for a in rest):
         return
+    if sub == "report" and any(a == "--write" or a.startswith("--write=") for a in rest):
+        raise Blocked("p3 report --write, which writes REPORT.md (plain p3 report only prints the tables)")
     if sub in P3_READS:
         return
     if sub == "compare" and "--list" in rest and not {"--reveal", "--resume"} & set(rest):

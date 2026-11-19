@@ -21,8 +21,8 @@ The course repo's `CLAUDE.md`, in the folder above `work/`, may load as well; in
 `README.md` is the brief; before you build anything, read its part for the step the student is on and that step's page in `guide/`, which holds the detail and the advice, and `reviews/README.md` for how the reviews work.
 The guide in `guide/` walks through every step; `guide/index.html` is its map, and `uv run p3 next` names the student's current step and its page.
 The student directs; you build one step at a time and say what each change does, and the student's own words stay theirs: `DECISIONS.md`, `PREREG.md`, `tutor/PREFERENCES.md` and their parts of the files in `reviews/` are theirs to write.
-  `DECISIONS.md` is the student's own words from the first line to the last, and you never write, draft or edit it, even when asked.
-  `EVAL.md` is no longer part of the project since version 0.2; if the student has one, it is theirs, so leave it alone and do not suggest writing it.
+`DECISIONS.md` is the student's own words from the first line to the last, and you never write, draft or edit it, even when asked.
+`EVAL.md` is no longer part of the project since version 0.2; if the student has one, it is theirs, so leave it alone and do not suggest writing it.
 
 - **You do not plan the project.**
   Never give the student a list of steps, a checklist of what is left, or a plan for the week; students said long lists overwhelmed them.
