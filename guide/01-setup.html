@@ -204,7 +204,7 @@ It says which section you are in and which stretch you chose, and as it ships it
   "section": "598E",
   "stretch": "length-study"
 }</code></pre>
-<p><code>p3 check</code> reads your section to know which minimums to count you against (498E needs at least four skills and five subagents across your snapshots, 598E at least six and eight), and <code>598E</code> or the <code>length-study</code> stretch switches on the length study's checks in <code>uv run p3 check --final</code>.
+<p><code>p3 check</code> reads your section to know which minimums to count you against (498E needs at least four skills and five subagents across your snapshots, 598E at least five and six), and <code>598E</code> or the <code>length-study</code> stretch switches on the length study's checks in <code>uv run p3 check --final</code>.
 Keep the double quotes around <code>"498E"</code> or <code>"598E"</code>, keep the comma at the end of the <code>"section"</code> line, and write <code>null</code> without quotes.</p>
 <div class="fail"><span class="label">If it fails</span>
   <p>A section that is not exactly <code>498E</code> or <code>598E</code> gives a WARN line such as <code>p3.json: section is '498e'; set it to "498E" or "598E"</code>, and a missing quote or comma gives a FAIL line saying that <code>p3.json</code> does not parse. Fix the file and run the check again.</p>
@@ -216,7 +216,7 @@ It reads your whole repo, makes no model call and costs nothing, and prints a ch
 <div class="cmd">
   <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
   <pre class="in">uv run p3 check</pre>
-  <pre class="out">p3 check: 498E (C:\...\work\p3-tutor)
+  <pre class="out">p3 0.2.0 check: 498E (C:\...\work\p3-tutor)
 
 Integrity
   OK    p3.json: section 498E, no stretch chosen yet
@@ -228,7 +228,8 @@ Integrity
   OK    no config file copies 40 or more characters from a shared topic
 
 Hand-in
-  TODO  EVAL.md: 30 TODO markers left (lines 31, 38, 49, 55, 65, 77, 84, 90, 98, 110, ...)
+  TODO  DECISIONS.md: 9 TODO markers left (lines 29, 39, 49, 58, 67, 77, 87, 97, 107)
+  TODO  REPORT.md: not written yet (p3 report --write, once your runs are scored)
   OK    config c0-baseline: the baseline
   TODO  config c1-skills: not snapshotted yet (p3 snapshot c1-skills)
   ...
@@ -240,11 +241,11 @@ Hand-in
   ...
 
 Integrity: no failures.
-Hand-in: 2 of 29 items done (TODO lines are work still to do; p3 check --final fails on them).</pre>
+Hand-in: 2 of 30 items done (TODO lines are work still to do; p3 check --final fails on them).</pre>
 </div>
 <p>That is the fresh template's output, trimmed where it says <code>...</code>; yours starts with your own path, and the numbers can differ a little.
 On a fresh copy almost every Hand-in line is TODO, and that is exactly right: you have not done the work yet.</p>
-<p>Each line starts with one of four words.</p>
+<p>Each line starts with one of five words.</p>
 <dl>
   <dt>OK</dt>
   <dd>The item holds.</dd>
@@ -254,6 +255,8 @@ On a fresh copy almost every Hand-in line is TODO, and that is exactly right: yo
   <dd>Worth a look, such as a file to tidy, and never a failure.</dd>
   <dt>FAIL</dt>
   <dd>Something is broken, and the line names the file to look at. Only a FAIL makes the check fail.</dd>
+  <dt>PLUS</dt>
+  <dd>Work in your repo beyond what the hand-in needs. These lines sit in a separate section, Extra work, which appears only when there is some, so you will not see it on a fresh copy. It earns bonus points as the Canvas discussion says, and none of it is needed for full marks.</dd>
 </dl>
 <p>The <strong>Integrity</strong> section is what must hold at every moment of the project: the fixed files unchanged, every snapshot matching its recorded hash, every run pointing at a config that still matches it.
 The <strong>Hand-in</strong> section is everything you hand in, item by item.

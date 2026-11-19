@@ -291,12 +291,12 @@ Quiz 0002: q4 asks for the better design without saying better for what.
 tutor-p01: it refuses the letter, then asks me who controls when the repetition ends, which points straight at the step limit."</p>
 </div>
 <p>Keep notes like these, anywhere you like for now.
-They are the start of your reading of the baseline in section 1 of <code>EVAL.md</code>, and of your first quick round in step 1.</p>
+They are the start of your first quick round in step 1, and of everything you will say later about how your tutor differs from the baseline.</p>
 
 <h2 id="known-gaps">KNOWN-GAPS.md: what I saw</h2>
 <p><code>KNOWN-GAPS.md</code>, at the root of your repo, is my record of the failures I saw when I ran the baseline before release: three full runs and one quick run on the shared topic.
 The gaps in it are starting points, not a checklist.
-Nothing grades you on fixing them; your own runs will show the same kinds of failure, and perhaps others, and when you write about them in <code>EVAL.md</code> you cite your runs, not mine.</p>
+Nothing grades you on fixing them; your own runs will show the same kinds of failure, and perhaps others, and when you write about them in a review or in <code>DECISIONS.md</code> you cite your runs, not mine.</p>
 <p>It names four gaps, here in a sentence each:</p>
 <ul>
   <li><strong>The tutor narrows a quiz item down while refusing to answer it.</strong>
@@ -345,7 +345,7 @@ On Windows, use Git Bash for the plain terminal, as in Project 2.</p>
   <li>Keep the computer awake and the terminal open until it finishes.</li>
 </ul>
 <p>It prints the same lines as the quick run, once for each repeat, each headed <code>repeat 1 of 3:</code>, <code>repeat 2 of 3:</code> and so on, with the run's folder, and at the end a list of the three run folders.
-If you want it to finish sooner, <code>--jobs 2</code> runs two scenarios of a repeat at the same time; it saves time, not tokens.</p>
+If you want it to finish sooner, <code>--jobs 2</code> runs two scenarios of a repeat at the same time; it saves time, not tokens, and <code>--jobs 4</code> takes about a third of the time.</p>
 <div class="note"><span class="label">While it runs</span>
 <p>The full runs use the snapshot in <code>configs/c0-baseline/</code>, not <code>tutor/</code>, so you can work in <code>tutor/</code> while they go.
 The natural thing to do is <a href="04-preferences.html">your PREFERENCES.md</a>, which needs no run; <code>uv run p3 next</code> suggests the same thing on its Also line, after the words "While it runs".
@@ -353,8 +353,9 @@ When the runs finish, read <code>grade-s2</code> and the replies to <code>tutor-
 </div>
 <div class="fail"><span class="label">If it stops partway</span>
 <p><strong>A usage limit, a sign-in problem or an outage.</strong>
-<code>p3 bench</code> stops at the first scenario that reports one, sets that repeat aside in <code>bench/runs/_live/_aborted/</code>, which git ignores, and keeps the repeats before it.
-Wait for the reset (<code>/usage</code> shows when), then run only what is missing: <code>uv run p3 bench <span class="nw">--config c0-baseline</span> <span class="nw">--repeats 2</span></code> if one repeat is done, or the same without <code>--repeats</code> if two are. <code>uv run p3 check</code> names the exact command.</p>
+<code>p3 bench</code> stops at the first scenario that reports one, keeps the scenarios of that repeat that had finished, sets the repeat aside in <code>bench/runs/_live/_aborted/</code>, which git ignores, and keeps the repeats before it.
+Wait for the reset (<code>/usage</code> shows when), then finish the stopped repeat with <code>uv run p3 bench --resume</code>, which runs only its missing scenarios and saves one run.
+The repeats that never started run with the command the message gives, such as <code>uv run p3 bench <span class="nw">--config c0-baseline</span> <span class="nw">--repeats 1</span></code>. <a href="06-the-bench.html#usage-limit">The bench</a> shows the whole message.</p>
 <p><strong>You pressed Ctrl+C or closed the terminal.</strong>
 The folder of the repeat in progress is left incomplete, with no <code>run.json</code>; after Ctrl+C, <code>p3 bench</code> prints that and says to delete it.
 Delete that folder, because <code>p3 check</code> fails on a run folder with no <code>run.json</code>, then run what is missing.</p>
@@ -375,9 +376,9 @@ Three give you a mean and a range, which <code>uv run p3 report</code> prints fo
 Three is what the project can afford: runs are not free, which is why only <code>c0-baseline</code> and <code>final</code> get repeats.</p>
 <p>Almost every comparison you make later uses these runs:</p>
 <ul>
-  <li>Step 1's major review compares <code>c1-skills</code> with <code>c0-baseline</code>, and <code>uv run p3 report --configs <span class="nw">c0-baseline,c1-skills</span></code> puts the one run of <code>c1-skills</code> beside the baseline's three. <code>EVAL.md</code> asks you what one run against three lets you claim.</li>
-  <li><code>final</code> is measured against <code>c0-baseline</code> with three runs each, so you can ask whether each difference is larger than the spread between runs of the same config.</li>
-  <li>The blind comparison of <code>c0-baseline</code> against <code>final</code> pairs their runs by repeat order, three pairs of runs, which make 3 teach, 3 quiz, 36 grade and 18 tutor pairs.</li>
+  <li>Step 1's major review compares <code>c1-skills</code> with <code>c0-baseline</code>, and <code>uv run p3 report --configs <span class="nw">c0-baseline,c1-skills</span></code> puts the one run of <code>c1-skills</code> beside the baseline's three. What one run against three lets you claim is only that the one run is or is not outside the baseline's spread.</li>
+  <li><code>final</code> is measured against <code>c0-baseline</code> with two runs of <code>final</code> against its three, so you can ask whether each difference is larger than the spread between runs of the same config.</li>
+  <li>The blind comparison of <code>c0-baseline</code> against <code>final</code> pairs their runs by repeat order, two pairs of runs, which make 2 teach, 2 quiz, 24 grade and 12 tutor pairs.</li>
 </ul>
 <p>So a problem in these three runs, such as a home-folder <code>CLAUDE.md</code> that reached every scenario, carries into every comparison after them.
 It is worth getting them right once.</p>
@@ -401,16 +402,16 @@ git push</pre>
 <p>After the push, the <code>p3-check</code> run in your repo's Actions tab checks them, and it should stay green.
 Never edit a run, and never delete one because you do not like its numbers; the only runs to delete are the ones that measure nothing, such as a run whose scenarios say Claude was not working (<a href="19-troubleshooting.html">When it breaks</a>).</p>
 
-<h2 id="eval-section-1">The baseline's section of EVAL.md</h2>
-<p>Section 1 of <code>EVAL.md</code> asks for the table of the baseline's three full runs, with their run ids, and your reading of the baseline: what it did well and where it fell short in each of the four jobs, which gaps in <code>KNOWN-GAPS.md</code> you saw in your own runs and whether you found one that is not listed, and which number moved the most from one run to the next.
-You can write it now, while the outputs are fresh, or later; nothing fails on it until <code>uv run p3 check --final</code>.
-The table comes from one command, which makes no model call:</p>
+<h2 id="eval-section-1">Where the baseline's numbers go</h2>
+<p>The baseline needs no write-up of its own: your reading of it goes into your first quick round in step 1, and its numbers are used every time a later step is measured against it.
+When you want to see its tables, one command prints them, and it makes no model call:</p>
 <div class="cmd">
   <div class="cmd-head">Run in the Builder, or a plain terminal</div>
   <pre class="in">uv run p3 report --configs c0-baseline</pre>
 </div>
-<p>Paste its tables as they are, and write the reading yourself, in VS Code; the prose of <code>EVAL.md</code> is yours.
-<a href="14-write-up.html">The inventory and EVAL.md</a> covers the whole file.</p>
+<p>You never copy those tables into a file by hand.
+Near the end, <code>uv run p3 report --write</code> writes <code>REPORT.md</code> from all your scored runs, the baseline's among them, and <code>DECISIONS.md</code> takes its numbers from there.
+<a href="14-write-up.html">The write-up page</a> covers both files.</p>
 
 <h2 id="done">When this stage is done</h2>
 <p><code>uv run p3 next</code> reads your repo and prints where you are on the project's map, with lines headed Done, Now, Next, Read and sometimes Also.

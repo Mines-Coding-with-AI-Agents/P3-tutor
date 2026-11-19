@@ -60,7 +60,7 @@
 <p class="eyebrow">Part III · The ladder</p>
 <h1>Step 1: four skills (c1-skills)</h1>
 <p class="lede">In this step you replace the baseline's one <code>teach</code> skill with four skills of your own, one for each job, build them in quick rounds, and then measure the result against <code>c0-baseline</code>. This page takes you from the first round to the commit.</p>
-<p class="meta">About 32 minutes to read.</p>
+<p class="meta">About 33 minutes to read.</p>
 
 <section class="path" aria-labelledby="short-path">
   <h2 id="short-path">The short path</h2>
@@ -71,7 +71,7 @@
     <dd><ol>
       <li>Build the four skills in quick rounds, one skill per round: run the live tutor in the <span class="tag builder">Builder</span> or a plain terminal, write what you noticed under the round in <code>reviews/c1-skills.md</code> in the VS Code editor, then say to the <span class="tag builder">Builder</span> "Act on Round k of <span class="nw">reviews/c1-skills.md.",</span> with k the round's number.</li>
       <li>When the four skills are in and you are happy with the tutor, snapshot it in the <span class="tag builder">Builder</span> or a plain terminal with <code>uv run p3 snapshot c1-skills</code>, and start its full run in a <span class="tag plain">Plain terminal</span> with <code>uv run p3 bench --config c1-skills</code>.</li>
-      <li>In the editor, write the major review in <code>reviews/c1-skills.md</code>, section 2 of <code>EVAL.md</code>, and the Purpose and Review of each skill in <code>reviews/components.md</code>; then commit and push, in a <span class="tag plain">Plain terminal</span> or through the Builder.</li>
+      <li>In the editor, write the major review in <code>reviews/c1-skills.md</code> (a rating on every criterion, and what the next step should fix) and prompt 1 of <code>DECISIONS.md</code>, and check the Builder's inventory entries and write each one's Kept in final later, in <code>reviews/components.md</code>; then commit and push, in a <span class="tag plain">Plain terminal</span> or through the Builder.</li>
     </ol></dd>
     <dt>Done when</dt>
     <dd><p><code>uv run p3 next</code> lists 4 Step 1, <span class="nw">c1-skills</span> under Done, and its Now line has moved on to 5 Step 2, <span class="nw">c2-review.</span></p></dd>
@@ -110,7 +110,7 @@
 
 <h3 id="reuse">Write skills you would reuse</h3>
 <p>P3 skills are meant to be reusable in P4, so write them to work on any topic, outside the bench as well as inside it. And never let a skill recognize a bench item: a config that treats a bench item specially gets no credit on that topic, and <code>p3 check</code> warns when a config file holds 40 or more characters copied from the shared topic. Your test topics later check exactly this, because you never tune on them.</p>
-<p>You may add any other skills you like, on any topic, and each one gets an inventory entry. 598E needs at least six skills across the ladder, the four and two of your own; <a href="16-stretch-and-598e.html">Stretch options and the 598E length study</a> has the details.</p>
+<p>You may add any other skills you like, on any topic, and each one gets an inventory entry. 598E needs at least five skills across the ladder, the four and one of your own; <a href="16-stretch-and-598e.html">Stretch options and the 598E length study</a> has the details.</p>
 
 <h2 id="rounds">Quick rounds</h2>
 <p>You build this step in quick rounds. In each one you run the tutor as it stands, read and try what it made, write a few sentences of thoughts in <code>reviews/c1-skills.md</code>, and the Builder makes one change to the tutor from them. <a href="07-reviews.html">Your reviews</a> explains quick rounds and who writes what in general; this section is how they go in step 1. You need at least two complete rounds, and this step usually takes four or more, at about 30 to 45 minutes each for the reading, the thoughts and the change.</p>
@@ -388,11 +388,11 @@ repeat 1 of 1: bench/runs/c1-skills/&lt;run-id&gt;
 <p>It belongs in a plain terminal because a full run can take longer than Claude Code lets a foreground command run, ten minutes at most, and it must not stop when you close a Claude Code window. The teach scenario alone is allowed up to 45 minutes. Check <code>/usage</code> in a Claude Code window first, so you know the run fits in what your plan has left.</p>
 <p>While it runs, do your live tries (below): they need only <code>tutor/</code>, which still matches the snapshot. <code>uv run p3 next</code> names other work that needs no run on its Also line, after "While it runs", usually the inventory entries of the four skills (<a href="#inventory">The inventory</a> below).</p>
 <div class="fail"><span class="label">If it fails</span>
-<p>If the run stops at a usage limit or a sign-in problem, <code>p3 bench</code> sets that repeat aside under <code>bench/runs/_live/_aborted/</code>, because it measures nothing; wait for the reset and run it again. A scenario that times out or writes no lesson is different: that is a result about your tutor, so keep the run and report it. <a href="19-troubleshooting.html">When it breaks</a> covers both.</p>
+<p>If the run stops at a usage limit or a sign-in problem, <code>p3 bench</code> keeps the scenarios that had finished and sets that repeat aside under <code>bench/runs/_live/_aborted/</code>; wait for the reset and finish it with <code>uv run p3 bench --resume</code>, which runs only what is missing. A scenario that times out or writes no lesson is different: that is a result about your tutor, so keep the run and report it. <a href="19-troubleshooting.html">When it breaks</a> covers both.</p>
 </div>
 
 <h2 id="major-review">The major review</h2>
-<p>The major review closes the step. It is the careful one: that run's outputs and your own live tries, all four jobs, criterion by criterion, each rated from 1 to 5 with written feedback and evidence, then a comparison with <code>c0-baseline</code> and what the next step should fix. Plan on about 2 hours. You write all of it, in the editor, under <code>## Major review</code> in <code>reviews/c1-skills.md</code>.</p>
+<p>The major review closes the step. It is the careful one: that run's outputs and your own live tries, all four jobs, criterion by criterion, each rated from 1 to 5, then a short paragraph on what the next step should fix. Plan on about 1 hour. You write all of it, in the editor, under <code>## Major review</code> in <code>reviews/c1-skills.md</code>.</p>
 
 <h3 id="mr-run">The Run line and the outputs</h3>
 <p>Replace the <code>TODO</code> in <code>**Run:** bench/runs/c1-skills/TODO</code> with your run's id, so it reads, for example, <code>**Run:** bench/runs/c1-skills/<wbr>20261108-101500-agent-architecture-m30-r1</code>. <code>p3 check</code> accepts it only when it names a scored full run of <code>c1-skills</code> on the shared topic. Then read every output in that folder:</p>
@@ -404,7 +404,7 @@ repeat 1 of 1: bench/runs/c1-skills/&lt;run-id&gt;
 </ul>
 
 <h3 id="mr-live">Live tries</h3>
-<p>Open a terminal in <code>work/p3-tutor/tutor</code>, start <code>claude</code> <span class="tag tutor">Your tutor</span>, and use the tutor as a learner: ask for a short lesson, take a quiz, have your answers graded, ask it a question. The topic is yours: the shared topic makes it easy to set what you saw beside the run, and a topic you really want to learn tells you more about fit. Write what you did and what you saw under <code>**Live tries:**</code>.</p>
+<p>Open a terminal in <code>work/p3-tutor/tutor</code>, start <code>claude</code> <span class="tag tutor">Your tutor</span>, and use the tutor as a learner: ask for a short lesson, take a quiz, have your answers graded, ask it a question. The topic is yours: the shared topic makes it easy to set what you saw beside the run, and a topic you really want to learn tells you more about fit. Writing what you did and what you saw under <code>**Live tries:**</code> is optional, and a <code>TODO</code> line left there is ignored, but a few lines make your ratings easier to defend.</p>
 <div class="say tutor">
   <div class="say-head">Say to your tutor</div>
   <pre>/teach Give me a 10-minute lesson on how an agent decides when it is done.</pre>
@@ -413,7 +413,7 @@ repeat 1 of 1: bench/runs/c1-skills/&lt;run-id&gt;
 <p>The learner files these tries leave in <code>tutor/</code> (<code>MISSION.md</code>, <code>NOTES.md</code>, <code>lessons/</code> and the rest) are never part of a config, so you need not clear them.</p>
 
 <h3 id="mr-criteria">The criteria</h3>
-<p>The <code>c1-skills</code> review covers all four jobs, each under its own heading in the template, each criterion under its own <code>####</code> heading. Write each rating as a whole number on its own line, <code>Rating: 4</code>, with the feedback below it. <a href="07-reviews.html">Your reviews</a> explains what each rating means and how I grade reviews.</p>
+<p>The <code>c1-skills</code> review covers all four jobs, each under its own heading in the template, each criterion under its own <code>####</code> heading. Write each rating as a whole number on its own line, <code>Rating: 4</code>; the template keeps a <code>TODO</code> line below each rating for feedback, which is optional and ignored if you leave it. <a href="07-reviews.html">Your reviews</a> explains what each rating means and how I grade reviews.</p>
 <div class="table-wrap">
 <table>
   <caption>The criteria of the <code>c1-skills</code> major review, from <code>reviews/README.md</code>.</caption>
@@ -428,85 +428,92 @@ repeat 1 of 1: bench/runs/c1-skills/&lt;run-id&gt;
 </div>
 
 <h3 id="mr-specific">Be specific: this review becomes step 2's checklists</h3>
-<p>What this review finds becomes the checklists of your reviewer subagents in step 2. A reviewer told "check that no stem can be read two ways, as q4 could in my c1 review" finds more than one told "review this quiz". So write each problem with the item id, the submission and item, the probe id or the quote that shows it, and say what a reviewer should check for.</p>
-<div class="student"><span class="label">Example: one criterion, in a student's words</span>
+<p>What this review finds becomes the checklists of your reviewer subagents in step 2, and the paragraph under <code>### What the next step should fix</code> is where that starts. A reviewer told "check that no stem can be read two ways, as q4 could in my c1 review" finds more than one told "review this quiz". So name each problem with the item id, the submission and item, the probe id or the quote that shows it, and say what a reviewer should check for.</p>
+<p>Feedback under a rating is optional. This is one criterion with a sentence of it, in a student's words:</p>
+<div class="student"><span class="label">Example: one criterion, optional feedback, in a student's words</span>
 <pre><code>#### Explains enough
 
 Rating: 3
 
-The feedback names the right misconception every time, but it often stops there.
-s1 q5 is marked partial with "Close, but think about who decides when to stop", which never says which half of my answer was right.
-s2 q4 has the right number for a wrong reason, and the feedback says "Right number, check your reasoning" without saying what was wrong with the reasoning.
-The grade reviewer in c2 should check that every partial or wrong verdict says what was right, what was missing, and why.</code></pre>
+The feedback names the right misconception every time, but s1 q5 is marked partial with "Close, but think about who decides when to stop", which never says which half of my answer was right.</code></pre>
 </div>
 
-<h3 id="mr-close">Compared with the previous step, and what the next step should fix</h3>
-<p>The previous step of <code>c1-skills</code> is <code>c0-baseline</code>, so under <code>### Compared with the previous step</code> compare with your three baseline runs, job by job. One run of <code>c1-skills</code> against three of the baseline is thin, so when a difference is smaller than the spread between your baseline runs, say so. Under <code>### What the next step should fix</code>, write what step 2's reviewers should catch: that list is where their checklists start.</p>
+<h3 id="mr-close">What the next step should fix, and the comparison</h3>
+<p>Under <code>### What the next step should fix</code>, write three to five sentences with one quote or item id: what step 2's reviewers should catch, in the order that matters. That paragraph is the one part of the review that has to be there, along with the Run line and a rating on every criterion. Under <code>### Compared with the previous step</code>, which is optional, compare with your three baseline runs, job by job; one run of <code>c1-skills</code> against three of the baseline is thin, so when a difference is smaller than the spread between your baseline runs, say so.</p>
+<div class="student"><span class="label">Example: what the next step should fix, in a student's words</span>
+<pre><code>### What the next step should fix
+
+The feedback is the weakest job: s1 q5 is marked partial with "Close, but think about who decides when to stop", and s2 q4 has the right number for a wrong reason that the feedback never names.
+The grade reviewer in c2 should check that every partial or wrong verdict says what was right, what was missing, and why.
+The quiz is next, because in q3 the right option is the only one longer than a line, so the quiz reviewer should compare option lengths.
+The lesson can wait.</code></pre>
+</div>
 
 <div class="note"><span class="label">Note</span>
 <p>Commit the review when you finish it. <code>p3 check</code> confirms that each major review was first committed complete after the run it reviews finished, which is how your review is on record as written from that run.</p>
 </div>
 
-<h2 id="eval">EVAL.md, section 2</h2>
-<p>Section 2 of <code>EVAL.md</code>, headed <code>## 2. Step 1: `c1-skills` against `c0-baseline`</code>, is where you say what this step bought and what it cost. It has three parts, each ending in a marker line that you replace with your own writing.</p>
-<ol>
-  <li><p><strong>What changed.</strong> Name the rounds that built the step, such as <code>c1-skills</code> Rounds 1 to 4, and the inventory entries of the skills; the trail itself is already in <code>reviews/</code>, so do not retell it. Then say what you put in <code>PREFERENCES.md</code>, and anything about how the four skills work together that no single inventory entry says.</p></li>
-  <li><p><strong>Your review, the objective checks and the cost.</strong> Paste the tables from the report, as they are, and name the run ids:</p>
-    <div class="cmd">
-      <div class="cmd-head">Run in the Builder, or a plain terminal</div>
-      <pre class="in">uv run p3 report --configs c0-baseline,c1-skills</pre>
-    </div>
-    <p>It makes no model call. It prints the headline numbers per config (the mean, with the range in brackets), a cost table per job, and "Your ratings" from your major reviews, one column per step.</p></li>
-  <li><p><strong>What the step bought and what it cost.</strong> For each job: what your major review found against <code>c0-baseline</code>, whether the objective checks agree, and which you believe where they do not. What it cost per scenario, and whether the gain was worth it. And what one run of <code>c1-skills</code> against three of <code>c0-baseline</code> lets you claim, and what it does not.</p></li>
-</ol>
-<div class="why"><span class="label">Your skills and your preferences, together</span>
-<p><code>c0-baseline</code> keeps the neutral <code>PREFERENCES.md</code> the template ships, and <code>c1-skills</code> is the first config with yours. So this step, and the comparison of <code>c0-baseline</code> with <code>final</code> later, measures your skills and your preferences together. Say so in <code>EVAL.md</code>, and say which differences you think came from which. For example, a lesson that now uses examples from your major may owe that to your preferences, while a tutor that stopped narrowing a quiz item down more likely owes it to a rule in the <code>tutor</code> skill, when your preferences say nothing about quiz answers.</p>
+<h2 id="decision">DECISIONS.md, prompt 1</h2>
+<p><code>DECISIONS.md</code> is your decision log: nine prompts, each answered in two to four sentences with one number or quote. Prompt 1 belongs to this step, and you answer it when the step is done, while the decision is still fresh. It reads: "Of everything you changed while building <code>c1-skills</code>, which one change to a skill made the biggest difference, and how do you know?" Name the round, and give the evidence: a rating that moved, a check in <code>REPORT.md</code> that moved, or a quote from an output before and after.</p>
+<p>The number comes from the report. Until <code>REPORT.md</code> exists, the terminal prints the same tables, and it makes no model call:</p>
+<div class="cmd">
+  <div class="cmd-head">Run in the Builder, or a plain terminal</div>
+  <pre class="in">uv run p3 report --configs c0-baseline,c1-skills</pre>
 </div>
-<p>The prose is yours. The Guide can explain what a question in the section is asking, and it will not write the answer.</p>
+<p>It prints the headline numbers per config (the mean, with the range in brackets), a cost table per job, and "Your ratings" from your major reviews, one column per step. Near the end, <code>uv run p3 report --write</code> writes all your tables to <code>REPORT.md</code>, so you never copy a table by hand. Replace the line <code>TODO: your answer to prompt 1.</code> under <code>## 1.</code> with your answer.</p>
+<div class="student"><span class="label">Example: an answer to prompt 1, in a student's words</span>
+<pre><code>The quiz skill from Round 2 mattered most. Before it, all six items were mcq and in q3 the right option was the only one longer than a line; after it, the items mix mcq, numeric and short, and quiz_ambiguous in REPORT.md fell from 1.0 for c0-baseline to 0 for c1-skills. My Wording rating for the quiz in the major review is a 4.</code></pre>
+</div>
+<div class="why"><span class="label">Your skills and your preferences, together</span>
+<p><code>c0-baseline</code> keeps the neutral <code>PREFERENCES.md</code> the template ships, and <code>c1-skills</code> is the first config with yours. So this step, and the comparison of <code>c0-baseline</code> with <code>final</code> later, measures your skills and your preferences together. Say so in your answer, and say which differences you think came from which. For example, a lesson that now uses examples from your major may owe that to your preferences, while a tutor that stopped narrowing a quiz item down more likely owes it to a rule in the <code>tutor</code> skill, when your preferences say nothing about quiz answers.</p>
+</div>
+<div class="note"><span class="label">If you already wrote section 2 of EVAL.md</span>
+<p>Under version 0.1 this step had its own section of <code>EVAL.md</code>. If you wrote section 2, keep it: <code>p3 next</code> counts prompt 1 as done and never sends you back to it. At the end, when you answer the prompts, one sentence that gives the answer and points there is enough, such as "See EVAL.md, section 2: the quiz skill, because its items stopped giving the key away." <code>p3 check --final</code> still needs the marker line replaced.</p>
+</div>
+<p>The answer is yours. The Guide can explain what the prompt is asking, and it will not write the answer.</p>
 
 <h2 id="inventory">The inventory: an entry for each skill</h2>
-<p><code>reviews/components.md</code> has one entry for every skill and subagent you build, and in this step that is the four skills, plus any others you added. Each entry's heading is the skill's folder name, such as <code>### quiz</code>, and it has six fields. The Builder fills in the factual ones as it builds; the judgment is yours. The inventory is where each component's reason for existing sits next to its evidence, the with-and-without from its rounds, so a skill that did not pay shows up as plainly as one that did. <a href="14-write-up.html">The inventory and EVAL.md</a> explains the inventory in full.</p>
+<p><code>reviews/components.md</code> has one entry for every skill and subagent you build, and in this step that is the four skills, plus any others you added. Each entry's heading is the skill's folder name, such as <code>### quiz</code>. The template's entries have six fields, but only two make an entry complete: its Kind, and "Kept in final: yes" or "no, because ...". The Builder fills in the factual fields as it builds, and during the steps <code>p3 next</code> asks only that each skill of the step's snapshot has an entry. The inventory is where each component's with-and-without sits next to its reason for existing, so a skill that did not pay shows up as plainly as one that did. <a href="14-write-up.html">The write-up page</a> explains the inventory in full.</p>
 <div class="table-wrap">
 <table class="stack">
-  <caption>Who writes each field, from <code>reviews/README.md</code>.</caption>
+  <caption>Who writes each field, and which ones are needed.</caption>
   <thead><tr><th>Field</th><th>Who</th><th>In step 1</th></tr></thead>
   <tbody>
     <tr><td data-label="Field">Kind</td><td data-label="Who">the Builder; you check it</td><td data-label="In step 1"><code>skill</code></td></tr>
     <tr><td data-label="Field">Step added</td><td data-label="Who">the Builder; you check it</td><td data-label="In step 1"><code>c1-skills</code>, for all four, <code>teach</code> included</td></tr>
     <tr><td data-label="Field">With and without</td><td data-label="Who">the Builder; you check it</td><td data-label="In step 1">the round that added the skill, such as <code>reviews/c1-skills.md, Round 2 (without) and Round 3 (with)</code></td></tr>
-    <tr><td data-label="Field">Purpose</td><td data-label="Who">you</td><td data-label="In step 1">why the tutor needs it, and why it is a skill rather than a subagent</td></tr>
-    <tr><td data-label="Field">Review</td><td data-label="Who">you</td><td data-label="In step 1">the output with it against without it, with evidence</td></tr>
-    <tr><td data-label="Field">Kept in final</td><td data-label="Who">you</td><td data-label="In step 1">later, once <code>final</code> is frozen</td></tr>
+    <tr><td data-label="Field">Purpose</td><td data-label="Who">you, optional</td><td data-label="In step 1">why the tutor needs it, and why it is a skill rather than a subagent</td></tr>
+    <tr><td data-label="Field">Review</td><td data-label="Who">you, optional</td><td data-label="In step 1">the output with it against without it, with evidence</td></tr>
+    <tr><td data-label="Field">Kept in final</td><td data-label="Who">you</td><td data-label="In step 1">later, once <code>final</code> exists</td></tr>
   </tbody>
 </table>
 </div>
 <ul>
   <li><strong><code>teach</code></strong> ships with the baseline and you rewrite it here, so its Step added is <code>c1-skills</code>, and its with-and-without points at the round where you rewrote it, with the shipped skill's lesson as the output without it.</li>
   <li><strong>The last skill you added</strong> has no next round in this step; its "with" is the step's full run, which your major review covers.</li>
-  <li><strong>Kept in final</strong> waits until <code>final</code>. Until then <code>p3 check</code> keeps listing the entry as not complete, which is expected; <code>p3 next</code> needs only the Purpose and the Review now.</li>
+  <li><strong>Kept in final</strong> is written once <code>final</code> exists. Until then <code>p3 check</code> keeps listing the entry as not complete, which is expected, and <code>p3 next</code> does not ask for it. A <code>TODO</code> left in Purpose or Review is ignored, so you may leave those lines or delete them.</li>
 </ul>
 <p>If a skill of the snapshot has no entry yet, <code>p3 next</code> gives you the words for the Builder, which adds the factual fields only:</p>
 <div class="say builder">
   <div class="say-head">Say to the Builder</div>
   <pre>Add an entry to reviews/components.md for each component of <span class="nw">configs/c1-skills/</span> that has none, with Kind, Step added, and With and without.</pre>
-  <p>Then write the Purpose and the Review of each entry yourself, in the editor.</p>
+  <p>Then read each entry, and fix a field that is wrong.</p>
 </div>
-<div class="student"><span class="label">Example: the two parts you write, in a student's words</span>
+<div class="student"><span class="label">Example: an entry after step 1, with the optional Purpose, in a student's words</span>
 <pre><code>### tutor
 
 - Kind: skill
 - Step added: c1-skills
-- Purpose: The baseline answered probes inside /teach, whose rules are mostly about lessons, and its hints on tutor-p01 still pointed at the keyed option; a skill of its own holds the rules for the chat. It is a skill and not a subagent because the reply has to be the main conversation's last message, with the learner's files already read.
+- Purpose: The baseline answered probes inside /teach, and its hints on tutor-p01 still pointed at the keyed option; a skill of its own holds the rules for the chat.
 - With and without: reviews/c1-skills.md, Round 1 (without) and Round 2 (with)
-- Review: Without it, the tutor-p01 hint asked who controls when the repetition ends, which is the keyed option in other words; with it, the hint fits every option alike, and both probe replies dropped under 200 words, for about the same tokens per probe.
 - Kept in final: TODO</code></pre>
 </div>
 
 <h2 id="commit">Commit and push</h2>
-<p>When the review, section 2 and the inventory entries are written, commit the snapshot, the run and your writing, and push, so CI checks them too:</p>
+<p>When the review, prompt 1 and the inventory entries are written, commit the snapshot, the run and your writing, and push, so CI checks them too:</p>
 <div class="cmd">
   <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
-  <pre class="in">git add configs bench/runs reviews EVAL.md
+  <pre class="in">git add configs bench/runs reviews DECISIONS.md
 git commit -m "c1-skills: snapshot, full run and major review"
 git push</pre>
 </div>
@@ -518,7 +525,7 @@ git push</pre>
   <div class="say-head">Say to the Guide</div>
   <pre>I finished step 1. What is the one thing I should do next, and why?</pre>
 </div>
-<p>If you are in 598E or chose the length study, <code>c1-skills</code> is also the study's single-agent config, so its nine teach-only runs can start in week 2, once <code>PREREG.md</code> is committed; <code>p3 next</code> brings them up after step 2, and <a href="16-stretch-and-598e.html#prereg">PREREG.md before the runs</a> explains them.</p>
+<p>If you are in 598E or chose the length study, <code>c1-skills</code> is also the study's single-agent config, so its four teach-only runs can start in week 2, once <code>PREREG.md</code> is committed; <code>p3 next</code> brings them up after step 2, and <a href="16-stretch-and-598e.html#prereg">PREREG.md before the runs</a> explains them.</p>
 <p>If something here fails, or <code>p3 check</code> lists a review as still to do when you think it is done, <a href="19-troubleshooting.html">When it breaks</a> has the usual causes. If anything on this page is unclear or seems wrong, tell me: that is a bug too. Office hours are Tuesday and Thursday, 9 to 10 am and 2 to 3 pm, in CTLM 246L.</p>
 <p>Next: <a href="09-step2-review-loops.html">Step 2: review loops (<span class="nw">c2-review</span>)</a>.</p>
 

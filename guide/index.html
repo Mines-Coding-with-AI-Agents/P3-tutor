@@ -59,11 +59,12 @@
 
 <h1>Start here</h1>
 <p class="lede">This page is Project 3 on one page: what you build, the map of the three weeks with a link to the page for each stage, and the windows you work in. Read it once at the start, and come back to the map whenever you want to see where you are.</p>
-<p class="meta">About 10 minutes to read.</p>
+<p class="meta">About 13 minutes to read.</p>
 
 <section class="summary" aria-labelledby="on-this-page">
   <h2 id="on-this-page">On this page</h2>
   <ul>
+    <li><a href="#update">Version 0.2</a>: what changed, and how to update a repo you already have</li>
     <li><a href="#project-3">Project 3 in one paragraph</a>, and <a href="#the-facts">the facts</a>: points, deadline, time, cost</li>
     <li><a href="#what-you-build">What you build</a>: the four jobs and the ladder of configs</li>
     <li><a href="#the-map">The map</a>: the twelve stages, in order, each with its page</li>
@@ -71,6 +72,48 @@
     <li><a href="#how-to-use">How to use this guide</a>, and <a href="#where-am-i">where am I?</a></li>
   </ul>
 </section>
+
+<h2 id="update">Version 0.2: what changed, and how to update</h2>
+<p>Many of you told me that the project asked for far too much writing and too many runs.
+So the tool is now version 0.2, and it asks for much less.
+If you made your repo after this update, <code>uv run p3 check</code> already shows <code>p3 0.2.0</code> in its first line and you have nothing to do here.
+If you made it earlier, this section says what got smaller and how to bring the new files in.</p>
+<ul>
+  <li><strong>Each major review</strong> needs its Run line, a rating from 1 to 5 on every criterion, and three to five sentences on what the next step should fix, with one quote or item id. The feedback under each rating, the Live tries and "Compared with the previous step" are optional, and the quick rounds are unchanged.</li>
+  <li><strong>One learning session</strong> in three or four sentences, where there were three.</li>
+  <li><strong>One test topic</strong>, where there were two. A second complete one is extra work that earns bonus points as the Canvas discussion says.</li>
+  <li><strong>An inventory entry</strong> needs its Kind and "Kept in final: yes" or "no, because ...", where it needed six fields.</li>
+  <li><strong><code>DECISIONS.md</code> replaces <code>EVAL.md</code></strong>: nine prompts, two to four sentences each with one number or quote. <code>REPORT.md</code> is written for you by <code>uv run p3 report --write</code>, so nobody copies a table by hand.</li>
+  <li><strong>In a blind comparison</strong> a typed reason is required for teach and quiz pairs, and optional for grade and tutor pairs.</li>
+  <li><strong>Fewer runs:</strong> <code>final</code> needs 2 scored full runs, where it needed 3; the ablation may be an <code>--only</code> run of the scenarios the removed component touches; the length study (required for 598E, an optional stretch for 498E) is 8 runs, where it was 18; and 598E builds at least 5 skills and 6 subagents.</li>
+  <li><strong>A usage limit no longer throws a repeat away:</strong> <code>uv run p3 bench --resume</code> finishes it and keeps the scenarios that had finished.</li>
+  <li><strong>The due date</strong> is Wednesday, December 9, at 11:59 pm, and it is firm: nothing is accepted after it, and the course's late rule does not apply to P3.</li>
+</ul>
+<div class="note"><span class="label">Nothing to redo</span>
+  <p>Everything you already wrote or ran still counts, and nobody redoes, trims or reformats anything.
+  Version 0.2 accepts every file that version 0.1 called complete and stops requiring parts of it, and <code>uv run p3 check</code> lists what you did beyond the new requirements under Extra work, one PLUS line each.
+  That work earns bonus points as the Canvas discussion says, and none of it is needed for full marks.</p>
+</div>
+<p>To update, run these four commands in a plain terminal in <code>work/p3-tutor</code>:</p>
+<div class="cmd">
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
+  <pre class="in">git remote add template https://github.com/Mines-Coding-with-AI-Agents/P3-tutor.git
+git fetch template
+git checkout template/main -- p3 guide tests .claude README.md CLAUDE.md KNOWN-GAPS.md DECISIONS.md reviews/README.md bench/own/README.md
+uv run p3 check</pre>
+</div>
+<ol>
+  <li><code>git remote add</code> gives your repo a second remote named <code>template</code>, the course's template. If git says the remote already exists, that is fine, and you can go on.</li>
+  <li><code>git fetch template</code> downloads the template's files and changes nothing in yours.</li>
+  <li><code>git checkout template/main -- ...</code> brings in the course's files only: the tool, this guide, the tests, the Claude Code files in <code>.claude</code>, the README, <code>CLAUDE.md</code>, <code>KNOWN-GAPS.md</code>, the new <code>DECISIONS.md</code> and two READMEs. It never touches <code>reviews/</code> (other than its README), <code>EVAL.md</code>, <code>PREREG.md</code>, <code>tutor/</code>, <code>configs/</code>, <code>bench/runs/</code>, <code>bench/compare/</code> or a test topic. It adds and replaces files and deletes none, so a test file or a settings file that you added stays.</li>
+  <li><code>uv run p3 check</code> then shows <code>p3 0.2.0</code> in its first line, and no FAIL line for work that was complete before.</li>
+</ol>
+<p>Then commit and push, so that CI checks the update too:</p>
+<div class="cmd">
+  <div class="cmd-head">Run in a plain terminal in <code>work/p3-tutor</code></div>
+  <pre class="in">git commit -m "Update the course's files to version 0.2"
+git push</pre>
+</div>
 
 <h2 id="project-3">Project 3 in one paragraph</h2>
 <p>You build a tutor that runs entirely inside Claude Code and does four jobs: it teaches a lesson, talks with you as a tutor, writes a quiz with its answer key, and grades your answers with feedback.
@@ -84,10 +127,10 @@ The tutor itself is not the point; the engineering judgment is: which machinery 
 <div class="facts">
   <div><span class="k">Weight</span><span class="v">20% of your final grade</span></div>
   <div><span class="k">Points</span><span class="v">200 on Canvas: 150 for the project and 50 for the video, in one discussion post</span></div>
-  <div><span class="k">Due</span><span class="v">Tuesday, November 24, at 11:59 pm, one deadline for everything, no checkpoints</span></div>
+  <div><span class="k">Due</span><span class="v">Wednesday, December 9, at 11:59 pm, one deadline for everything, no checkpoints; the date is firm</span></div>
   <div><span class="k">Work</span><span class="v">Individual; 598E adds a rider, the length study</span></div>
-  <div><span class="k">Late work</span><span class="v">20% off, and nothing accepted more than a week late</span></div>
-  <div><span class="k">Your time</span><span class="v">About 32 hours for 498E, and about 40 to 42 for 598E</span></div>
+  <div><span class="k">Late work</span><span class="v">None: nothing is accepted after December 9, and the course's late rule does not apply to P3</span></div>
+  <div><span class="k">Your time</span><span class="v">About 22 to 26 hours of core work for 498E, 4 to 6 more for a stretch, and about 27 to 30 for 598E</span></div>
   <div><span class="k">Your repo</span><span class="v">Public, made from the template, named <code>p3-tutor</code>, cloned to <code>work/p3-tutor</code></span></div>
   <div><span class="k">Cost</span><span class="v">Every run draws on your own Claude plan; you never need an API key</span></div>
   <div><span class="k">Help</span><span class="v">Office hours Tue and Thu, 9 to 10 am and 2 to 3 pm, CTLM 246L</span></div>
@@ -125,25 +168,25 @@ The weeks are the pace I would keep; nothing is checked on those dates, and <a h
   <li><a href="04-preferences.html">Your preferences</a><span class="when">Week 1</span>
     <p><code>tutor/PREFERENCES.md</code> rewritten in your own words, so every later review and the blind comparison measure fit to you.</p></li>
   <li><a href="08-step1-skills.html">Step 1, <code>c1-skills</code></a><span class="when">Week 1</span>
-    <p>The four skills <code>teach</code>, <code>tutor</code>, <code>quiz</code> and <code>grade</code> built in quick rounds, then the snapshot, its full run, its major review, its section of <code>EVAL.md</code> and its inventory entries.</p></li>
+    <p>The four skills <code>teach</code>, <code>tutor</code>, <code>quiz</code> and <code>grade</code> built in quick rounds, then the snapshot, its full run, its major review, prompt 1 of <code>DECISIONS.md</code> and its inventory entries.</p></li>
   <li><a href="09-step2-review-loops.html">Step 2, <code>c2-review</code></a><span class="when">Week 2</span>
     <p>Reviewer subagents on teach, quiz and grade, with checklists drawn from your <code>c1-skills</code> review, measured and reviewed the same way.</p></li>
   <li><a href="16-stretch-and-598e.html">The length study, part 1 (598E or <code>length-study</code> only)</a><span class="when">Week 2</span>
-    <p>Sections 1 to 4 of <code>PREREG.md</code>, your plan, written and committed, then nine teach-only runs of <code>c1-skills</code> at 10, 30 and 60 minutes; if you are in 498E without this stretch, you skip this stage.</p></li>
+    <p>Sections 1 to 4 of <code>PREREG.md</code>, your plan, written and committed, then four teach-only runs of <code>c1-skills</code>, two at 10 minutes and two at 60; if you are in 498E without this stretch, you skip this stage.</p></li>
   <li><a href="10-step3-split.html">Step 3, <code>c3-split</code></a><span class="when">Week 2</span>
     <p>The teach job split across subagents of your design, measured on teach against <code>c2-review</code>.</p></li>
-  <li><a href="11-test-topics.html">Test topics</a><span class="when">Week 2</span>
-    <p>Two topics of your own in <code>bench/own/</code>, one from another Mines course and one life skill, written and committed before any run uses them.</p></li>
+  <li><a href="11-test-topics.html">Test topic</a><span class="when">Week 2</span>
+    <p>One topic of your own in <code>bench/own/</code>, from another Mines course or a life skill, written and committed before any run uses it; a second one is extra work.</p></li>
   <li><a href="12-final.html"><code>final</code></a><span class="when">Week 3</span>
-    <p>What earned its place plus the guard hook, then its three runs, the ablation, the runs on your test topics, your three learning sessions and its major review.</p></li>
+    <p>What earned its place plus the guard hook, then its two runs, the ablation, the runs on your test topic, one learning session and its major review.</p></li>
   <li><a href="13-blind-comparison.html">The blind comparison</a><span class="when">Week 3</span>
-    <p><code>c0-baseline</code> against <code>final</code> on all four jobs with the labels hidden, your picks, and the reveal.</p></li>
+    <p><code>c0-baseline</code> against <code>final</code> on all four jobs with the labels hidden, your picks (with a typed reason for teach and quiz), and the reveal.</p></li>
   <li><a href="14-write-up.html">The write-up</a><span class="when">Week 3</span>
-    <p>Your open review of the test topics, the complete component inventory in <code>reviews/components.md</code>, and <code>EVAL.md</code>, with its judge check, with no TODO left.</p></li>
+    <p>Your open review of the test topic, the complete component inventory in <code>reviews/components.md</code>, and <code>DECISIONS.md</code>, with its judge check, with no TODO left, and <code>REPORT.md</code>, written by <code>uv run p3 report --write</code>.</p></li>
   <li><a href="15-hand-in.html">Hand in</a><span class="when">Week 3</span>
-    <p><code>uv run p3 check --final</code> passing, then the video, the last push and one Canvas post, by Tuesday, November 24, at 11:59 pm.</p></li>
+    <p><code>uv run p3 check --final</code> passing, then the video, the last push and one Canvas post, by Wednesday, December 9, at 11:59 pm.</p></li>
 </ol>
-<p>Stages 4, 5 and 7 each run the same loop: quick rounds while you build, a snapshot, one full run, a major review, the step's section of <code>EVAL.md</code>, and the step's entries in the component inventory.
+<p>Stages 4, 5 and 7 each run the same loop: quick rounds while you build, a snapshot, one full run, a major review, the step's prompt in <code>DECISIONS.md</code>, and the step's entries in the component inventory.
 <a href="07-reviews.html">Your reviews</a> explains the quick rounds and the major reviews once, and each step page shows them for its own step.</p>
 
 <h2 id="the-windows">The windows</h2>
@@ -191,7 +234,7 @@ In Project 2 one agent did both, and many of you told me that was confusing, so 
       <text x="653" y="110" text-anchor="middle" fill="currentColor" font-size="12">the tutor you built,</text>
       <text x="653" y="127" text-anchor="middle" fill="currentColor" font-size="12">for learning with it:</text>
       <text x="653" y="144" text-anchor="middle" fill="currentColor" font-size="12">live tries and the</text>
-      <text x="653" y="161" text-anchor="middle" fill="currentColor" font-size="12">learning sessions</text>
+      <text x="653" y="161" text-anchor="middle" fill="currentColor" font-size="12">learning session</text>
 
       <line x1="107" y1="190" x2="107" y2="247" stroke="currentColor" stroke-dasharray="4 3" marker-end="url(#win-arrow)"/>
       <text x="115" y="228" fill="currentColor" font-size="11">reads only</text>
@@ -204,7 +247,7 @@ In Project 2 one agent did both, and many of you told me that was confusing, so 
 
       <rect x="22" y="250" width="716" height="64" rx="4" fill="none" stroke="currentColor"/>
       <text x="380" y="274" text-anchor="middle" fill="currentColor" font-size="13" font-weight="700">Your repo, work/p3-tutor: the state of your project lives in its files</text>
-      <text x="380" y="298" text-anchor="middle" fill="currentColor" font-size="11" style="font-family: var(--font-mono)">tutor/ · reviews/ · configs/ · bench/runs/ · EVAL.md · guide/</text>
+      <text x="380" y="298" text-anchor="middle" fill="currentColor" font-size="11" style="font-family: var(--font-mono)">tutor/ · reviews/ · configs/ · bench/runs/ · DECISIONS.md · guide/</text>
     </svg>
   </div>
   <figcaption>The four terminals in your VS Code window and what each one touches. You write your own reviews in <code>reviews/</code> yourself, in the editor, and never through a chat.</figcaption>

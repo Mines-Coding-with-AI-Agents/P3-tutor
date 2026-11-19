@@ -60,7 +60,7 @@
 <p class="eyebrow">Part II · How it works</p>
 <h1>Your reviews</h1>
 <p class="lede">Your reviews are the part of P3 that only you can do. This page says what you write, exactly where you type it, how a quick round moves between your windows, how a major review and its ratings work, and how I grade them.</p>
-<p class="meta">About 39 minutes to read.</p>
+<p class="meta">About 41 minutes to read.</p>
 
 <section class="summary" aria-labelledby="on-this-page">
   <h2 id="on-this-page">On this page</h2>
@@ -72,7 +72,7 @@
     <li><a href="#adding-a-round">Adding a round</a></li>
     <li><a href="#one-component">One component per round, and why</a></li>
     <li><a href="#minimums">How many rounds, and the c1-skills rule</a></li>
-    <li><a href="#major-reviews">Major reviews</a>: when, what you review, where you type, <a href="#criteria">the criteria</a>, <a href="#ratings">the ratings</a>, <a href="#evidence">evidence</a>, <a href="#closing">the two closing sections</a>, <a href="#final-review">the review of final</a></li>
+    <li><a href="#major-reviews">Major reviews</a>: when, what you review, where you type, <a href="#criteria">the criteria</a>, <a href="#ratings">the ratings</a>, <a href="#evidence">evidence</a>, <a href="#closing">the closing sections</a>, <a href="#final-review">the review of final</a></li>
     <li><a href="#your-ratings">p3 report and "Your ratings"</a></li>
     <li><a href="#grading">How I grade your reviews</a></li>
     <li><a href="#who-writes">Who writes what</a></li>
@@ -125,7 +125,7 @@ A step that made your tutor worse is a fine result to report, as long as the tra
     <tr><td><code>reviews/c1-skills.md</code></td><td>the quick rounds while you build <code>c1-skills</code>, then its major review</td><td>week 1</td></tr>
     <tr><td><code>reviews/c2-review.md</code></td><td>the quick rounds while you build the review loops, then the major review of <code>c2-review</code></td><td>week 2</td></tr>
     <tr><td><code>reviews/c3-split.md</code></td><td>the quick rounds while you split up the teach job, then the major review of <code>c3-split</code></td><td>week 2</td></tr>
-    <tr><td><code>reviews/final.md</code></td><td>optional quick rounds, the major review of <code>final</code>, your three learning sessions, and your open review of the two test topics</td><td>week 3</td></tr>
+    <tr><td><code>reviews/final.md</code></td><td>optional quick rounds, the major review of <code>final</code>, your learning session, and your open review of the test topic</td><td>week 3</td></tr>
     <tr><td><code>reviews/components.md</code></td><td>the component inventory: one entry for every skill and every subagent you built</td><td>at the end of each step, finished in week 3</td></tr>
   </tbody>
 </table>
@@ -134,7 +134,13 @@ A step that made your tutor worse is a fine result to report, as long as the tra
 You replace each marker with your own writing, and you keep every heading exactly as it is, because <code>p3 check</code> finds your reviews by their headings.
 <code>reviews/README.md</code> holds the same rules in short, with an example of each part; this page explains them and why they exist.</p>
 <p>This page covers the quick rounds and the major reviews.
-The learning sessions and the open review of the test topics, both in <code>reviews/final.md</code>, are explained on <a href="12-final.html#learning-sessions">final: the guard, repeats and the ablation</a> and <a href="11-test-topics.html">Your two test topics</a>, and the inventory on <a href="14-write-up.html#inventory">The inventory and EVAL.md</a>.</p>
+The learning session and the open review of the test topic, both in <code>reviews/final.md</code>, are explained on <a href="12-final.html#learning-sessions">final: the guard, repeats and the ablation</a> and <a href="11-test-topics.html">the test topics page</a>, and the inventory on <a href="14-write-up.html#inventory">the write-up page</a>.
+Under version 0.2 they ask for little:</p>
+<ul>
+  <li><strong>One learning session</strong>, written up in three or four sentences, with its Date and its Topic, which starts with the id of your test topic. Any one of the three session sections will do, and the others are optional.</li>
+  <li><strong>One test topic</strong>, reviewed in one section headed with its id. A second complete test topic is extra work that earns bonus points as the Canvas discussion says.</li>
+  <li><strong>An inventory entry</strong> for every skill and subagent you built, with its Kind, and "Kept in final: yes" or "no, because ...". The Builder still fills in Kind, Step added, and With and without; Purpose and Review are optional.</li>
+</ul>
 
 <h2 id="quick-rounds">A quick round, from run to change</h2>
 <p>A <strong>quick round</strong> is one turn of the loop you build each step with.
@@ -399,7 +405,7 @@ Its change is reviewed by the major review that follows it, because the step's f
   <li><strong>Two is a floor, not a plan.</strong>
   With one new component per round, step 1 usually takes four rounds or more: one for each new skill and one to rewrite <code>teach</code>.
   Step 2 takes at least three, one for the reviewer of each of teach, quiz and grade, even though <code>p3 check</code> counts only two; <code>p3 next</code>'s advice before the <code>c2-review</code> snapshot says so.
-  Across the three steps that is about nine rounds for 498E, and about fourteen for 598E, whose architecture is larger.</li>
+  Across the three steps that is about nine rounds for 498E, and about eleven for 598E, whose architecture is larger.</li>
 </ul>
 <p><strong><code>c1-skills</code> is still one agent.</strong>
 No round in <code>reviews/c1-skills.md</code> adds a subagent: each one changes or adds a skill, or makes another change the skills need, such as an allow rule (Kind <code>other</code>).
@@ -416,9 +422,9 @@ Those notes are exactly what your <code>c2-review</code> checklists are made of.
 
 <h2 id="major-reviews">Major reviews</h2>
 <p>A <strong>major review</strong> closes each step: <code>c1-skills</code>, <code>c2-review</code>, <code>c3-split</code> and <code>final</code>.
-Where a quick round is a few sentences about what you noticed, a major review goes through every criterion of every job the step reviews, rates each one from 1 to 5, and justifies each rating with evidence.
+Where a quick round is a few sentences about what you noticed, a major review goes through every criterion of every job the step reviews, rates each one from 1 to 5, and then says in a short paragraph what the next step should fix.
 It is written at the end of the step's file, under <code>## Major review</code>.
-In my estimate it takes about 2 hours for <code>c1-skills</code>, 1.75 for <code>c2-review</code>, 0.75 for <code>c3-split</code> and 1.5 for <code>final</code>.</p>
+In my estimate the four together take about 3 hours: about 1 hour for <code>c1-skills</code>, 45 minutes for <code>c2-review</code>, 30 minutes for <code>c3-split</code> and 45 minutes for <code>final</code>.</p>
 
 <h3 id="major-when">When to write it</h3>
 <ol class="steps">
@@ -474,7 +480,8 @@ That file is personal and never reaches the bench; the last section of <code>tut
 
 <h3 id="major-where">Where you type a major review</h3>
 <p>The major review is the second half of the step's file.
-This is the start of it in <code>reviews/c1-skills.md</code>, and the end:</p>
+This is the start of it in <code>reviews/c1-skills.md</code> as the template ships it, and the end.
+The file keeps a <code>TODO</code> line under every criterion, and you do not have to fill all of them in, as the table below says.</p>
 <pre><code>## Major review
 
 **Run:** bench/runs/c1-skills/TODO
@@ -508,15 +515,15 @@ TODO
 TODO</code></pre>
 <div class="table-wrap">
 <table class="stack">
-  <caption>The parts of a major review. You write all of them.</caption>
+  <caption>The parts of a major review. You write all of them. The Run line, a rating for every criterion and the closing section make a review complete.</caption>
   <thead><tr><th>Part</th><th>What goes there</th></tr></thead>
   <tbody>
     <tr><td data-label="Part"><code>**Run:**</code></td><td data-label="What goes there">the folder of the full run you reviewed, <code>bench/runs/&lt;step&gt;/&lt;run-id&gt;</code>; it must be a scored full run of that step on the shared topic, not a quick run, an <code>--only</code> run or a test topic's run</td></tr>
-    <tr><td data-label="Part"><code>**Live tries:**</code></td><td data-label="What goes there">what you did in <code>tutor/</code> and what you saw, as one text, or with a heading of your own for each try (such as <code>### Try 1: a quiz on tools</code>) above <code>### Lesson</code>; everything up to the first job's heading counts</td></tr>
+    <tr><td data-label="Part"><code>**Live tries:**</code></td><td data-label="What goes there">optional: what you did in <code>tutor/</code> and what you saw, as one text, or with a heading of your own for each try (such as <code>### Try 1: a quiz on tools</code>) above <code>### Lesson</code>; everything up to the first job's heading counts, and a <code>TODO</code> line left here is ignored</td></tr>
     <tr><td data-label="Part"><code>### Lesson</code>, <code>### Quiz</code>, <code>### Feedback</code>, <code>### Tutor</code></td><td data-label="What goes there">one heading per job the step reviews, already there; do not add or remove jobs</td></tr>
-    <tr><td data-label="Part"><code>#### &lt;criterion&gt;</code> with <code>Rating:</code></td><td data-label="What goes there">a whole number from 1 to 5 on the Rating line, such as <code>Rating: 4</code>, and below it the feedback that justifies it, with evidence</td></tr>
-    <tr><td data-label="Part"><code>### Compared with the previous step</code></td><td data-label="What goes there">how this step compares with the one before it, job by job</td></tr>
-    <tr><td data-label="Part"><code>### What the next step should fix</code></td><td data-label="What goes there">what the next step should fix; in <code>final.md</code> this heading is <code>### What I would do next</code></td></tr>
+    <tr><td data-label="Part"><code>#### &lt;criterion&gt;</code> with <code>Rating:</code></td><td data-label="What goes there">a whole number from 1 to 5 on the Rating line, such as <code>Rating: 4</code>; this is required for every criterion. Feedback below it is optional, and a <code>TODO</code> line you leave there is ignored</td></tr>
+    <tr><td data-label="Part"><code>### Compared with the previous step</code></td><td data-label="What goes there">optional: how this step compares with the one before it, job by job</td></tr>
+    <tr><td data-label="Part"><code>### What the next step should fix</code></td><td data-label="What goes there">required: three to five sentences on what the next step should fix, with one quote or item id; in <code>final.md</code> this heading is <code>### What I would do next</code></td></tr>
   </tbody>
 </table>
 </div>
@@ -576,50 +583,54 @@ In your live tries, judge a quiz against the lesson it follows.</p>
 </table>
 </div>
 <p>Use the same scale at every step, because <code>p3 report</code> puts your ratings side by side, one column per step, and a 4 should mean the same thing in <code>c1-skills</code> as in <code>final</code>.
-Write each rating as a whole number on its own line, <code>Rating: 4</code>, with the feedback below it.
-If you are torn between two numbers, pick one and say in the feedback what kept it from the other; a range such as 3-4, or 4.5, is not a rating <code>p3 check</code> accepts.
+Write each rating as a whole number on its own line, <code>Rating: 4</code>.
+If you are torn between two numbers, pick one; a range such as 3-4, or 4.5, is not a rating <code>p3 check</code> accepts, and you may say in a sentence below it what kept it from the other number.
 A job that failed to produce anything, such as a missing lesson, is a 1 on its criteria, with the run's evidence that it is missing.</p>
 
 <h3 id="evidence">Evidence</h3>
-<p>Every rating needs feedback that justifies it, and feedback needs evidence that I can find:</p>
+<p>A rating has to be one that the run's outputs support, so look at the outputs before you rate, and keep what you saw where you can find it again.
+Writing feedback under a rating is optional, but when you do write it, or when you write the paragraph that closes the review, give evidence that I can find:</p>
 <ul>
   <li>a quote from the lesson, the quiz, the feedback or a reply;</li>
   <li>an item id, such as <code>q4</code>, or a submission and item, such as <code>s2 q4</code>;</li>
   <li>a probe id, such as <code>tutor-p05</code>;</li>
   <li>a section of the lesson, by its heading.</li>
 </ul>
-<p>"Rating: 4. Good." is not a review.
-This is what one criterion looks like when it is done well, from <code>reviews/README.md</code>:</p>
+<p>"Rating: 4. Good." says nothing, and "Rating: 4" on its own is fine because it does not pretend to say more.
+This is what one criterion looks like with a sentence of feedback under it, which is optional:</p>
 <pre><code>#### Wording and possible misreadings
 
 Rating: 3
 
-Four of the six items read cleanly, but two do not.
-q2 asks which design "is better" without saying better for what, and both (b) and (c) are defensible for a learner on a small budget.
-q5's correct option is the only one that repeats a phrase from the stem ("ends the loop"), so it gives itself away.
-The reviewer in c2 should check every stem for an unstated criterion and every correct option for words copied from its stem.</code></pre>
-<p>It says how much of the quiz is fine, names each problem by its item, quotes the words that cause it, explains why it hurts a learner, and ends with something a reviewer could check for.
-That last sentence is why the <code>c1-skills</code> review matters so much: what it finds becomes the checklists of your reviewers in <code>c2-review</code>, and a reviewer told "check that no stem can be read two ways, as q4 could in my c1 review" finds more than one told "review this quiz".</p>
+q2 asks which design "is better" without saying better for what, and q5's correct option repeats a phrase from the stem ("ends the loop").</code></pre>
 
-<h3 id="closing">The two closing sections</h3>
-<p>Every major review ends with two sections of your own.</p>
+<h3 id="closing">The closing sections</h3>
+<p>Every major review ends with a section of your own, and one more is optional.</p>
 <ul>
-  <li><strong><code>### Compared with the previous step</code>.</strong>
+  <li><strong><code>### What the next step should fix</code></strong>, or in <code>final.md</code> <strong><code>### What I would do next</code></strong>, is required.
+  Write three to five sentences on the problems you want the next step to solve, with one quote or item id, specifically enough to act on.
+  The Builder reads this section when it starts the next step's rounds, so a vague line here becomes a vague next step.</li>
+  <li><strong><code>### Compared with the previous step</code></strong> is optional.
   Job by job, how this step compares with the one before it, using the table above.
   For <code>c1-skills</code> the previous step is <code>c0-baseline</code>, which has no major review of its own, so compare with what you read in your baseline runs.
   For <code>final</code>, the quiz and the feedback compare with <code>c2-review</code> and the tutor with <code>c1-skills</code>, because <code>c3-split</code> reviewed only the lesson.</li>
-  <li><strong><code>### What the next step should fix</code></strong>, or in <code>final.md</code> <strong><code>### What I would do next</code></strong>.
-  The problems you want the next step to solve, specifically enough to act on.
-  The Builder reads this section when it starts the next step's rounds, so a vague line here becomes a vague next step.</li>
 </ul>
+<p>This is a fix-next paragraph for a <code>c1-skills</code> review, in a student's words:</p>
+<pre><code>### What the next step should fix
+
+The quiz is the weakest job: q2 asks which design "is better" without saying better for what, and q5's correct option repeats a phrase from its stem.
+The quiz reviewer in c2 should check every stem for an unstated criterion and every correct option for words copied from its stem.
+The feedback comes next, because on s1 q5 it only says "You are close, think about why" and never says what my answer was missing, so the second reviewer should go on grading.
+The lesson can wait.</code></pre>
+<p>It names the weakest jobs in order, points at the items that show it, and ends with something a reviewer subagent could check for, which is what the <code>c1-skills</code> review is for: what it finds becomes the checklists of your reviewers in <code>c2-review</code>, and a reviewer told "check that no stem can be read two ways, as q4 could in my c1 review" finds more than one told "review this quiz".</p>
 
 <h3 id="final-review">The major review of final</h3>
-<p>The review of <code>final</code> covers all four jobs, on one of its three full runs.
-Its live tries are your three learning sessions with <code>final</code> on one of your test topics, written up under <code>## Learning sessions</code> in the same file, so its Live tries line points at them and names anything else you tried; a line is enough.
+<p>The review of <code>final</code> covers all four jobs, on one of its two full runs.
+Its live tries are your learning session with <code>final</code> on your test topic, written up under <code>## Learning sessions</code> in the same file; the Live tries part is optional, so a line that points at the session is plenty.
 <a href="12-final.html#major-review">final: the guard, repeats and the ablation</a> walks through it.</p>
 <div class="watch"><span class="label">Watch out</span>
 <p>Write the review of <code>final</code> and commit it before you start the blind comparison of <code>c0-baseline</code> against <code>final</code>.
-Your open judgment has to be on record before your blind one, because <code>EVAL.md</code> asks you to set the two side by side, and a review written after you saw the reveal is no longer an open review to compare with.
+Your open judgment has to be on record before your blind one, because prompt 6 of <code>DECISIONS.md</code> asks where your blind picks disagreed with your open reviews, and a review written after you saw the reveal is no longer an open review to compare with.
 <a href="13-blind-comparison.html">The blind comparison</a> explains why.</p>
 </div>
 
@@ -645,19 +656,18 @@ Your ratings from 1 to 5 in the major reviews (reviews/&lt;step&gt;.md), which r
 A dash means one of three things: no rating there yet, a rating <code>p3 check</code> does not accept (such as 4.5), or a job that step does not review.
 There is no column for <code>c0-baseline</code>, because the baseline has no major review of its own; your <code>c1-skills</code> review is where you compare with it.</p>
 <p>Without <code>--reviews</code>, <code>uv run p3 report</code> prints the objective checks and the cost of the shared topic's full runs, and then the same "Your ratings" table at the end.
-You paste these tables into <code>EVAL.md</code> at each step; <a href="14-write-up.html#eval">The inventory and EVAL.md</a> says which command goes in which section.</p>
+You never paste these tables anywhere: near the end, <code>uv run p3 report --write</code> writes them into <code>REPORT.md</code> for you, from your scored runs, and <code>DECISIONS.md</code> takes its numbers from there.</p>
 
 <h2 id="grading">How I grade your reviews</h2>
 <p>The reviews are 30 of the 150 points, for the quick rounds and the four major reviews, and the component inventory is another 10.
-I look for four things in them.</p>
+I look for three things in them.</p>
 <div class="table-wrap">
 <table>
-  <caption>The four things I look for, each with a weak and a strong example. The examples are from reviews/README.md and README.md, except the last row, which is made up.</caption>
+  <caption>The three things I look for, each with a weak and a strong example. The examples are made up from the ones in this page.</caption>
   <thead><tr><th>What I look for</th><th>Weak</th><th>Strong</th></tr></thead>
   <tbody>
-    <tr><td><strong>Specific evidence</strong>: quotes, item ids, probe ids and file names, so I can find what you saw</td><td>"Some quiz items were confusing."</td><td>"q2 asks which design 'is better' without saying better for what, and both (b) and (c) are defensible."</td></tr>
-    <tr><td><strong>Ratings your feedback justifies</strong></td><td>"Rating: 4. Good."</td><td>A 2 with a reason I can check, which is worth more than a 4 with none.</td></tr>
-    <tr><td><strong>Feedback someone could act on</strong></td><td>"The quiz could be clearer."</td><td>"q2 never says better for what."</td></tr>
+    <tr><td><strong>A rating on every criterion that your outputs support</strong></td><td>"Rating: 5" for Wording, when q2 of that run can be read two ways.</td><td>A 3 for Wording, because q2 can be read two ways and the other five items read cleanly; a 2 the run supports is worth more than a 4 it does not.</td></tr>
+    <tr><td><strong>A fix-next paragraph that names specific evidence, a quote or an item id, and that the Builder can act on</strong></td><td>"The quiz could be clearer."</td><td>"q2 never says better for what, so the c2 quiz reviewer should check every stem for an unstated criterion."</td></tr>
     <tr><td><strong>A visible trail</strong>: from a review, to the change it caused (the round's What changed), to whether that change helped (the next round's thoughts, or the next major review)</td><td>A Round 3 whose thoughts never mention the grade skill that Round 2 added.</td><td>A Round 3 that begins: "The grade skill helped: s1 q5's feedback now says my answer gave the what and missed the why, and points me to the loop section."</td></tr>
   </tbody>
 </table>
@@ -675,11 +685,11 @@ The agents have small, fixed parts, and neither of them writes or edits yours, e
   <tbody>
     <tr><td>the Run lines, My thoughts, and Live tries</td><td>you</td></tr>
     <tr><td>every rating and its feedback, the comparisons with the previous step, and what the next step should fix</td><td>you</td></tr>
-    <tr><td>the learning sessions and the test-topic reviews</td><td>you</td></tr>
+    <tr><td>the learning session and the test-topic review</td><td>you</td></tr>
     <tr><td>a new round's heading and marker lines</td><td>you, when you write its thoughts</td></tr>
     <tr><td>What changed under each round: Kind, Files and Why</td><td>the Builder, when you ask it to act on the round</td></tr>
     <tr><td>the inventory's Kind, Step added, and With and without</td><td>the Builder may fill these in, and you check them</td></tr>
-    <tr><td>the inventory's Purpose, Review, and Kept in final</td><td>you</td></tr>
+    <tr><td>the inventory's Kept in final, and Purpose and Review when you write them</td><td>you</td></tr>
     <tr><td>explanations of what a criterion asks and what good evidence looks like, and questions that help you notice something</td><td>the Guide, in its own window, never in your files</td></tr>
   </tbody>
 </table>
@@ -702,12 +712,13 @@ If an agent ever writes in one of your parts, undo it and write your own; its ru
 <h2 id="check">What p3 check says about your reviews, and the usual fixes</h2>
 <p><code>uv run p3 check</code> reads every file in <code>reviews/</code> and lists what is still to do in them.
 It makes no model call and changes nothing, so run it whenever you finish a round or a review, in the Builder or a plain terminal, or ask the Guide to run it.
-Each line starts with one of four words:</p>
+Each line starts with one of five words:</p>
 <ul>
   <li><code>OK</code>: the item holds.</li>
   <li><code>TODO</code>: work not done yet. It never fails the check on its own, but <code>p3 check --final</code>, which you run before you hand in, fails on every one of them.</li>
   <li><code>WARN</code>: worth a look, never a failure.</li>
   <li><code>FAIL</code>: something is broken.</li>
+  <li><code>PLUS</code>: work beyond what the hand-in needs, listed in a separate Extra work section that is shown only when there is some. It earns bonus points as the Canvas discussion says, and none of it is needed for full marks.</li>
 </ul>
 <p>Under a line, indented, it names the file's part with its headings, as in <code>Major review &gt; Lesson &gt; Pedagogy</code>.
 A round in progress looks like this:</p>
@@ -731,7 +742,7 @@ The table below lists the messages you are most likely to see and what to do abo
     <tr><td data-label="What p3 check says"><code>Quick rounds &gt; Round 1: Why is still TODO</code></td><td data-label="What it means, and the fix">The Builder has not acted on the round. Say "Act on Round 1 of reviews/c1-skills.md." to the Builder.</td></tr>
     <tr><td data-label="What p3 check says"><code>Quick rounds &gt; Round 1: Kind is 'new skil'; write one of modified skill, new skill, new subagent, other</code></td><td data-label="What it means, and the fix">The Kind is not one of the four kinds. Ask the Builder to correct the Kind of that round.</td></tr>
     <tr><td data-label="What p3 check says"><code>Major review &gt; Lesson &gt; Pedagogy: Rating is 4.5; write a whole number from 1 to 5</code>, or <code>Rating is 'four'</code>, or <code>Rating is '3-4'; pick one, a whole number from 1 to 5, not a range</code></td><td data-label="What it means, and the fix">Write one whole number, as <code>Rating: 4</code>, and put your hesitation into the feedback.</td></tr>
-    <tr><td data-label="What p3 check says"><code>Major review &gt; Quiz &gt; Difficulty: no feedback below the rating (say why, with quotes or item ids)</code></td><td data-label="What it means, and the fix">A rating with no reason. Write the feedback below it.</td></tr>
+    <tr><td data-label="What p3 check says"><code>Major review &gt; What the next step should fix: the text is still TODO</code></td><td data-label="What it means, and the fix">The closing section is not written yet. Write its three to five sentences, with one quote or item id. A <code>TODO</code> left under a rating, in Live tries or in Compared with the previous step is not a problem, and p3 check ignores it.</td></tr>
     <tr><td data-label="What p3 check says"><code>Major review &gt; Lesson &gt; Pedagogy: missing; add #### Pedagogy</code></td><td data-label="What it means, and the fix">The heading was renamed or deleted. Put it back word for word, at the same level (four <code>#</code> for a criterion, three for a job). Case, spacing, bold and code marks do not matter; the words and the level do.</td></tr>
     <tr><td data-label="What p3 check says"><code>Major review: Run is still TODO; name the run you reviewed (bench/runs/c1-skills/&lt;run-id&gt;)</code></td><td data-label="What it means, and the fix">Write the folder of the full run you reviewed on the Run line.</td></tr>
     <tr><td data-label="What p3 check says"><code>Major review &gt; Run: bench/runs/c1-skills/&lt;run-id&gt; is a quick run; the major review reviews a full run (p3 bench --config c1-skills)</code></td><td data-label="What it means, and the fix">The Run line names a quick run. The same line appears, in its own words, for an <code>--only</code> run, a run on a test topic, or a run not scored yet. Name the step's scored full run on the shared topic.</td></tr>

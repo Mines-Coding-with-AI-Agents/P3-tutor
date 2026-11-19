@@ -132,7 +132,7 @@ Three kinds of Claude Code session touch this repo, and each has its own instruc
   <tbody>
     <tr><td><span class="tag guide">Guide</span><br><code>claude --agent p3-guide</code> in <code>work/p3-tutor</code></td><td><code>.claude/agents/p3-guide.md</code></td><td>explains and points the way; never changes a file</td></tr>
     <tr><td><span class="tag builder">Builder</span><br><code>claude</code> in <code>work/p3-tutor</code></td><td>the root <code>CLAUDE.md</code></td><td>changes the files in <code>tutor/</code>, one change per round, and runs <code>p3</code> commands you ask for</td></tr>
-    <tr><td><span class="tag tutor">Your tutor</span><br><code>claude</code> in <code>work/p3-tutor/tutor</code></td><td><code>tutor/CLAUDE.md</code></td><td>teaches you, in live tries and in your learning sessions</td></tr>
+    <tr><td><span class="tag tutor">Your tutor</span><br><code>claude</code> in <code>work/p3-tutor/tutor</code></td><td><code>tutor/CLAUDE.md</code></td><td>teaches you, in live tries and in your learning session</td></tr>
   </tbody>
 </table>
 </div>
@@ -299,7 +299,7 @@ Each rung of the ladder is a snapshot with a fixed name.</p>
     <tr><td><code>c1-skills</code></td><td>the four skills <code>teach</code>, <code>tutor</code>, <code>quiz</code> and <code>grade</code>, plus any others you like; still one agent</td><td class="num">1</td><td><a href="08-step1-skills.html">Step 1</a></td></tr>
     <tr><td><code>c2-review</code></td><td>review loops on teach, quiz and grade, with the reviewers as subagents</td><td class="num">1</td><td><a href="09-step2-review-loops.html">Step 2</a></td></tr>
     <tr><td><code>c3-split</code></td><td>the teach job split across subagents (a planner, a designer, a writer, a visual designer, a references finder, and so on)</td><td class="num">1</td><td><a href="10-step3-split.html">Step 3</a></td></tr>
-    <tr><td><code>final</code></td><td>what earned its place (a step that did not pay may be dropped), plus a guard hook that keeps the answer keys from the tutor</td><td class="num">3</td><td><a href="12-final.html">final</a></td></tr>
+    <tr><td><code>final</code></td><td>what earned its place (a step that did not pay may be dropped), plus a guard hook that keeps the answer keys from the tutor</td><td class="num">2</td><td><a href="12-final.html">final</a></td></tr>
     <tr><td><code>final-minus-&lt;x&gt;</code></td><td><code>final</code> with one component removed, the ablation; you need at least one</td><td class="num">1</td><td><a href="12-final.html#ablation">The ablation</a></td></tr>
   </tbody>
 </table>
@@ -307,9 +307,9 @@ Each rung of the ladder is a snapshot with a fixed name.</p>
 
 <p>Each step is measured against the one before it, in quality (your major review and the objective checks) and in cost (tokens, turns, subagents and time).
 An ablation names what it removes, for example <code>final-minus-quiz-review</code> or <code>final-minus-planner</code>.
-Only <code>c0-baseline</code> and <code>final</code> get three runs, because those two carry the project's main comparison and a split pipeline with reviewers is expensive to repeat.</p>
+Only <code>c0-baseline</code> (three runs) and <code>final</code> (two) get more than one, because those two carry the project's main comparison and a split pipeline with reviewers is expensive to repeat.</p>
 <p><code>c0-baseline</code> keeps the neutral <code>PREFERENCES.md</code> the template ships, and <code>c1-skills</code> is the first config with yours.
-So step 1, and the comparison of <code>c0-baseline</code> with <code>final</code>, measure your skills and your preferences together, and <code>EVAL.md</code> asks you to say which differences you think came from which.</p>
+So step 1, and the comparison of <code>c0-baseline</code> with <code>final</code>, measure your skills and your preferences together, and <code>DECISIONS.md</code> is the place to say which differences you think came from which.</p>
 
 <h2 id="output-contract">The output contract</h2>
 <p>How your tutor works is yours, with one exception: the files it writes for the bench to read must match <code>bench/FORMATS.md</code> exactly, down to the file names, the numbering and the JSON keys.
@@ -394,7 +394,7 @@ You review one quiz and its key against the objective it serves.
 <p><code>tutor/.claude/agents/README.md</code> has every field, what I saw the bench do with them, and the link to the Claude Code documentation on subagents (a reference page; read the part on frontmatter fields when you write your first one).</p>
 
 <h3 id="skill-or-subagent">Which one to use</h3>
-<p>The component inventory asks you this for every component you build: why it is a skill or a subagent rather than the other.
+<p>The component inventory has a Kind field for every component you build, skill or subagent, and the Purpose line is the place to say why it is the one rather than the other.
 These are the questions I would ask.</p>
 <div class="table-wrap">
 <table>
@@ -521,12 +521,12 @@ Your tutor's guard, which you build in <code>final</code>, lives in <code>tutor/
     <tr><td><code>tutor/</code></td><td>the tutor: <code>CLAUDE.md</code>, <code>PREFERENCES.md</code>, <code>FORMATS.md</code> and <code>.claude/</code> (skills, agents, settings)</td><td>yours, except <code>tutor/FORMATS.md</code>, which stays a copy of <code>bench/FORMATS.md</code></td></tr>
     <tr><td><code>configs/</code></td><td>snapshots of the tutor; <code>c0-baseline</code> ships, and you add the rest with <code>p3 snapshot</code></td><td>yours, written by <code>p3</code></td></tr>
     <tr><td><code>bench/FORMATS.md</code>, <code>bench/scenarios.json</code>, <code>bench/judge/</code>, <code>bench/topics/</code></td><td>the output contract, the scenarios, the judge prompts and the shared topic</td><td>mine, hash-checked</td></tr>
-    <tr><td><code>bench/own/</code></td><td>your two test topics</td><td>yours</td></tr>
+    <tr><td><code>bench/own/</code></td><td>your test topic (a second one is extra work)</td><td>yours</td></tr>
     <tr><td><code>bench/runs/</code>, <code>bench/compare/</code></td><td>your committed runs and blind comparisons</td><td>written by <code>p3</code></td></tr>
-    <tr><td><code>reviews/</code></td><td>your quick rounds and major reviews, your learning sessions, your test-topic reviews, and the component inventory</td><td>yours; the Builder writes only what it changed in each round and the inventory's factual fields</td></tr>
+    <tr><td><code>reviews/</code></td><td>your quick rounds and major reviews, your learning session, your test-topic review, and the component inventory</td><td>yours; the Builder writes only what it changed in each round and the inventory's factual fields</td></tr>
     <tr><td><code>p3/</code></td><td>the runner, the scorer, the comparison tool, the check and <code>p3 next</code></td><td>mine, hash-checked</td></tr>
     <tr><td><code>tests/</code></td><td>the tests of <code>p3</code> and of the Guide's guard, and the place for your own guard's tests</td><td>mine, plus the tests you add</td></tr>
-    <tr><td><code>EVAL.md</code>, <code>PREREG.md</code></td><td>your write-up</td><td>yours</td></tr>
+    <tr><td><code>DECISIONS.md</code>, <code>REPORT.md</code>, <code>PREREG.md</code></td><td>your write-up: your decision log, the tables of your runs (written by <code>p3 report --write</code>), and the length study's plan</td><td>yours, except <code>REPORT.md</code>, which <code>p3</code> writes</td></tr>
     <tr><td><code>KNOWN-GAPS.md</code></td><td>failures I saw when I ran the baseline, each with the run that shows it</td><td>mine</td></tr>
     <tr><td><code>p3.json</code></td><td>your section and your stretch</td><td>yours</td></tr>
     <tr><td><code>README.md</code></td><td>the brief</td><td>mine</td></tr>

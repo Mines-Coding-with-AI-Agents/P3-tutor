@@ -125,8 +125,8 @@ Its snapshot, <code>configs/c0-baseline/</code>, holds the neutral <code>PREFERE
 <p>That means <code>c1-skills</code> is the first config with your preferences, and step 1 changes two things at once: your four skills and your preferences.
 The same holds for every later comparison with the baseline, including the blind comparison of <code>c0-baseline</code> against <code>final</code>.
 A difference you see could come from either.</p>
-<p>The README asks you to say so in <code>EVAL.md</code>: in section 2, that step 1 measures your skills and your preferences together, and which differences you think came from which.
-You cannot separate them with the runs the project asks for, but you can reason about them, and your reasons are worth writing down.</p>
+<p>It is worth saying so in <code>DECISIONS.md</code>, in your answer to prompt 1 (the skill change that mattered most): that step 1 measures your skills and your preferences together, and which differences you think came from which.
+You cannot separate them with the runs the project asks for, but you can reason about them, and a sentence of your reasons is enough.</p>
 <div class="student"><span class="label">Example: reasoning about which change caused what, in a student's words</span>
 <p>"The c1-skills feedback uses kitchen examples and is about half as long as the baseline's. That is most likely my preferences, since my grade skill says nothing about examples or length.
 Its quiz mixes mcq, numeric and short items where the baseline's were all mcq. That is the quiz skill: my preferences say nothing about item types."</p>
@@ -233,7 +233,7 @@ The same rule holds for the learner files your sessions with the tutor leave in 
 
 <h2 id="who-writes-it">Who writes it</h2>
 <p>You do, in the VS Code editor.
-The root <code>CLAUDE.md</code> tells the Builder that <code>tutor/PREFERENCES.md</code> is yours to write, like <code>EVAL.md</code> and your parts of <code>reviews/</code>, and the tutor itself never edits it.
+The root <code>CLAUDE.md</code> tells the Builder that <code>tutor/PREFERENCES.md</code> is yours to write, like <code>DECISIONS.md</code> and your parts of <code>reviews/</code>, and the tutor itself never edits it.
 The Guide can explain what a heading is for, or ask you a question that helps you notice how you learn, and it never changes a file.</p>
 <div class="say guide">
   <div class="say-head">Say to the Guide</div>
@@ -275,9 +275,9 @@ So a change of preferences always reaches your committed runs in a snapshot unde
 <p>That step then measures your new preferences along with its new architecture, exactly as <code>c1-skills</code> does, so:</p>
 <ul>
   <li>Change it at the start of a step if you can, and on its own: make a run before it and a run after it, with nothing else changed in between, so you can see what it did.</li>
-  <li>Say in <code>EVAL.md</code> which snapshot first carries the new version, and which differences you think came from it.</li>
+  <li>Say in <code>DECISIONS.md</code>, in the answer it fits best, which snapshot first carries the new version, and which differences you think came from it.</li>
   <li>Never snapshot <code>c0-baseline</code> again: it keeps the neutral file, and its runs depend on it.</li>
-  <li>Do not change it during your three learning sessions with <code>final</code>; note what you would change instead, so that all three are sessions with the version you measured.</li>
+  <li>Do not change it during your learning session with <code>final</code>; note what you would change instead, so that the session is with the version you measured.</li>
 </ul>
 <p>The personalization-swap stretch does this on purpose: a second <code>PREFERENCES.md</code> for a learner unlike you, snapshotted with <code>final</code> under a second name, to show that the tutor changes as the profile asks and stays correct (<a href="16-stretch-and-598e.html">Stretch options and the 598E length study</a>).</p>
 
