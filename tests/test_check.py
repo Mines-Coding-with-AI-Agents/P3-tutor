@@ -554,7 +554,7 @@ class FinalTests(CheckTestCase):
         warning = self.find(r, "bench/own/statics/: no scored full run of c0-baseline yet")[0]
         self.assertEqual((warning.status, warning.text), (check.WARN, "bench/own/statics/: no scored full run of c0-baseline yet; a second test topic is optional, so this is only needed for the bonus"))
         self.assertEqual(self.status(r, "test topics in bench/own/: 2 (cooking, statics; 1 needed; a second one is a bonus once it is complete)"), check.OK)
-        self.assertFalse([t for t in self.plus(r) if "second test topic" in t], "a second topic with no runs is no extra work")
+        self.assertFalse([t for t in self.plus(r) if "additional test topic" in t], "a second topic with no runs is no extra work")
         self.assertEqual(self.status(r, "reviews/final.md, test topics: a complete review of cooking (1 needed)"), check.OK)
 
     def test_the_other_test_topic_may_be_the_one_that_counts(self):
@@ -576,7 +576,7 @@ class FinalTests(CheckTestCase):
             self.assertEqual(item.status, check.WARN)
             self.assertTrue(item.text.endswith("; a second test topic is optional, so finish it for the bonus or delete bench/own/statics/"), item.text)
             self.assertEqual(self.status(r, "bench/own/statics/: not finished (see its line above)"), check.WARN)
-        self.assertFalse([t for t in self.plus(self.report(final=True)) if "second test topic" in t])
+        self.assertFalse([t for t in self.plus(self.report(final=True)) if "additional test topic" in t])
 
     def test_a_second_test_topic_that_is_ready_and_reviewed_is_extra_work(self):
         self.build(minimal=True)
@@ -584,7 +584,7 @@ class FinalTests(CheckTestCase):
         self.build_second_topic()
         r = self.report(final=True)
         self.assertNoFailure(r)
-        self.assertEqual(self.plus(r), ["a second test topic, complete with its runs and its review (statics)"])
+        self.assertEqual(self.plus(r), ["an additional test topic, complete with its runs and its review (statics)"])
         self.assertEqual(self.status(r, "reviews/final.md, test topics: a complete review of cooking and statics (1 needed)"), check.OK)
 
     def build_second_topic(self) -> None:
@@ -619,7 +619,7 @@ class FinalTests(CheckTestCase):
             "reviews/components.md: Purpose and Review written for 9 of 9 components",
             "runs of final: 3 scored full runs on agent-architecture, 1 more than needed",
             f"runs of {self.ABLATION}: a full run, where a run made with --only would do",
-            "a second test topic, complete with its runs and its review (statics)",
+            "an additional test topic, complete with its runs and its review (statics)",
             "reviews/final.md, learning sessions: 3 complete, 2 more than needed",
         ])  # fmt: skip
         self.assertTrue(all(i.status == check.PLUS for i in r.items(check.EXTRAS)))

@@ -57,8 +57,8 @@ version 0.2, which asks for less than 0.1 did and accepts everything 0.1 called 
 
 Extra work (PLUS lines; never a failure and never needed): what version 0.1 asked for and 0.2 does
 not, when it is there: written feedback on every criterion of a major review, sections of EVAL.md,
-Purpose and Review in the inventory, a third run of final, a full run of the ablation, a second
-complete test topic, more learning sessions than one, length-study runs beyond the eight, and for
+Purpose and Review in the inventory, a third run of final, a full run of the ablation, each
+additional complete test topic, more learning sessions than one, length-study runs beyond the eight, and for
 598E the larger architecture of six skills and eight subagents.
 """
 
@@ -1154,8 +1154,8 @@ def check_extras(root: Path, settings: dict, ablations: list[str], own: list[str
     if final_review is not None:
         reviewed = {t.topic for t in final_review.topics if not t.problems}
         more = [tid for tid in ready if tid in reviewed][OWN_TOPICS:]
-        if more:
-            items.append(Item(PLUS, f"a second test topic, complete with its runs and its review ({', '.join(more)})"))
+        for tid in more:
+            items.append(Item(PLUS, f"an additional test topic, complete with its runs and its review ({tid})"))
         sessions = [s for s in final_review.sessions if not _session_problems(s, own)]
         if len(sessions) > reviews.SESSIONS:
             items.append(Item(PLUS, f"{final_review.path}, learning sessions: {len(sessions)} complete, {len(sessions) - reviews.SESSIONS} more than needed"))

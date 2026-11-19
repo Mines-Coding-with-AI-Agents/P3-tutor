@@ -287,7 +287,7 @@ When a step is done, you snapshot it, make its full run, and review it properly:
 | Tutor | guardrails; personalization | `c1-skills`, `final` |
 
 A major review is complete with its Run line, a rating from 1 (failing) to 5 (excellent) on every criterion, and its closing section, "What the next step should fix" (for `final`, "What I would do next"): three to five sentences that name one piece of evidence, a quote or an item id, and that the Builder could act on.
-Written feedback under a rating, your Live tries and a "Compared with the previous step" section are optional, and a `TODO` line left in one of them is ignored, so you may leave it or delete it; when you do write feedback, evidence such as quotes, item ids and probe ids makes it worth more.
+Written feedback under a rating, your Live tries and a "Compared with the previous step" section are optional, and a marker line left in one of them is ignored, so you may leave it or delete it; when you do write feedback, evidence such as quotes, item ids and probe ids makes it worth more.
 `reviews/README.md` says what each rating means, so a 4 means the same thing at every step.
 `uv run p3 report` gathers your ratings into one table, "Your ratings", with a row per criterion and a column per step, so you can see the ladder through your own eyes beside the objective checks and the cost.
 

@@ -659,7 +659,7 @@ class ReviewWorkflowTests(unittest.TestCase):
             "reviews/components.md: Purpose and Review written for 9 of 9 components",
             "runs of final: 3 scored full runs on agent-architecture, 1 more than needed",
             f"runs of {ABLATION}: a full run, where a run made with --only would do",
-            f"a second test topic, complete with its runs and its review ({TOPICS[1] if sorted(TOPICS)[1] == TOPICS[1] else TOPICS[0]})",
+            f"an additional test topic, complete with its runs and its review ({TOPICS[1] if sorted(TOPICS)[1] == TOPICS[1] else TOPICS[0]})",
             "reviews/final.md, learning sessions: 3 complete, 2 more than needed",
         ):
             self.assertIn(line, text)

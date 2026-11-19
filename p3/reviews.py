@@ -57,9 +57,11 @@ Since version 0.2 the rest is optional, and a TODO marker left in an optional pa
 problem: the feedback under a rating (words after the rating on its line count as feedback), Live
 tries (the text from its label up to the first job or closing section, sub-headings included),
 Compared with the previous step, and an entry's Step added, Purpose, With and without and Review.
-A file written under 0.1, with all of those filled in, is complete as it is. What needs the rest of the repo is for p3 check: whether the named run exists and is a
-scored full run of the step on the shared topic, and whether each learning session's Topic starts
-with the id of a test topic in bench/own/, the same one in all three.
+A file written under 0.1, with all of those filled in, is complete as it is.
+
+What needs the rest of the repo is for p3 check: whether the named run exists and is a scored full
+run of the step on the shared topic, and whether each learning session's Topic starts with the id
+of a test topic in bench/own/.
 
 A config's subagents are the .md files under its .claude/agents/ (subfolders included, README.md
 left out) whose frontmatter opens on the first line and has a name, which is what Claude Code loads;
