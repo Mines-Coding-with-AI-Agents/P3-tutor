@@ -5,8 +5,14 @@ order the README sets out: the baseline's runs; for each step of the ladder its 
 run, the student's thoughts, the agent's one change to tutor/ and its What changed lines), the
 snapshot, the full run and the major review, each committed as it is done; then final with its
 guard, its repeats and its ablation, the two test topics and their runs, the learning sessions, the
-major review of final, the blind comparison, the test-topic reviews, the inventory and EVAL.md.
+major review of final, the blind comparison, the test-topic reviews, the inventory, EVAL.md,
+DECISIONS.md and REPORT.md (written by p3 report --write).
 tests/fake_claude.py stands in for claude, so no model is called.
+
+The project is written to the standard of version 0.1 (feedback under every rating, Live tries, both
+closing sections, six-field entries, three sessions, two test topics, three runs of final, a full
+ablation run, EVAL.md written) on purpose: version 0.2 must accept all of it, and say what is extra
+work. A second project, the same one cut back to the least version 0.2 asks, must pass too.
 
 p3 check must stay free of failures all along, and p3 check --final must pass at the end. Then each
 rule is broken in turn, on top of the finished project, and p3 check must fail with a message that
@@ -31,6 +37,7 @@ import unittest
 from datetime import timedelta
 from pathlib import Path
 
+import p3
 from p3 import check, cli, compare, reviews, util
 from tests import ENV_KEYS, REPO, fake_command, git, git_init, has_git, write
 from tests.test_template import copy_template
@@ -142,6 +149,11 @@ NEXT = {
     "c3-split": "final should keep the main conversation out of keys/ and drop whatever I cannot see paying off, the feedback reviewer first.",
     "final": "I would give the quiz reviewer the lesson itself in my own sessions, and try the figure designer on Haiku to see whether it holds up for less.",
 }
+LIVE = {
+    "final": f"My three learning sessions below, all on {SESSION_TOPIC}, are my live tries of final.",
+}
+for _step in ("c1-skills", "c2-review", "c3-split"):
+    LIVE[_step] = "Right after the snapshot I asked tutor/ for a 10-minute lesson on notes files, took its quiz, had my answers graded and asked it for quiz 0001 q3; it gave a hint and not the answer."
 SESSIONS = [
     ("2026-11-19", f"`{SESSION_TOPIC}`, the claw grip and the rocking cut",
      "I chose knife skills because I cook every day and have never been taught; I knew how to hold a knife and nothing about cuts.\n"
@@ -315,11 +327,7 @@ class Project:
     def major_review(self, step: str, run: str) -> None:
         """The student's major review of `run`, every placeholder of the template's replaced."""
         rel = reviews.step_file(step)
-        live = (
-            f"My three learning sessions below, all on {SESSION_TOPIC}, are my live tries of final."
-            if step == "final"
-            else "Right after the snapshot I asked tutor/ for a 10-minute lesson on notes files, took its quiz, had my answers graded and asked it for quiz 0001 q3; it gave a hint and not the answer."
-        )
+        live = LIVE[step]
         self.change(rel, lambda t: edit(t, ("## Major review",), f"**Run:** bench/runs/{step}/TODO", f"**Run:** {run}"))
         self.change(rel, lambda t: edit(t, ("## Major review",), "**Live tries:**\n\nTODO", f"**Live tries:**\n\n{live}"))
         for job in reviews.STEP_JOBS[step]:
@@ -414,6 +422,65 @@ class ReviewWorkflowTests(unittest.TestCase):
         git(root, "checkout", "-q", "-f", "main")
         git(root, "reset", "-q", "--hard", self.good)
         git(root, "clean", "-q", "-fd")
+
+    def cut_back(self) -> None:
+        """Rewrite the finished project to the least version 0.2 asks, in the working tree and
+        committed: no EVAL.md; every major review with only its Run, its ratings and the last closing
+        section; one learning session written; one test topic (the other one's items, runs and review
+        gone, and the template's second heading in its place); inventory entries with Kind and Kept in
+        final only; two runs of final; an ablation run made with --only."""
+        p, root = self.project, self.project.root
+
+        def blank(text: str, old: str) -> str:
+            self.assertIn(old, text)
+            return text.replace(old, "TODO", 1)
+
+        (root / "EVAL.md").unlink()
+        gone, kept = TOPICS
+        for step in reviews.STEPS:
+            rel = reviews.step_file(step)
+            text = p.read(rel)
+            for feedback in FEEDBACK.values():
+                if feedback in text:
+                    text = text.replace(feedback, "TODO")
+            text = blank(text, LIVE[step])
+            text = blank(text, COMPARED[step])
+            if step == "final":
+                for date, topic_line, body in SESSIONS[1:]:
+                    text = blank(blank(blank(text, body), f"**Date:** {date}"), f"**Topic:** {topic_line}")
+                a, b = span(text, "## Test topics", f"### {gone}")
+                text = text[:a] + text[b:].rstrip("\n") + "\n\n### TODO: your second test topic's id\n\nTODO\n"
+            p.write(rel, text)
+        text = re.sub(r"(?m)^- (Step added|Purpose|With and without|Review): .*$", r"- \1: TODO", p.read(reviews.COMPONENTS_PATH))
+        p.write(reviews.COMPONENTS_PATH, text)
+        util.remove_tree(root / "bench" / "own" / gone)
+        for run in util.list_runs(None, gone, root=root):
+            util.remove_tree(run.dir)
+        util.remove_tree(util.list_runs("final", util.SHARED_TOPIC, root=root)[-1].dir)
+        for run in util.list_runs(ABLATION, util.SHARED_TOPIC, root=root):
+            util.remove_tree(run.dir)
+        p.bench(ABLATION, "--only", "teach")
+        for old in (root / "bench" / "compare").iterdir():  # the blind comparison again, over the two runs of final that are left
+            if old.name != ".gitkeep":
+                old.unlink()
+        self.blind_comparison(p)
+        p.commit("Cut back to the least version 0.2 asks")
+
+    @classmethod
+    def blind_comparison(cls, p: Project) -> dict[str, tuple[str, int]]:
+        """The blind comparison of c0-baseline and final on every job, {job: (session id, pairs)}."""
+        sessions = {}
+        for job in check.BLIND_COMPARE_JOBS:
+            record = compare.new_session("c0-baseline", "final", job, root=p.root)
+            s = compare.Session(record["session"], p.root)
+            answers = iter(["r", "It starts from an example, as I like.", "n", "l", "Shorter, and it asks me back.", "y", "t", "Both fine for me.", "n"] * len(s.pairs))
+            with contextlib.redirect_stdout(io.StringIO()):
+                code = compare.terminal(s, ask=lambda _prompt, a=answers: next(a), folder=cls._tmp / "pairs" / job)
+            if code != 0:
+                raise AssertionError(f"the {job} comparison did not finish")
+            p.must("compare", "--reveal", record["session"])
+            sessions[job] = (record["session"], len(record["pairs"]))
+        return sessions
 
     # ---- the project, in the order a student works ----
 
@@ -518,17 +585,7 @@ class ReviewWorkflowTests(unittest.TestCase):
         p.commit("final: learning sessions and major review")
 
         # the blind comparison, picks made in the terminal flow p3 compare --terminal uses
-        cls.sessions = {}
-        for job in check.BLIND_COMPARE_JOBS:
-            record = compare.new_session("c0-baseline", "final", job, root=p.root)
-            s = compare.Session(record["session"], p.root)
-            answers = iter(["r", "It starts from an example, as I like.", "n", "l", "Shorter, and it asks me back.", "y", "t", "Both fine for me.", "n"] * len(s.pairs))
-            with contextlib.redirect_stdout(io.StringIO()):
-                code = compare.terminal(s, ask=lambda _prompt, a=answers: next(a), folder=cls._tmp / "pairs" / job)
-            if code != 0:
-                raise AssertionError(f"the {job} comparison did not finish")
-            p.must("compare", "--reveal", record["session"])
-            cls.sessions[job] = (record["session"], len(record["pairs"]))
+        cls.sessions = cls.blind_comparison(p)
         p.commit("Blind comparison: c0-baseline against final, all four jobs")
 
         # the open reviews of the test topics, the inventory's own fields, EVAL.md
@@ -548,6 +605,13 @@ class ReviewWorkflowTests(unittest.TestCase):
         p.write("EVAL.md", "\n".join("My own words on this, with the run ids and session ids." if "TODO" in line else line for line in eval_md.split("\n")))
         p.commit("Test-topic reviews, the inventory and EVAL.md")
 
+        # version 0.2's decision log, and the tables of the runs
+        decisions = p.read("DECISIONS.md")
+        n = iter(range(1, 10))
+        p.write("DECISIONS.md", "\n".join(f"Prompt {next(n)}: it paid off by 0.4 on quiz 0002 q3, and I quote \"asks me back\" from the tutor." if line.startswith("TODO") else line for line in decisions.split("\n")))
+        p.must("report", "--write")
+        p.commit("DECISIONS.md and REPORT.md")
+
     # ---- the finished project passes ----
 
     def test_the_finished_project_passes_check_final(self):
@@ -564,16 +628,65 @@ class ReviewWorkflowTests(unittest.TestCase):
             "reviews/c2-review.md, quick rounds: 3 complete (2 needed)",
             "reviews/c3-split.md, quick rounds: 2 complete (2 needed)",
             "reviews/final.md, quick rounds (optional): 2 complete",
-            f"reviews/final.md, learning sessions: 3 complete (3 needed), on {SESSION_TOPIC}",
-            f"reviews/final.md, test topics: a complete review of each ({', '.join(sorted(TOPICS))})",
+            f"reviews/final.md, learning sessions: 3 complete (1 needed), on {SESSION_TOPIC}",
+            f"reviews/final.md, test topics: a complete review of {' and '.join(sorted(TOPICS))} (1 needed)",
+            "DECISIONS.md is written",
+            "REPORT.md: there (p3 report --write writes it again after new runs)",
             "reviews/components.md: a complete entry for every skill and subagent in your snapshots (4 skills and 5 subagents)",
             "components built: 4 skills and 5 subagents across your snapshots other than c0-baseline (498E needs at least 4 skills, teach, tutor, quiz and grade among them, and 5 subagents)",
+            "runs of final: 3 scored full runs on agent-architecture at 30 minutes (2 needed)",
             "c1-skills: skills only (no subagent in configs/c1-skills/, and no quick round that adds one)",
         ):  # fmt: skip
             self.assertIn(f"\n  OK    {line}\n", out)
         for job, (sid, _n) in self.sessions.items():
             self.assertIn(f"\n  OK    compare c0-baseline / final, {job} on agent-architecture: complete ({sid})\n", out)
         self.assertEqual({job: n for job, (_sid, n) in self.sessions.items()}, {"teach": 3, "quiz": 3, "grade": 36, "tutor": 18}, "the pairs the README promises")
+        self.assertTrue(out.startswith(f"p3 {p3.__version__} check --final: 498E"), out[:80])
+
+    def test_the_work_of_version_0_1_is_listed_as_extra_work(self):
+        """Everything the 0.1 standard asked beyond 0.2 earns a PLUS line, and none of it changes the exit code."""
+        p = self.project
+        code, out, _err = p.p3("check", "--final")
+        self.assertEqual(code, 0, out)
+        extra = out.split("\nExtra work\n")[1].split("\n\n")[0].split("\n")
+        self.assertTrue(all(line.startswith("  PLUS  ") for line in extra), extra)
+        text = "\n".join(extra)
+        for step in reviews.STEPS:
+            n = sum(len(reviews.CRITERIA[j]) for j in reviews.STEP_JOBS[step])
+            self.assertIn(f"reviews/{step}.md: written feedback on every criterion of the major review ({n} of {n})", text)
+        for line in (
+            "EVAL.md: sections 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 and 13 written (13 of 13)",
+            "reviews/components.md: Purpose and Review written for 9 of 9 components",
+            "runs of final: 3 scored full runs on agent-architecture, 1 more than needed",
+            f"runs of {ABLATION}: a full run, where a run made with --only would do",
+            f"a second test topic, complete with its runs and its review ({TOPICS[1] if sorted(TOPICS)[1] == TOPICS[1] else TOPICS[0]})",
+            "reviews/final.md, learning sessions: 3 complete, 2 more than needed",
+        ):
+            self.assertIn(line, text)
+        self.assertEqual(len(extra), 4 + 6, "four feedback lines and the six others")
+        self.assertIn(f"Extra work: {len(extra)} things beyond what the hand-in needs", out)
+
+    def test_the_least_version_0_2_asks_is_complete(self):
+        """The same project cut back to the minimal forms: no extra work, nothing failing."""
+        p = self.project
+        self.cut_back()
+        code, out, _err = p.p3("check", "--final")
+        self.assertEqual(code, 0, out)
+        self.assertIn("ready to hand in", out)
+        self.assertNotRegex(out, r"\n  (TODO|FAIL|PLUS) ")
+        self.assertNotIn("Extra work", out, "no section and no summary line when there is nothing")
+        for line in (
+            "runs of final: 2 scored full runs on agent-architecture at 30 minutes (2 needed)",
+            f"runs of {ABLATION}: 1 scored run on agent-architecture at 30 minutes (1 needed, a full run or one made with --only)",
+            "reviews/final.md, learning sessions: 1 complete (1 needed), on " + SESSION_TOPIC,
+            f"reviews/final.md, test topics: a complete review of {SESSION_TOPIC} (1 needed)",
+            f"test topics in bench/own/: 1 ({SESSION_TOPIC}; 1 needed)",
+            "reviews/components.md: a complete entry for every skill and subagent in your snapshots (4 skills and 5 subagents)",
+        ):
+            self.assertIn(f"\n  OK    {line}\n", out)
+        for step in reviews.STEPS:
+            self.assertRegex(out, rf"\n  OK    reviews/{step}\.md, major review: complete, of bench/runs/{step}/")
+        self.assertNotIn("EVAL.md", out)
 
     def test_the_ratings_table(self):
         p = self.project
@@ -642,20 +755,20 @@ class ReviewWorkflowTests(unittest.TestCase):
         self.assertEqual(item.details, ["configs/c1-skills/.claude/agents/early-checker.md: the subagent early-checker; take it out of tutor/, snapshot c1-skills again (p3 snapshot c1-skills --force) and make its runs again"])
         (runs,) = [i for i in r.failures() if i.text.startswith("bench/runs/c1-skills/")]
         self.assertIn("was made with another version of c1-skills than configs/c1-skills/ holds", runs.details[0])
-        (inventory,) = [i for i in r.items() if i.text.startswith("reviews/components.md")]
-        self.assertEqual((inventory.status, inventory.details), (check.TODO, ["early-checker (subagent, in configs/c1-skills/): no entry; add ### early-checker with its six fields"]))
+        (inventory,) = [i for i in r.items(check.HANDIN) if i.text.startswith("reviews/components.md")]
+        self.assertEqual((inventory.status, inventory.details), (check.TODO, ["early-checker (subagent, in configs/c1-skills/): no entry; add ### early-checker with its Kind and its Kept in final"]))
 
     def test_a_component_missing_from_the_inventory(self):
         self.project.change(reviews.COMPONENTS_PATH, lambda t: drop(t, "### quiz-reviewer"))
         item, r = self.failing("reviews/components.md: not complete (1 problem)")
         self.assertEqual(item.text, "reviews/components.md: not complete (1 problem); every skill and subagent in a snapshot other than c0-baseline needs a complete entry")
-        self.assertEqual(item.details, ["quiz-reviewer (subagent, in configs/c2-review/): no entry; add ### quiz-reviewer with its six fields"])
+        self.assertEqual(item.details, ["quiz-reviewer (subagent, in configs/c2-review/): no entry; add ### quiz-reviewer with its Kind and its Kept in final"])
         self.assertEqual(len(r.failures()), 1)
 
     def test_the_598e_minimums(self):
         self.project.write("p3.json", json.dumps({"section": "598E", "stretch": None}) + "\n")
         item, r = self.failing("components built: ")
-        self.assertEqual(item.text, "components built: 4 skills and 5 subagents across your snapshots other than c0-baseline (598E needs at least 6 skills, teach, tutor, quiz and grade among them, and 8 subagents)")
+        self.assertEqual(item.text, "components built: 4 skills and 5 subagents across your snapshots other than c0-baseline (598E needs at least 5 skills, teach, tutor, quiz and grade among them, and 6 subagents)")
         self.assertEqual(item.details, ["skills: grade, quiz, teach, tutor", f"subagents: {', '.join(sorted(REVIEWERS + SPLIT))}"])
         failed = {i.text for i in r.failures()}
         for m in check.STUDY_MINUTES:

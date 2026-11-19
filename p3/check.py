@@ -611,7 +611,7 @@ def check_shared_runs(root: Path, final: bool, ablations: list[str], items: list
     for waiting in runner.pending_resumes(root):
         if waiting["config"] != util.LIVE_RUNS_DIR and waiting["config"] != "live":
             done, total = waiting["done"], waiting["done"] + waiting["missing"]
-            items.append(Item(WARN, f"a repeat of {waiting['config']} that a limit stopped is waiting, with {done} of its {total} scenarios done; finish it with: uv run p3 bench --resume"))
+            items.append(Item(WARN, f"a repeat of {waiting['config']} that a limit stopped is waiting, with {done} of its {_plural(total, 'scenario')} done; finish it with: uv run p3 bench --resume"))
     for name in ablations:
         have = len(_ablation_runs(root, name))
         if have >= ABLATION_RUNS:
