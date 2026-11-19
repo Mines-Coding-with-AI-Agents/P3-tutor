@@ -9,7 +9,8 @@ import unittest
 from datetime import timedelta
 from pathlib import Path
 
-from p3 import check, compare, reviews, util
+import p3
+from p3 import check, compare, reviews, runner, util
 from tests import REPO, RepoTestCase, add_agents, component_md, components_md, git, git_init, has_git, review_md, write, write_topic
 from tests.test_compare import T0, add_config, make_run, stamp
 
@@ -51,7 +52,11 @@ class IntegrityTests(CheckTestCase):
         code, out, err = self.p3("check")
         self.assertEqual(code, 0, out + err)
         self.assertIn("Integrity: no failures.", out)
-        self.assertRegex(out, r"\n  TODO  EVAL.md is missing\n")
+        self.assertRegex(out, r"\n  TODO  DECISIONS.md is missing \(it is new in version 0.2; copy it from the template\)\n")
+        self.assertRegex(out, r"\n  TODO  REPORT.md: not written yet \(p3 report --write, once your runs are scored\)\n")
+        self.assertNotIn("EVAL.md", out, "version 0.2 does not ask for EVAL.md")
+        self.assertNotIn("Extra work", out, "no section when there is nothing beyond the hand-in")
+        self.assertTrue(out.startswith(f"p3 {p3.__version__} check: 498E ("), out[:60])
         self.assertIn("p3 check --final fails on them", out)
 
     def test_the_real_template_passes(self):
@@ -213,8 +218,8 @@ class HandInTests(CheckTestCase):
         self.assertEqual(loose.exit_code(), 0)
         self.assertEqual(strict.exit_code(), 1)
         for needle in (
-            "EVAL.md is missing", "config c1-skills: not snapshotted yet", "ablation: no final-minus-<x>",
-            "runs of c0-baseline: 0 of the 3", "test topics in bench/own/: 0 of 2", "compare c0-baseline / final, teach on agent-architecture",
+            "DECISIONS.md is missing", "REPORT.md: not written yet", "config c1-skills: not snapshotted yet", "ablation: no final-minus-<x>",
+            "runs of c0-baseline: 0 of the 3", "test topics in bench/own/: 0 of the 1 needed", "compare c0-baseline / final, teach on agent-architecture",
             "compare c0-baseline / final, tutor", "reviews/c1-skills.md is missing", "reviews/final.md is missing",
             "reviews/components.md is missing", "components built: 0 skills and 0 subagents",
         ):  # fmt: skip
@@ -222,23 +227,48 @@ class HandInTests(CheckTestCase):
             self.assertEqual(self.status(strict, needle), check.FAIL, needle)
         self.assertEqual(self.status(strict, "config c0-baseline: the baseline"), check.OK)
         self.assertEqual(len(self.find(strict, "compare ")), len(check.BLIND_COMPARE_JOBS), "one blind comparison, c0-baseline against final, on every job")
-        documents = [i.text for i in strict.items(check.HANDIN) if i.text.endswith(".md is missing") and "/" not in i.text]
-        self.assertEqual(documents, ["EVAL.md is missing"], "the student's document is EVAL.md, and PREREG.md only for the length study; README.md is the brief")
+        documents = [i.text for i in strict.items(check.HANDIN) if ".md is missing" in i.text and "/" not in i.text]
+        self.assertEqual(documents, ["DECISIONS.md is missing (it is new in version 0.2; copy it from the template)"], "the student's document is DECISIONS.md, and PREREG.md only for the length study; README.md is the brief")
+        self.assertFalse(self.find(strict, "EVAL.md"), "EVAL.md is not asked for any more")
         for gone in ("compare c0-baseline / c1-skills", "compare c2-review / c3-split", "c1-skills: skills only"):
             self.assertFalse(self.find(strict, gone), gone)
         self.assertFalse(self.find(strict, "length study"), "498E without the stretch has no length study")
         self.assertFalse(self.find(strict, "PREREG.md"))
         code, out, _err = self.p3("check", "--final")
         self.assertEqual(code, 1)
-        self.assertIn("FAIL  EVAL.md is missing", out)
+        self.assertIn("FAIL  DECISIONS.md is missing", out)
         self.assertRegex(out, r"Hand-in: 1 of \d+ items done; \d+ still missing\.")
 
     def test_docs_with_todo_markers(self):
-        write(self.root / "EVAL.md", "# Eval\n\nTODO: paste the table.\n\nDone here.\nTODO: and here.\n")
-        self.assertEqual(self.status(self.report(final=True), "EVAL.md"), check.FAIL)
-        self.assertIn("2 TODO markers left (lines 3, 6)", self.find(self.report(), "EVAL.md")[0].text)
-        write(self.root / "EVAL.md", DONE)
-        self.assertEqual(self.status(self.report(final=True), "EVAL.md is written"), check.OK)
+        write(self.root / "DECISIONS.md", "# Decisions\n\nTODO: your answer to prompt 1.\n\nDone here.\nTODO: and here.\n")
+        self.assertEqual(self.status(self.report(final=True), "DECISIONS.md"), check.FAIL)
+        self.assertEqual(self.status(self.report(), "DECISIONS.md"), check.TODO)
+        self.assertIn("DECISIONS.md: 2 TODO markers left (lines 3, 6)", self.find(self.report(), "DECISIONS.md")[0].text)
+        write(self.root / "DECISIONS.md", DONE)
+        self.assertEqual(self.status(self.report(final=True), "DECISIONS.md is written"), check.OK)
+
+    def test_eval_md_is_not_read_any_more(self):
+        write(self.root / "DECISIONS.md", DONE)
+        write(self.root / "EVAL.md", "# Eval\n\n## 1. Setup\n\nTODO: the whole of it.\n")
+        r = self.report(final=True)
+        self.assertFalse(self.find(r, "TODO marker left"), r.text())
+        self.assertFalse([i for i in r.items(check.HANDIN) if "EVAL.md" in i.text])
+
+    def test_report_md_is_needed_only_to_exist(self):
+        write(self.root / "DECISIONS.md", DONE)
+        item = self.find(self.report(final=True), "REPORT.md")[0]
+        self.assertEqual((item.status, item.text), (check.FAIL, "REPORT.md: not written yet (p3 report --write, once your runs are scored)"))
+        self.assertEqual(self.find(self.report(), "REPORT.md")[0].status, check.TODO)
+        write(self.root / "REPORT.md", "TODO: whatever, it is not read.\n")
+        item = self.find(self.report(final=True), "REPORT.md")[0]
+        self.assertEqual((item.status, item.text), (check.OK, "REPORT.md: there (p3 report --write writes it again after new runs)"))
+
+    def test_the_first_line_names_the_version(self):
+        self.assertTrue(p3.__version__)
+        code, out, _err = self.p3("check")
+        self.assertEqual(out.split("\n")[0], f"p3 {p3.__version__} check: 498E ({self.root})")
+        code, out, _err = self.p3("check", "--final")
+        self.assertEqual(out.split("\n")[0], f"p3 {p3.__version__} check --final: 498E ({self.root})")
 
     def test_config_requirements(self):
         add_config(self.root, "c1-skills", skills=("teach", "tutor", "quiz"))
@@ -284,38 +314,57 @@ class HandInTests(CheckTestCase):
 
 @unittest.skipUnless(has_git(), "needs git")
 class FinalTests(CheckTestCase):
-    """A repository with everything the hand-in needs, committed where git history matters."""
+    """A repository with everything the hand-in needs, committed where git history matters.
+
+    build() writes it to the standard of version 0.1, which version 0.2 must still accept: feedback
+    under every rating, Live tries, both closing sections, six-field entries, three sessions, two test
+    topics, three runs of final, a full run of the ablation and EVAL.md. build(minimal=True) writes the
+    least version 0.2 asks instead."""
 
     REVIEWERS = ("lesson-reviewer", "quiz-reviewer", "feedback-reviewer")
     SPLIT = ("lesson-planner", "figure-designer")
     REVIEWED = "2026-11-10T12:00:00Z"  # after every run below finished
+    ABLATION = "final-minus-review"
 
-    def build(self) -> None:
+    def build(self, minimal: bool = False, final_runs: int | None = None, ablation: str | None = None) -> None:
+        """`final_runs` scored full runs of final (default: 3, or 2 when minimal); `ablation`: its one
+        run is "full", "only" (made with --only) or "quick" (default: full, or only when minimal)."""
         root = self.root
-        for name in check.DOCS:
+        for name in check.DOCS + (check.REPORT,):
             write(root / name, DONE)
+        if not minimal:
+            write(root / "EVAL.md", DONE)
         add_config(root, "c1-skills", skills=check.SKILLS)
         add_agents(root, *self.REVIEWERS)
         add_config(root, "c2-review", skills=check.SKILLS)
         add_agents(root, *self.REVIEWERS, *self.SPLIT)
         add_config(root, "c3-split", skills=check.SKILLS)
         add_agents(root, *self.SPLIT)
-        add_config(root, "final-minus-review", skills=check.SKILLS, hook=True)
+        add_config(root, self.ABLATION, skills=check.SKILLS, hook=True)
         add_agents(root, *self.REVIEWERS, *self.SPLIT)
         add_config(root, "final", skills=check.SKILLS, hook=True)
-        for tid in ("cooking", "statics"):
+        topics = ("cooking",) if minimal else ("cooking", "statics")
+        for tid in topics:
             write_topic(root / "bench" / "own" / tid)
         util.rehash(root)
         git_init(root)
         git(root, "add", "-A")
         git(root, "commit", "-q", "-m", "the template, the configs and the test topics", when="2026-11-02T12:00:00Z")
         head = util.rev_parse_head(root)
+        wanted = {**check.SHARED_RUNS, self.ABLATION: 1}
+        wanted["final"] = final_runs if final_runs is not None else 2 if minimal else 3
+        how = ablation or ("only" if minimal else "full")
         n = 0
-        for name, count in {**check.SHARED_RUNS, "final-minus-review": 1}.items():
+        for name, count in wanted.items():
             for k in range(count):
                 n += 1
-                make_run(root, name, f"{name}-r{k + 1}", stamp(n))
-        for tid in ("cooking", "statics"):
+                kwargs = {}
+                if name == self.ABLATION and how == "only":
+                    kwargs = {"scenarios": ["teach"], "only": ["teach"]}
+                elif name == self.ABLATION and how == "quick":
+                    kwargs = {"quick": True}
+                make_run(root, name, f"{name}-r{k + 1}", stamp(n), **kwargs)
+        for tid in topics:
             for name in ("c0-baseline", "final"):
                 n += 1
                 make_run(root, name, f"{name}-{tid}", stamp(n), topic_id=tid, topic_commit=head)
@@ -326,12 +375,32 @@ class FinalTests(CheckTestCase):
             for pair in s.pairs:
                 s.record(pair["pair_id"], "tie", "Both fit me.", False)
         for step in reviews.STEPS:
-            write(root / reviews.step_file(step), review_md(step, f"bench/runs/{step}/{step}-r1", kinds={2: "new subagent"} if step != "c1-skills" else None, topics=("cooking", "statics")))
-        entries = FOUR + tuple(component_md(name, "subagent", "c2-review") for name in self.REVIEWERS)
-        entries += tuple(component_md(name, "subagent", "c3-split") for name in self.SPLIT)
+            write(root / reviews.step_file(step), review_md(step, f"bench/runs/{step}/{step}-r1", kinds={2: "new subagent"} if step != "c1-skills" else None, topics=topics, minimal=minimal, sessions=1 if minimal else 3))
+        entries = tuple(component_md(s, minimal=minimal) for s in check.SKILLS) + tuple(component_md(name, "subagent", "c2-review", minimal=minimal) for name in self.REVIEWERS)
+        entries += tuple(component_md(name, "subagent", "c3-split", minimal=minimal) for name in self.SPLIT)
         write(root / reviews.COMPONENTS_PATH, components_md(*entries))
         git(root, "add", "-A")
         git(root, "commit", "-q", "-m", "the runs, the comparisons and the reviews", when=self.REVIEWED)
+
+    def change(self, rel: str, old: str, new: str, count: int = 1) -> None:
+        """Replace text in a file of the repository (not committed), which must hold it."""
+        text = util.read_text(self.root / rel)
+        self.assertIn(old, text)
+        write(self.root / rel, text.replace(old, new, count))
+
+    def failing(self, needle: str, details: list[str] | None = None) -> check.Item:
+        """The one item with `needle` in its text: a TODO without --final and a FAIL with it (and the
+        check exits 1 only with it)."""
+        loose, strict = self.report(), self.report(final=True)
+        self.assertEqual((self.status(loose, needle), self.status(strict, needle)), (check.TODO, check.FAIL), needle)
+        self.assertEqual((loose.exit_code(), strict.exit_code()), (0, 1))
+        item = self.find(strict, needle)[0]
+        if details is not None:
+            self.assertEqual(item.details, details)
+        return item
+
+    def plus(self, report: check.Checklist) -> list[str]:
+        return [i.text for i in report.items(check.EXTRAS)]
 
     def test_complete_passes_then_a_changed_topic_fails(self):
         self.build()
@@ -348,21 +417,253 @@ class FinalTests(CheckTestCase):
             self.assertIn(f"after bench/runs/{step}/{step}-r1 finished", self.find(r, first)[0].text)
         self.assertEqual(self.status(r, "reviews/c2-review.md, quick rounds: 2 complete (2 needed)"), check.OK)
         self.assertEqual(self.status(r, "reviews/final.md, quick rounds (optional): none written"), check.OK)
-        self.assertEqual(self.status(r, "reviews/final.md, learning sessions: 3 complete (3 needed)"), check.OK)
-        self.assertEqual(self.status(r, "reviews/final.md, test topics: a complete review of each (cooking, statics)"), check.OK)
+        self.assertEqual(self.status(r, "reviews/final.md, learning sessions: 3 complete (1 needed), on cooking"), check.OK)
+        self.assertEqual(self.status(r, "reviews/final.md, test topics: a complete review of cooking and statics (1 needed)"), check.OK)
         self.assertEqual(self.status(r, "reviews/components.md: a complete entry for every skill and subagent in your snapshots (4 skills and 5 subagents)"), check.OK)
         self.assertEqual(self.status(r, "components built: 4 skills and 5 subagents"), check.OK)
         self.assertEqual(self.status(r, "c1-skills: skills only"), check.OK)
+        self.assertEqual(self.status(r, "runs of final: 3 scored full runs on agent-architecture at 30 minutes (2 needed)"), check.OK)
 
         write(self.root / "bench" / "own" / "cooking" / "workspace" / "NOTES.md", "# Notes\n\nChanged after the runs.\n")
         r = self.report(final=True)
         (item,) = self.find(r, "bench/own/cooking/: 2 runs not made")
-        self.assertEqual(item.status, check.FAIL)
+        self.assertEqual(item.status, check.WARN, "statics is complete, so cooking is the second test topic and only a warning")
         self.assertTrue(all("has changed since this run" in d for d in item.details), item.details)
-        self.assertEqual(self.report().exit_code(), 0, "without --final it is work to do, not a failure")
+        self.assertIn("a second test topic is optional", item.text)
+        self.assertEqual(self.report().exit_code(), 0)
+
+    def test_work_written_to_the_standard_of_version_0_1_is_all_still_complete(self):
+        self.build()
+        r = self.report(final=True)
+        self.assertNoFailure(r)
+        self.assertEqual([i for i in r.items(check.HANDIN) if i.status != check.OK], [])
+        for step in reviews.STEPS:  # a review file written to the 0.1 standard has its feedback, Live tries and both closing sections
+            review = reviews.read_step(step, self.root)
+            self.assertTrue(review.major.complete and all(reviews.written(c.feedback) for c in review.major.criteria.values()), step)
+            self.assertTrue(reviews.written(review.major.live_tries) and reviews.written(review.major.closing[reviews.COMPARED]))
+        self.assertEqual([e.problems for e in reviews.read_components(self.root)], [[]] * 9, "six-field entries are complete")
+        self.assertEqual(len(reviews.read_step("final", self.root).sessions), 3)
+
+    def test_the_least_version_0_2_asks_is_complete(self):
+        self.build(minimal=True)
+        r = self.report(final=True)
+        self.assertNoFailure(r)
+        self.assertEqual([i for i in r.items(check.HANDIN) if i.status != check.OK], [], r.text())
+        self.assertEqual([i.text for i in r.items() if i.status == check.WARN], [], "the template's second test-topic heading and its untouched sessions are no problem")
+        self.assertIn("ready to hand in", r.text())
+        self.assertNotIn("Extra work", r.text())
+        self.assertEqual(r.items(check.EXTRAS), [])
+        for step in reviews.STEPS:
+            self.assertEqual(self.status(r, f"reviews/{step}.md, major review: complete, of bench/runs/{step}/{step}-r1"), check.OK)
+        self.assertEqual(self.status(r, "reviews/final.md, learning sessions: 1 complete (1 needed), on cooking"), check.OK)
+        self.assertEqual(self.status(r, "reviews/final.md, test topics: a complete review of cooking (1 needed)"), check.OK)
+        self.assertEqual(self.status(r, "test topics in bench/own/: 1 (cooking; 1 needed)"), check.OK)
+        self.assertEqual(self.status(r, "runs of final: 2 scored full runs on agent-architecture at 30 minutes (2 needed)"), check.OK)
+        self.assertEqual(self.status(r, "runs of final-minus-review: 1 scored run on agent-architecture at 30 minutes (1 needed, a full run or one made with --only)"), check.OK)
+        self.assertEqual(self.status(r, "reviews/components.md: a complete entry for every skill and subagent in your snapshots (4 skills and 5 subagents)"), check.OK)
+        text = check.run_checks(self.root, final=False).text()
+        self.assertIn("Hand-in: ", text)
+        self.assertNotRegex(text, r"\n  (TODO|FAIL|PLUS) ")
+
+    def test_a_rating_is_still_needed(self):
+        self.build(minimal=True)
+        self.change("reviews/c2-review.md", "#### Difficulty\n\nRating: 4", "#### Difficulty\n\nRating: TODO")
+        self.failing("reviews/c2-review.md, major review: not complete yet (1 problem)", ["Major review > Quiz > Difficulty: Rating is still TODO; write a whole number from 1 to 5"])
+        self.change("reviews/c2-review.md", "#### Difficulty\n\nRating: TODO\n\n", "#### Difficulty\n\n")
+        self.failing("reviews/c2-review.md, major review: not complete yet (1 problem)", ["Major review > Quiz > Difficulty: no Rating line (write Rating: N, N a whole number from 1 to 5)"])
+
+    def test_what_the_next_step_should_fix_is_still_needed(self):
+        self.build(minimal=True)
+        self.change("reviews/c3-split.md", "Split the teach job so the figures get their own pass.", "TODO")
+        self.failing("reviews/c3-split.md, major review: not complete yet (1 problem)", ["Major review > What the next step should fix: the text is still TODO"])
+        self.change("reviews/c3-split.md", f"### {reviews.NEXT_FIX}", "### Next")
+        self.failing("reviews/c3-split.md, major review: not complete yet (1 problem)", ["Major review > What the next step should fix: missing; add ### What the next step should fix"])
+        self.change("reviews/final.md", f"### {reviews.NEXT_DO}\n\nSplit the teach job so the figures get their own pass.", f"### {reviews.NEXT_DO}\n\nTODO")
+        self.assertEqual(self.find(self.report(final=True), "reviews/final.md, major review: not complete yet")[0].details, ["Major review > What I would do next: the text is still TODO"])
+
+    def test_an_entry_still_needs_kept_in_final_with_a_reason(self):
+        self.build(minimal=True)
+        self.change(reviews.COMPONENTS_PATH, "- Kept in final: yes", "- Kept in final: TODO")
+        self.failing("reviews/components.md: not complete (1 problem)", ["teach: Kept in final is still TODO"])
+        self.change(reviews.COMPONENTS_PATH, "- Kept in final: TODO", "- Kept in final: no")
+        item = self.failing("reviews/components.md: not complete (2 problems)")  # and final holds teach, which the entry now denies
+        self.assertIn("teach: Kept in final is no, with no reason; write no, because ...", item.details)
+        self.assertIn("teach: Kept in final says no, but configs/final/ holds it", item.details)
+        self.change(reviews.COMPONENTS_PATH, "- Kept in final: no", "- Kept in final: yes")
+        self.assertEqual(self.status(self.report(final=True), "reviews/components.md: a complete entry"), check.OK)
+
+    def test_an_entry_with_no_kept_in_final_line(self):
+        self.build(minimal=True)
+        self.change(reviews.COMPONENTS_PATH, "- Kept in final: yes\n", "")
+        self.failing("reviews/components.md: not complete (1 problem)", ['teach: no "- Kept in final:" line'])
+
+    def test_a_learning_session_is_still_needed(self):
+        self.build(minimal=True)
+        self.change("reviews/final.md", "Session 1: forty minutes on knife skills; quiz 0003 q2 was fair.", "TODO")
+        self.change("reviews/final.md", "**Date:** 2026-11-21", "**Date:** TODO")
+        self.change("reviews/final.md", "**Topic:** cooking", "**Topic:** TODO")
+        self.failing("reviews/final.md, learning sessions: 0 of the 1 complete session needed", ["Learning sessions > Session 1: not written yet"])
+
+    def test_a_session_started_and_not_finished_still_fails(self):
+        self.build(minimal=True)
+        self.change("reviews/final.md", "### Session 2\n\n**Date:** TODO", "### Session 2\n\n**Date:** 2026-11-22")
+        item = self.failing("reviews/final.md, learning sessions: 1 complete (1 needed), on cooking, and 1 session started but not complete (finish it, or delete it)")
+        self.assertEqual(item.details, ["Learning sessions > Session 2: Topic is still TODO", "Learning sessions > Session 2: the text is still TODO"])
+
+    def test_a_test_topic_is_still_needed(self):
+        self.build(minimal=True)
+        util.remove_tree(self.root / "bench" / "own" / "cooking")
+        for run in util.list_runs(None, "cooking", root=self.root):
+            util.remove_tree(run.dir)
+        self.failing("test topics in bench/own/: 0 of the 1 needed (p3 new-topic <id>)")
+        self.failing("reviews/final.md, test topics: no test topic in bench/own/ yet to review")
+
+    def test_decisions_md_and_report_md_are_still_needed(self):
+        self.build(minimal=True)
+        (self.root / "DECISIONS.md").unlink()
+        self.failing("DECISIONS.md is missing (it is new in version 0.2; copy it from the template)")
+        write(self.root / "DECISIONS.md", "# Decisions\n\n## 1. Step 1\n\nTODO: your answer to prompt 1.\n")
+        self.failing("DECISIONS.md: 1 TODO marker left (line 5)")
+        write(self.root / "DECISIONS.md", DONE)
+        (self.root / "REPORT.md").unlink()
+        self.failing("REPORT.md: not written yet (p3 report --write, once your runs are scored)")
+        write(self.root / "REPORT.md", DONE)
+        self.assertNoFailure(self.report(final=True))
+
+    def test_one_run_of_final_is_not_enough(self):
+        self.build(minimal=True, final_runs=1)
+        self.failing("runs of final: 1 of the 2 scored full runs needed on agent-architecture at 30 minutes (p3 bench --config final)")
+
+    def test_an_ablation_with_only_a_quick_run_is_not_enough(self):
+        self.build(minimal=True, ablation="quick")
+        self.failing(f"runs of {self.ABLATION}: no scored run on agent-architecture at 30 minutes yet (p3 bench --config {self.ABLATION}, with --only and the scenarios the removed component touches, or without it for a full run)")
+
+    def test_an_ablation_made_with_only_counts_and_a_full_run_is_extra(self):
+        self.build(minimal=True)
+        self.assertNoFailure(self.report(final=True))
+        self.assertEqual(self.plus(self.report(final=True)), [])
+        make_run(self.root, self.ABLATION, f"{self.ABLATION}-full", stamp(300))
+        self.assertEqual(self.plus(self.report(final=True)), [f"runs of {self.ABLATION}: a full run, where a run made with --only would do"])
+
+    def test_the_test_topic_nearest_to_ready_counts_and_the_other_is_a_warning(self):
+        self.build()
+        util.remove_tree(util.runs_dir("c0-baseline", self.root) / "c0-baseline-statics")
+        r = self.report(final=True)
+        self.assertNoFailure(r)
+        self.assertEqual(self.status(r, "bench/own/cooking/: scored runs of c0-baseline and final"), check.OK)
+        warning = self.find(r, "bench/own/statics/: no scored full run of c0-baseline yet")[0]
+        self.assertEqual((warning.status, warning.text), (check.WARN, "bench/own/statics/: no scored full run of c0-baseline yet; a second test topic is optional, so this is only needed for the bonus"))
+        self.assertEqual(self.status(r, "test topics in bench/own/: 2 (cooking, statics; 1 needed; a second one is a bonus once it is complete)"), check.OK)
+        self.assertFalse([t for t in self.plus(r) if "second test topic" in t], "a second topic with no runs is no extra work")
+        self.assertEqual(self.status(r, "reviews/final.md, test topics: a complete review of cooking (1 needed)"), check.OK)
+
+    def test_the_other_test_topic_may_be_the_one_that_counts(self):
+        self.build()
+        util.remove_tree(util.runs_dir("final", self.root) / "final-cooking")
+        r = self.report(final=True)
+        self.assertNoFailure(r)
+        self.assertEqual(self.find(r, "bench/own/cooking/: no scored full run of final yet")[0].status, check.WARN)
+        self.assertEqual(self.status(r, "bench/own/statics/: scored runs of c0-baseline and final"), check.OK)
+        self.assertEqual(self.status(r, "reviews/final.md, test topics: a complete review of statics (1 needed)"), check.OK)
+
+    def test_an_unfinished_second_test_topic_is_a_warning_not_a_failure(self):
+        self.build()
+        write(self.root / "bench" / "own" / "statics" / "workspace" / "NOTES.md", "# Notes\n\nTODO: what the learner knows.\n")
+        for final in (False, True):
+            r = self.report(final)
+            self.assertNoFailure(r)
+            (item,) = self.find(r, "bench/own/statics/ is valid, with 1 TODO marker still to fill in")
+            self.assertEqual(item.status, check.WARN)
+            self.assertTrue(item.text.endswith("; a second test topic is optional, so finish it for the bonus or delete bench/own/statics/"), item.text)
+            self.assertEqual(self.status(r, "bench/own/statics/: not finished (see its line above)"), check.WARN)
+        self.assertFalse([t for t in self.plus(self.report(final=True)) if "second test topic" in t])
+
+    def test_a_second_test_topic_that_is_ready_and_reviewed_is_extra_work(self):
+        self.build(minimal=True)
+        self.assertEqual(self.plus(self.report(final=True)), [])
+        self.build_second_topic()
+        r = self.report(final=True)
+        self.assertNoFailure(r)
+        self.assertEqual(self.plus(r), ["a second test topic, complete with its runs and its review (statics)"])
+        self.assertEqual(self.status(r, "reviews/final.md, test topics: a complete review of cooking and statics (1 needed)"), check.OK)
+
+    def build_second_topic(self) -> None:
+        root = self.root
+        write_topic(root / "bench" / "own" / "statics")
+        git(root, "add", "-A")
+        git(root, "commit", "-q", "-m", "a second test topic", when="2026-11-11T12:00:00Z")
+        head = util.rev_parse_head(root)
+        for k, name in enumerate(("c0-baseline", "final")):
+            make_run(root, name, f"{name}-statics", stamp(400 + k), topic_id="statics", topic_commit=head)
+        self.change("reviews/final.md", "### TODO: your second test topic's id\n\nTODO", "### statics\n\nOn statics, final's lesson had a worked example where c0-baseline's had none.")
+
+    def test_a_second_test_topic_without_a_review_is_a_warning(self):
+        self.build(minimal=True)
+        self.build_second_topic()
+        self.change("reviews/final.md", "### statics\n\nOn statics, final's lesson had a worked example where c0-baseline's had none.", "### TODO: your second test topic's id\n\nTODO")
+        r = self.report(final=True)
+        self.assertNoFailure(r)
+        self.assertEqual(self.plus(r), [])
+        item = self.find(r, "reviews/final.md, test topics: 1 thing you may tidy")[0]
+        self.assertEqual((item.status, item.details), (check.WARN, ["Test topics > statics: no complete review; a second test topic is optional, so review it for the bonus or leave it"]))
+
+    def test_every_extra_of_version_0_1_has_a_plus_line(self):
+        self.build()
+        write(self.root / "EVAL.md", "# Eval\n\n## 1. Setup\n\nI set it up.\n\n## 2. Step 1\n\nTODO: later.\n\n## 3. Step 2\n\nIt paid.\n")
+        r = self.report(final=True)
+        self.assertNoFailure(r)
+        n = {step: sum(len(reviews.CRITERIA[j]) for j in reviews.STEP_JOBS[step]) for step in reviews.STEPS}
+        self.assertEqual(self.plus(r), [
+            *[f"reviews/{step}.md: written feedback on every criterion of the major review ({n[step]} of {n[step]})" for step in reviews.STEPS],
+            "EVAL.md: sections 1 and 3 written (2 of 13)",
+            "reviews/components.md: Purpose and Review written for 9 of 9 components",
+            "runs of final: 3 scored full runs on agent-architecture, 1 more than needed",
+            f"runs of {self.ABLATION}: a full run, where a run made with --only would do",
+            "a second test topic, complete with its runs and its review (statics)",
+            "reviews/final.md, learning sessions: 3 complete, 2 more than needed",
+        ])  # fmt: skip
+        self.assertTrue(all(i.status == check.PLUS for i in r.items(check.EXTRAS)))
+        self.assertIn(f"Extra work: {len(self.plus(r))} things beyond what the hand-in needs (the PLUS lines; the Canvas discussion says what the bonus is).", r.text())
+        self.assertRegex(r.text(), r"\nExtra work\n  PLUS  reviews/c1-skills.md: written feedback")
+        self.assertEqual(self.report().exit_code(), 0)
+
+    def test_extra_work_is_not_counted_as_a_hand_in_item(self):
+        self.build()
+        r = self.report(final=True)
+        handin = r.items(check.HANDIN)
+        self.assertIn(f"Hand-in: {len(handin)} of {len(handin)} items done, ready to hand in.", r.text())
+        self.assertTrue(all(i.status != check.PLUS for i in handin))
+
+    def test_a_line_of_extra_work_appears_only_when_its_condition_holds(self):
+        self.build()
+        review = util.read_text(self.root / "reviews" / "c2-review.md")
+        write(self.root / "reviews" / "c2-review.md", review.replace("Difficulty: section 2 of lesson 0001 says \"the program runs the tool\", which is right.", "TODO", 1))
+        self.assertFalse([t for t in self.plus(self.report(final=True)) if t.startswith("reviews/c2-review.md")], "one criterion with no feedback: no line for that step")
+        self.assertTrue([t for t in self.plus(self.report(final=True)) if t.startswith("reviews/c1-skills.md")])
+        write(self.root / "reviews" / "c2-review.md", review.replace("Rating: 4", "Rating: TODO", 1))
+        self.assertFalse([t for t in self.plus(self.report(final=True)) if t.startswith("reviews/c2-review.md")], "a criterion with no rating: no line either")
+        self.change(reviews.COMPONENTS_PATH, "- Review: Without it quiz 0002 q3 gave its answer away; with it, no stem did.", "- Review: TODO", 2)
+        self.assertIn("reviews/components.md: Purpose and Review written for 7 of 9 components", self.plus(self.report(final=True)))
+
+    def test_a_stopped_repeat_that_waits_for_resume_is_a_warning(self):
+        self.build(minimal=True)
+        self.assertEqual([i for i in self.report(final=True).items() if i.status == check.WARN], [])
+        folder = self.root / runner.ABORTED_DIR / "c1-skills" / "20261103-140000-agent-architecture-m30-r1"
+        ids = ["teach", "quiz", "grade-s1", "grade-s2", "tutor-p01", "tutor-p02"]
+        write(folder / runner.PARTIAL_FILE, {"scenario_ids": ids, "record": {"scenarios": [{"id": "teach"}, {"id": "quiz"}], "started_at": "2026-11-03T14:00:00Z"}})
+        self.assertEqual(len(runner.pending_resumes(self.root)), 1)
+        for final in (False, True):
+            r = self.report(final)
+            self.assertNoFailure(r)
+            (item,) = self.find(r, "a repeat of c1-skills that a limit stopped is waiting")
+            self.assertEqual((item.status, item.text), (check.WARN, "a repeat of c1-skills that a limit stopped is waiting, with 2 of its 6 scenarios done; finish it with: uv run p3 bench --resume"))
+        write(folder / runner.PARTIAL_FILE, {"scenario_ids": ["teach"], "record": {"scenarios": [], "started_at": "2026-11-03T14:00:00Z"}})
+        self.assertEqual(self.find(self.report(), "a repeat of c1-skills")[0].text, "a repeat of c1-skills that a limit stopped is waiting, with 0 of its 1 scenario done; finish it with: uv run p3 bench --resume")
+        util.remove_tree(folder)
+        self.assertFalse(self.find(self.report(), "a limit stopped"))
 
     def test_runs_from_uncommitted_items_fail(self):
-        self.build()
+        self.build(minimal=True)
         head = util.rev_parse_head(self.root)
         meta = util.read_json(self.root / "bench" / "own" / "cooking" / "topic.json")
         write(self.root / "bench" / "own" / "cooking" / "topic.json", {**meta, "title": "Cooking, edited and not committed"})
@@ -406,7 +707,7 @@ class LengthStudyTests(CheckTestCase):
         self.commit(self.PREREG.format(h="The single agent loses more.", o="TODO: your outcome."))
         self.study_runs(util.iso_utc(util.utc_now() + timedelta(minutes=5)))
         r = self.report(final=True)
-        self.assertEqual(self.status(r, "length study, c1-skills: scored teach-only runs 3 at 10, 3 at 30, 3 at 60 minutes"), check.OK)
+        self.assertEqual(self.status(r, "length study, c1-skills: scored teach-only runs 2 at 10, 2 at 60 minutes, 2 needed at each"), check.OK)
         self.assertEqual(self.status(r, "length study, final"), check.OK)
         self.assertEqual(self.status(r, "PREREG.md: sections 1 to 4 committed"), check.OK)
         self.assertEqual(self.status(r, "PREREG.md: 1 TODO marker left"), check.FAIL, "section 5 is still to write")
@@ -438,7 +739,7 @@ class LengthStudyTests(CheckTestCase):
         for i, m in enumerate(check.STUDY_MINUTES):
             record = compare.new_session("c1-skills", "final", "teach", minutes=m, teach_only=True, root=self.root, when=T0 + timedelta(seconds=i + 1))
             s = compare.Session(record["session"], self.root)
-            self.assertEqual(len(s.pairs), check.STUDY_RUNS, "three teach-only runs of each config at each length")
+            self.assertEqual(len(s.pairs), check.STUDY_RUNS, "two teach-only runs of each config at each length")
             for pair in s.pairs[:-1] if m == 60 else s.pairs:  # the 60-minute session is left unfinished
                 s.record(pair["pair_id"], "left", "Shorter and clearer.", True)
             sids[m] = record["session"]
@@ -457,10 +758,59 @@ class LengthStudyTests(CheckTestCase):
         self.assertEqual(item.status, check.FAIL)
         self.assertIn("after the first length-study run started (2020-01-01T00:00:00Z)", item.text)
 
+    def test_the_study_needs_two_runs_at_ten_and_at_sixty_minutes(self):
+        self.commit(self.PREREG.format(h="The single agent loses more.", o="It did."))
+        self.assertEqual((check.STUDY_MINUTES, check.STUDY_RUNS), ((10, 60), 2))
+        self.study_runs(util.iso_utc(util.utc_now() + timedelta(minutes=5)))
+        r = self.report(final=True)
+        for name in check.STUDY_CONFIGS:
+            self.assertEqual(self.status(r, f"length study, {name}: scored teach-only runs 2 at 10, 2 at 60 minutes, 2 needed at each"), check.OK)
+        self.assertEqual(r.items(check.EXTRAS), [], "exactly the eight needed")
+        util.remove_tree(util.runs_dir("final", self.root) / "final-m60-r1")
+        item = self.find(self.report(final=True), "length study, final: scored")[0]
+        self.assertEqual((item.status, item.text), (check.FAIL, "length study, final: scored teach-only runs 2 at 10, 1 at 60 minutes, 2 needed at each (p3 bench --config final --only teach --minutes M --repeats 2)"))
+
+    def test_a_third_run_and_a_run_at_30_minutes_are_extra_work_and_no_part_of_the_study(self):
+        self.commit(self.PREREG.format(h="The single agent loses more.", o="It did."))
+        self.study_runs(util.iso_utc(util.utc_now() + timedelta(minutes=5)))
+        make_run(self.root, "c1-skills", "c1-skills-m10-r2", stamp(500), minutes=10, scenarios=["teach"], only=["teach"])
+        r = self.report(final=True)
+        self.assertEqual([i.text for i in r.items(check.EXTRAS)], ["length study, c1-skills: 1 teach-only run beyond the 4 needed (3 at 10, 0 at 30, 2 at 60 minutes)"])
+        make_run(self.root, "final", "final-m30-r0", stamp(501), minutes=30, scenarios=["teach"], only=["teach"])
+        make_run(self.root, "final", "final-m30-r1", stamp(502), minutes=30, scenarios=["teach"], only=["teach"])
+        r = self.report(final=True)
+        self.assertEqual([i.text for i in r.items(check.EXTRAS)], [
+            "length study, c1-skills: 1 teach-only run beyond the 4 needed (3 at 10, 0 at 30, 2 at 60 minutes)",
+            "length study, final: 2 teach-only runs beyond the 4 needed (2 at 10, 2 at 30, 2 at 60 minutes)",
+        ])  # fmt: skip
+        self.assertEqual(r.exit_code(), self.report(final=True).exit_code())
+        util.remove_tree(util.runs_dir("final", self.root) / "final-m10-r0")
+        util.remove_tree(util.runs_dir("final", self.root) / "final-m10-r1")
+        item = self.find(self.report(final=True), "length study, final: scored")[0]
+        self.assertEqual(item.status, check.FAIL, "runs at 30 minutes do not stand in for the ones at 10")
+        self.assertIn("0 at 10, 2 at 60 minutes, 2 needed at each", item.text)
+
     def test_a_full_run_is_not_a_study_run(self):
         self.commit(self.PREREG.format(h="The single agent loses more.", o="It did."))
         make_run(self.root, "c1-skills", "full", stamp(0))
-        self.assertIn("0 at 10, 0 at 30, 0 at 60", self.find(self.report(), "length study, c1-skills")[0].text)
+        self.assertEqual(self.report().items(check.EXTRAS), [], "a full run at 30 minutes is the ladder's, not extra work")
+        self.assertIn("0 at 10, 0 at 60 minutes, 2 needed at each", self.find(self.report(), "length study, c1-skills")[0].text)
+
+
+class EvalSectionsTests(unittest.TestCase):
+    def test_the_sections_with_text_and_no_todo(self):
+        text = (
+            "# Evaluation report\n\nIntro.\n\n## 1. The baseline\n\nWritten.\n\n## 2. Step 1\n\n### What changed\n\nTODO: later.\n\n"
+            "## 3. Step 2\n\n\n## 4. Step 3\n\n### What changed\n\nIt did.\n\n### What it cost\n\nMore.\n\n## 5. Final\n\nDone."
+        )
+        self.assertEqual(check.eval_sections_written(text), [1, 4, 5])
+        self.assertEqual(check.eval_sections_written(text.replace("\n", "\r\n")), [1, 4, 5])
+        self.assertEqual(check.eval_sections_written("# Evaluation report\n\nNo numbered sections.\n"), [])
+        self.assertEqual(check.eval_sections_written(""), [])
+
+    def test_a_marker_in_any_subsection_leaves_the_section_unwritten(self):
+        text = "## 2. Step 1\n\n### What changed\n\nDone.\n\n### What it cost\n\nTODO: tables.\n"
+        self.assertEqual(check.eval_sections_written(text), [])
 
 
 class ReviewFixTests(CheckTestCase):
@@ -509,10 +859,10 @@ class ReviewCheckTests(CheckTestCase):
         self.assertNoFailure(r)
         rounds = self.both("reviews/c1-skills.md, quick rounds: 0 of the 2 complete rounds needed")
         self.assertEqual(rounds.details, ["Quick rounds > Round 1: not written yet", "Quick rounds > Round 2: not written yet"])
-        major = self.both("reviews/c3-split.md, major review: not written yet (after a scored full run of c3-split, rate and review it criterion by criterion)")
+        major = self.both("reviews/c3-split.md, major review: not written yet (after a scored full run of c3-split, rate every criterion and say what the next step should fix)")
         self.assertEqual(major.details, [], "an untouched review lists no TODO lines")
         self.both("reviews/final.md, quick rounds (optional): none written", check.OK, check.OK)
-        self.both("reviews/final.md, learning sessions: 0 of the 3 complete sessions needed")
+        self.both("reviews/final.md, learning sessions: 0 of the 1 complete session needed")
         self.both("reviews/final.md, test topics: no test topic in bench/own/ yet to review")
         inventory = self.both("reviews/components.md: no skill or subagent in a snapshot other than c0-baseline yet")
         self.assertEqual(inventory.details, ["<name>: not written yet; fill it in for one component, or delete it"])
@@ -610,43 +960,65 @@ class ReviewCheckTests(CheckTestCase):
             "Major review > Run: bench/runs/c2-review/r1 is not a run (no bench/runs/c2-review/r1/run.json); name a run folder under bench/runs/c2-review/",
         ])  # fmt: skip
 
-    def test_learning_sessions_and_test_topics(self):
+    def test_learning_sessions(self):
         for tid in ("cooking", "statics"):
             write_topic(self.root / "bench" / "own" / tid)
-        self.review("final", review_md("final", sessions=2, topics=("cooking",)))
-        item = self.both("reviews/final.md, learning sessions: 2 of the 3 complete sessions needed")
-        self.assertEqual(item.details, ["Learning sessions: 2 sessions; add a ### Session section for each, 3 at least"])
-        item = self.both("reviews/final.md, test topics: 1 of the 2 test topics reviewed")
-        self.assertEqual(item.details, ["Test topics > statics: missing; add ### statics, comparing c0-baseline and final on it"])
-        self.review("final", review_md("final", topics=("cooking", "statics", "<topic-id>")))
-        item = self.both("reviews/final.md, test topics: 2 of the 2 test topics reviewed")
-        self.assertEqual(item.details, ["Test topics > <topic-id>: names no test topic in bench/own/ (cooking, statics); rename it to a topic's id, or delete it"])
-        self.review("final", review_md("final", topics=("cooking", "TODO: your second test topic's id")))
-        item = self.both("reviews/final.md, test topics: 1 of the 2 test topics reviewed")
-        self.assertEqual(item.details, [
-            "Test topics > statics: missing; add ### statics, comparing c0-baseline and final on it",
-            "Test topics > TODO: your second test topic's id: the heading is still TODO; make it the id of a test topic (cooking, statics)",
-        ])  # fmt: skip
+        self.review("final", review_md("final", sessions=0, topics=("cooking",)))
+        item = self.both("reviews/final.md, learning sessions: 0 of the 1 complete session needed")
+        self.assertEqual(item.details, ["Learning sessions: 0 sessions; add a ### Session section, 1 at least"])
+        self.review("final", review_md("final", sessions=1, minimal=True, topics=("cooking",)))
+        self.both("reviews/final.md, learning sessions: 1 complete (1 needed), on cooking", check.OK, check.OK)
         self.review("final", review_md("final", topics=("cooking", "statics")))
-        self.both("reviews/final.md, learning sessions: 3 complete (3 needed)", check.OK, check.OK)
-        self.both("reviews/final.md, test topics: a complete review of each (cooking, statics)", check.OK, check.OK)
-        self.assertIn(", on cooking", self.item(self.report(), "reviews/final.md, learning sessions: 3 complete").text)
-        self.review("final", review_md("final", topics=("cooking", "statics")).replace("**Topic:** cooking", "**Topic:** knife skills, the claw grip", 1))
-        item = self.both("reviews/final.md, learning sessions: 2 of the 3 complete sessions needed")
-        self.assertEqual(item.details, ["Learning sessions > Session 1: Topic is 'knife skills, the claw grip'; start it with the id of the test topic the session was on (cooking, statics)"])
+        self.both("reviews/final.md, learning sessions: 3 complete (1 needed), on cooking", check.OK, check.OK)
+        self.assertIn("reviews/final.md, learning sessions: 3 complete, 2 more than needed", [i.text for i in self.report().items(check.EXTRAS)])
         self.review("final", review_md("final", topics=("cooking", "statics")).replace("**Topic:** cooking", "**Topic:** `cooking`, the claw grip", 1))
-        self.both("reviews/final.md, learning sessions: 3 complete (3 needed), on cooking", check.OK, check.OK)
-        self.review("final", review_md("final", topics=("cooking", "statics")).replace("**Topic:** cooking", "**Topic:** statics: the method of joints", 1))
-        item = self.both("reviews/final.md, learning sessions: 3 complete (3 needed), on 2 test topics")
-        mixed = "Learning sessions: the sessions are on cooking and statics; hold all three on one of your test topics, because together they are the live tries of one major review"
-        self.assertEqual(item.details, [mixed])
-        self.review("final", review_md("final", topics=("cooking", "statics")).replace("**Topic:** cooking", "**Topic:** statics", 1).replace("**Topic:** cooking", "**Topic:** julienne", 1))
-        item = self.both("reviews/final.md, learning sessions: 2 of the 3 complete sessions needed")
-        self.assertEqual(item.details, ["Learning sessions > Session 2: Topic is 'julienne'; start it with the id of the test topic the session was on (cooking, statics)", mixed])
+        self.both("reviews/final.md, learning sessions: 3 complete (1 needed), on cooking", check.OK, check.OK)
         self.review("final", review_md("final", topics=("cooking", "statics")).split("## Learning sessions")[0])
-        item = self.both("reviews/final.md, learning sessions: 0 of the 3")
+        item = self.both("reviews/final.md, learning sessions: 0 of the 1")
         self.assertEqual(item.details, ["## Learning sessions is missing (the template's reviews/final.md has it; copy it back)"])
         self.assertEqual(self.item(self.report(), "reviews/final.md, test topics").details, ["## Test topics is missing (the template's reviews/final.md has it; copy it back)"])
+
+    def test_sessions_on_different_test_topics_are_all_right_now(self):
+        for tid in ("cooking", "statics"):
+            write_topic(self.root / "bench" / "own" / tid)
+        self.review("final", review_md("final", topics=("cooking", "statics")).replace("**Topic:** cooking", "**Topic:** statics: the method of joints", 1))
+        item = self.both("reviews/final.md, learning sessions: 3 complete (1 needed), on cooking and statics", check.OK, check.OK)
+        self.assertEqual(item.details, [], "the sessions need not be on one topic")
+
+    def test_a_session_on_no_test_topic_does_not_count(self):
+        for tid in ("cooking", "statics"):
+            write_topic(self.root / "bench" / "own" / tid)
+        text = review_md("final", sessions=1, minimal=True, topics=("cooking",)).replace("**Topic:** cooking", "**Topic:** knife skills, the claw grip", 1)
+        self.review("final", text)
+        item = self.both("reviews/final.md, learning sessions: 0 of the 1 complete session needed")
+        self.assertEqual(item.details, ["Learning sessions > Session 1: Topic is 'knife skills, the claw grip'; start it with the id of the test topic the session was on (cooking, statics)"])
+
+    def test_test_topic_reviews(self):
+        for tid in ("cooking", "statics"):
+            write_topic(self.root / "bench" / "own" / tid)
+        self.review("final", review_md("final", topics=("cooking",)))
+        self.both("reviews/final.md, test topics: a complete review of cooking (1 needed)", check.OK, check.OK)
+        item = self.both("reviews/final.md, test topics: 1 thing you may tidy", check.WARN, check.WARN)
+        self.assertEqual(item.details, ["Test topics > statics: no complete review; a second test topic is optional, so review it for the bonus or leave it"])
+        self.review("final", review_md("final", topics=("cooking", "statics")))
+        self.both("reviews/final.md, test topics: a complete review of cooking and statics (1 needed)", check.OK, check.OK)
+        self.assertFalse(self.find(self.report(), "you may tidy"))
+        self.review("final", review_md("final", topics=("cooking", "statics", "<topic-id>")))
+        item = self.both("reviews/final.md, test topics: 1 thing you may tidy", check.WARN, check.WARN)
+        self.assertEqual(item.details, ["Test topics > <topic-id>: names no test topic in bench/own/ (cooking, statics); rename it to a topic's id, or delete it"])
+        self.review("final", review_md("final", sessions=1, minimal=True, topics=("statics",)))
+        self.both("reviews/final.md, test topics: a complete review of statics (1 needed)", check.OK, check.OK)
+        self.assertEqual(self.item(self.report(), "reviews/final.md, test topics: 1 thing you may tidy").details, ["Test topics > cooking: no complete review; a second test topic is optional, so review it for the bonus or leave it"], "the template's TODO heading is no problem")
+
+    def test_no_complete_test_topic_review_fails(self):
+        for tid in ("cooking", "statics"):
+            write_topic(self.root / "bench" / "own" / tid)
+        self.review("final", review_md("final", topics=("cooking", "statics")).replace("On cooking, final's lesson had a worked example where c0-baseline's had none.", "").replace("On statics, final's lesson had a worked example where c0-baseline's had none.", ""))
+        item = self.both("reviews/final.md, test topics: no complete review of a test topic yet (1 needed)")
+        self.assertEqual(item.details, ["Test topics > cooking: no text below the heading (how c0-baseline and final compare on it)"])
+        self.review("final", review_md("final", minimal=True, sessions=1, topics=()))
+        item = self.both("reviews/final.md, test topics: no complete review of a test topic yet (1 needed)")
+        self.assertEqual(item.details, ["Test topics > TODO: your second test topic's id: make this heading the topic's id, ### cooking, and compare c0-baseline and final on it there"])
 
     def test_c1_changes_skills_only(self):
         add_agents(self.root, "lesson-reviewer")
@@ -736,7 +1108,7 @@ class InventoryTests(CheckTestCase):
         write(self.root / reviews.COMPONENTS_PATH, components_md(*entries))
 
     def inventory(self, final: bool = False) -> check.Item:
-        (item,) = self.find(self.report(final), "reviews/components.md")
+        (item,) = [i for i in self.report(final).items(check.HANDIN) if "reviews/components.md" in i.text]
         return item
 
     def test_every_component_needs_an_entry(self):
@@ -746,7 +1118,7 @@ class InventoryTests(CheckTestCase):
         item = self.inventory()
         self.assertEqual((item.status, self.inventory(final=True).status), (check.TODO, check.FAIL))
         self.assertEqual(item.text, "reviews/components.md: not complete (1 problem); every skill and subagent in a snapshot other than c0-baseline needs a complete entry")
-        self.assertEqual(item.details, ["lesson-reviewer (subagent, in configs/c2-review/): no entry; add ### lesson-reviewer with its six fields"])
+        self.assertEqual(item.details, ["lesson-reviewer (subagent, in configs/c2-review/): no entry; add ### lesson-reviewer with its Kind and its Kept in final"])
         self.components(*FOUR, component_md("lesson-reviewer", "subagent", "c2-review"), component_md("old-checker", "subagent", "c2-review", "no, because it never caught a thing"))
         item = self.inventory(final=True)
         self.assertEqual(item.status, check.OK, item.details)
@@ -756,10 +1128,7 @@ class InventoryTests(CheckTestCase):
         self.snapshot("c1-skills")
         half = component_md("teach", todo=True).replace("- Kind: TODO", "- Kind: skill").replace("- Purpose: TODO", "- Purpose: It writes the lesson.")
         self.components(component_md("tutor", todo=True), half, *FOUR[2:])
-        self.assertEqual(self.inventory().details, [
-            "teach: Step added is still TODO", "teach: With and without is still TODO", "teach: Review is still TODO", "teach: Kept in final is still TODO",
-            "tutor: not written yet; fill in its six fields",
-        ])  # fmt: skip
+        self.assertEqual(self.inventory().details, ["teach: Kept in final is still TODO", "tutor: not written yet; write its Kind and its Kept in final"])  # fmt: skip
 
     def test_c0_baseline_and_readme_are_not_components(self):
         write(self.root / "tutor" / ".claude" / "agents" / "README.md", "# My subagents\n")
@@ -838,13 +1207,34 @@ class InventoryTests(CheckTestCase):
         write(self.root / "p3.json", {"section": "598E", "stretch": None})
         (item,) = self.find(self.report(), "components built")
         self.assertEqual(item.status, check.TODO)
-        self.assertIn("(598E needs at least 6 skills, teach, tutor, quiz and grade among them, and 8 subagents)", item.text)
-        for extra in ("notes", "glossary"):
-            write(self.root / "tutor" / ".claude" / "skills" / extra / "SKILL.md", f"---\nname: {extra}\n---\n")
-        self.snapshot("final-minus-review", "s3", "s4", "s5", hook=True)
+        self.assertIn("(598E needs at least 5 skills, teach, tutor, quiz and grade among them, and 6 subagents)", item.text)
+        self.assertEqual(item.details, ["skills: grade, quiz, teach, tutor", "subagents: r1, r2, r3, s1, s2"])
+        write(self.root / "tutor" / ".claude" / "skills" / "notes" / "SKILL.md", "---\nname: notes\n---\n")
+        self.snapshot("final-minus-review", hook=True)
+        (item,) = self.find(self.report(final=True), "components built")
+        self.assertEqual(item.status, check.FAIL, "5 skills and 5 subagents: one subagent short")
+        self.snapshot("final-minus-review", "s3", hook=True)
         (item,) = self.find(self.report(final=True), "components built")
         self.assertEqual(item.status, check.OK, item.text)
-        self.assertTrue(item.text.startswith("components built: 6 skills and 8 subagents"), item.text)
+        self.assertTrue(item.text.startswith("components built: 5 skills and 6 subagents"), item.text)
+        self.assertEqual([i.text for i in self.report(final=True).items(check.EXTRAS)], [], "the larger architecture of version 0.1 is six skills and eight subagents")
+
+    def test_the_larger_598e_architecture_is_extra_work(self):
+        write(self.root / "p3.json", {"section": "598E", "stretch": None})
+        self.snapshot("c1-skills")
+        for extra in ("notes", "glossary"):
+            write(self.root / "tutor" / ".claude" / "skills" / extra / "SKILL.md", f"---\nname: {extra}\n---\n")
+        self.snapshot_with_extra_skills("c2-review", 7)
+        r = self.report()
+        self.assertEqual([i.text for i in r.items(check.EXTRAS)], [])
+        self.snapshot_with_extra_skills("c3-split", 8)
+        want = "components built: 6 skills and 8 subagents, the larger architecture of at least 6 and 8"
+        self.assertEqual([i.text for i in self.report().items(check.EXTRAS)], [want])
+        write(self.root / "p3.json", {"section": "498E", "stretch": None})
+        self.assertEqual([i.text for i in self.report().items(check.EXTRAS)], [], "only 598E had that minimum")
+
+    def snapshot_with_extra_skills(self, name: str, agents: int) -> None:
+        self.snapshot(name, *[f"agent-{k}" for k in range(agents)])
 
     def test_the_required_skills_count_even_when_there_are_enough(self):
         write(self.root / "p3.json", {"section": None, "stretch": None})

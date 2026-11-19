@@ -22,9 +22,9 @@ ORIGIN = "https://github.com/student/p3-tutor.git"
 TOPICS = ("cooking", "statics")
 REVIEWERS = ("lesson-reviewer", "quiz-reviewer", "feedback-reviewer")
 SPLIT = ("lesson-planner", "figure-designer")
-# 598E builds at least six skills and eight subagents: these on top of the four skills, REVIEWERS and SPLIT
-EXTRA_SKILLS = ("notes", "glossary")
-EXTRA_REVIEWERS = ("fact-checker", "pedagogy-reviewer", "alignment-reviewer")
+# 598E builds at least five skills and six subagents: these on top of the four skills, REVIEWERS and SPLIT
+EXTRA_SKILLS = ("notes",)
+EXTRA_REVIEWERS = ("fact-checker",)
 BEFORE = "2026-11-02T12:00:00Z"  # before every run below (they start at T0, 2026-11-03T14:00:00Z)
 REVIEWED = "2026-11-10T12:00:00Z"  # after every run below finished
 GUARD = {
@@ -35,12 +35,17 @@ EVAL_SECTIONS = (
     (1, "The baseline, `c0-baseline`"), (2, "Step 1: `c1-skills` against `c0-baseline`"), (3, "Step 2: `c2-review` against `c1-skills`"),
     (4, "Step 3: `c3-split` against `c2-review`"), (5, "`final` against `c0-baseline`, with repeats"),
 )  # fmt: skip
+PROMPTS = (
+    "Step 1: the skill change that mattered most", "Step 2: which review loop earned its cost", "Step 3: whether splitting the teach job paid",
+    "`final`: what you kept, what you dropped, and a change that did not pay", "The ablation: prediction, result and what one run shows",
+    "Blind against open", "The test topic", "The judge check", "The stretch",
+)  # fmt: skip
 PREREG = "# Pre-registration: the length study\n\n## 1. Hypothesis\n\n{h}\n\n## 5. Outcome (write this after the fact)\n\n{o}\n"
 LIVE_TRY = "Run the live tutor (uv run p3 bench --config live --quick, or --only with the scenarios you are working on), then write what you noticed under Round {k} > My thoughts in reviews/{step}.md."
 START = "In a plain terminal at the repo root, start {what} with this command, and leave it running: {cmd}"
 SESSION_1 = (
-    "Hold learning session 1: open a terminal in tutor/, start claude there with tutor/ as you snapshotted final, and learn something on one of your test topics "
-    "(cooking and statics); then write it up under Session 1 in reviews/final.md."
+    "Hold a learning session: open a terminal in tutor/, start claude there with tutor/ as you snapshotted final, and learn something on one of your test topics "
+    "(cooking and statics); then write it up in three or four sentences under Session 1 in reviews/final.md."
 )  # fmt: skip
 
 
@@ -53,6 +58,21 @@ def eval_md(done=()) -> str:
         out += [f"## {n}. {title}", "", "### What changed", "", "My own words." if written else f"TODO: what changed in section {n}.", ""]
         out += ["### What it cost", "", "My own words." if written else "TODO: paste the report tables.", ""]
     return "\n".join(out)
+
+
+def decisions_md(done=()) -> str:
+    """DECISIONS.md shaped as the template ships it: nine prompts, each ending with a marker line
+    (prompt n's on line 8n + 1), with the prompts in `done` answered ("all" for every one)."""
+    out = ["# Decision log", "", "Answer each prompt in your own words.", ""]
+    for n, title in enumerate(PROMPTS, 1):
+        written = done == "all" or n in done
+        out += [f"## {n}. {title}", "", "The question of the prompt.", "", "My own answer, with a number: 0.4 on quiz 0002 q3." if written else f"TODO: your answer to prompt {n}.", "", "---", ""]
+    return "\n".join(out)
+
+
+def marker(n: int) -> int:
+    """The line of prompt n's marker in decisions_md()."""
+    return 8 * n + 1
 
 
 def round_md(n: int, thoughts: bool = True, changed: bool = True, kind: str = "new skill") -> str:
@@ -97,9 +117,11 @@ class NextTestCase(RepoTestCase):
             write(self.root / reviews.step_file(step), review_md(step, todo=True, optional=1 if step == "final" else 0))
         write(self.root / reviews.COMPONENTS_PATH, components_md(component_md("TODO: the component's name", todo=True)))
         write(self.root / "EVAL.md", eval_md())
+        write(self.root / "DECISIONS.md", decisions_md())
         self.entries: list[str] = []
         self.reviewers = REVIEWERS
         self.minute = 0
+        self.via_eval = False  # a student of version 0.1, who answers a step in EVAL.md
 
     def where(self) -> p3next.Report:
         return p3next.where(self.root)
@@ -131,12 +153,16 @@ class NextTestCase(RepoTestCase):
 
     def step(self, step: str, agents: tuple[str, ...] = (), kind: str = "new skill") -> None:
         """Every item of a step: two rounds, the snapshot (with the four skills), its full run, its
-        major review, its EVAL.md section and an inventory entry for each new component."""
+        major review, its prompt of DECISIONS.md (or, with via_eval, its section of EVAL.md) and an
+        inventory entry for each new component."""
         write(self.root / reviews.step_file(step), step_md(step, round_md(1, kind=kind), round_md(2, kind=kind), major=f"bench/runs/{step}/{step}-r1"))
         add_agents(self.root, *agents)
         add_config(self.root, step, skills=check.SKILLS)
         self.run_of(step, f"{step}-r1")
-        write(self.root / "EVAL.md", eval_md(done=set(range(1, reviews.STEPS.index(step) + 3))))
+        if self.via_eval:
+            write(self.root / "EVAL.md", eval_md(done=set(range(1, reviews.STEPS.index(step) + 3))))
+        else:
+            write(self.root / "DECISIONS.md", decisions_md(done=set(range(1, reviews.STEPS.index(step) + 2))))
         built = [(name, "skill") for name in reviews.skill_names(self.root / "configs" / step)] + [(name, "subagent") for name in agents]
         self.entries += [component_md(name, kind, step) for name, kind in built if not any(e.startswith(f"### {name}\n") for e in self.entries)]
         write(self.root / reviews.COMPONENTS_PATH, components_md(*self.entries))
@@ -157,7 +183,7 @@ class NextTestCase(RepoTestCase):
         git(self.root, "add", "bench/own")
         git(self.root, "commit", "-q", "-m", "the test topics", when=BEFORE)
 
-    def final(self, runs: int = 3) -> None:
+    def final(self, runs: int = check.SHARED_RUNS["final"]) -> None:
         """Every item of final: the guard, the snapshot, its runs, the ablation, the runs on the test
         topics, the learning sessions and the major review, committed after the runs."""
         add_agents(self.root, *self.reviewers)
@@ -202,8 +228,9 @@ class NextTestCase(RepoTestCase):
             self.write_up(study)
 
     def write_up(self, study: bool = False) -> None:
-        """EVAL.md (and PREREG.md's outcome) written, and everything committed."""
-        write(self.root / "EVAL.md", eval_md(done="all"))
+        """DECISIONS.md, REPORT.md (and PREREG.md's outcome) written, and everything committed."""
+        write(self.root / "DECISIONS.md", decisions_md(done="all"))
+        write(self.root / "REPORT.md", "# Report\n\nThe tables of my runs.\n")
         if study:
             write(self.root / "PREREG.md", PREREG.format(h="The single agent loses more at 60 minutes.", o="It did, by a little."))
         git(self.root, "add", "-A")
@@ -379,7 +406,7 @@ class AlsoTests(NextTestCase):
         self.preferences()
         self.topics()
         r = self.assertAt("4 Step 1, c1-skills: quick rounds (0 of at least 2 complete)")
-        self.assertEqual(r.done, ["1 Set up", "2 The baseline", "3 Your preferences", "8 Test topics"], "a later stage already complete is listed too")
+        self.assertEqual(r.done, ["1 Set up", "2 The baseline", "3 Your preferences", "8 Test topic"], "a later stage already complete is listed too")
         self.assertEqual(r.also, [])
 
     def test_at_most_two_runs_left_behind(self):
@@ -397,21 +424,21 @@ class AlsoTests(NextTestCase):
         r = self.assertAt("11 The write-up: reviews/components.md complete, with the minimum of components built", "Finish reviews/components.md: teach: Kept in final is still TODO.")
         self.assertEqual(r.also, [
             "the baseline's runs: 2 of 3 scored full runs (start the last one in a plain terminal)",
-            "the runs of final: 1 of 3 scored full runs (start the last two in a plain terminal)",
+            "the runs of final: 1 of 2 scored full runs (start the last one in a plain terminal)",
         ], "the ablation's run is left behind too, and Also shows two")  # fmt: skip
-        self.assertEqual(r.done, ["1 Set up", "2 The baseline", "3 Your preferences", "4 Step 1, c1-skills", "5 Step 2, c2-review", "7 Step 3, c3-split", "8 Test topics", "9 final", "10 The blind comparison"])
+        self.assertEqual(r.done, ["1 Set up", "2 The baseline", "3 Your preferences", "4 Step 1, c1-skills", "5 Step 2, c2-review", "7 Step 3, c3-split", "8 Test topic", "9 final", "10 The blind comparison"])
 
     def test_what_needs_a_run_left_behind_goes_back_to_it(self):
         """The blind comparison pairs only the runs there are, so it waits for all of them."""
         self.build(9)
-        util.remove_tree(util.runs_dir("final", self.root) / "final-r3")
+        util.remove_tree(util.runs_dir("final", self.root) / "final-r2")
         r = self.assertAt(
-            "9 final: 3 scored full runs of final (2 so far)",
+            "9 final: 2 scored full runs of final (1 so far)",
             START.format(what="the last full run", cmd="uv run p3 bench --config final"),
             "guide/12-final.html#runs",
         )
         self.assertEqual(r.also, [], "everything after it is done or waits for a run")
-        self.assertEqual(r.done, ["1 Set up", "2 The baseline", "3 Your preferences", "4 Step 1, c1-skills", "5 Step 2, c2-review", "7 Step 3, c3-split", "8 Test topics"])
+        self.assertEqual(r.done, ["1 Set up", "2 The baseline", "3 Your preferences", "4 Step 1, c1-skills", "5 Step 2, c2-review", "7 Step 3, c3-split", "8 Test topic"])
 
 
 class RoundTests(NextTestCase):
@@ -512,11 +539,12 @@ class StepTests(NextTestCase):
             START.format(what="the full run", cmd="uv run p3 bench --config c1-skills"),
             f"{page}#full-run",
         )
-        self.assertEqual(r.also, [f"While it runs: {builder} See {page}#inventory."], "the major review and EVAL.md wait for the run")
+        self.assertEqual(r.also, [f"While it runs: {builder} See {page}#inventory."], "the major review and DECISIONS.md wait for the run")
         self.run_of("c1-skills", "c1-skills-r1")
         self.assertAt(
             "4 Step 1, c1-skills: the major review (not written yet)",
-            "Write the major review of bench/runs/c1-skills/c1-skills-r1 in reviews/c1-skills.md, under ## Major review: its Run line, your live tries of the tutor, then each criterion rated from 1 to 5 with feedback.",
+            "Write the major review of bench/runs/c1-skills/c1-skills-r1 in reviews/c1-skills.md, under ## Major review: its Run line, a rating from 1 to 5 for every criterion, "
+            "and what the next step should fix, in a few sentences with one quote or item id.",
             f"{page}#major-review",
         )
         ratings = {("Lesson", "Pedagogy"): "TODO", ("Tutor", "Guardrails"): "4.5"}
@@ -527,33 +555,55 @@ class StepTests(NextTestCase):
         )
         write(self.root / reviews.step_file("c1-skills"), step_md("c1-skills", round_md(1), round_md(2), major="bench/runs/c1-skills/c1-skills-r1"))
         self.assertAt(
-            "4 Step 1, c1-skills: section 2 of EVAL.md (2 TODO markers left)",
-            "Write section 2 of EVAL.md in your own words: 2 TODO markers left (lines 19, 23).",
-            f"{page}#eval",
+            "4 Step 1, c1-skills: prompt 1 of DECISIONS.md (not answered yet)",
+            f"Answer prompt 1 of DECISIONS.md in your own words, in two to four sentences with one number or quote (line {marker(1)}).",
+            f"{page}#decision",
         )
-        write(self.root / "EVAL.md", eval_md(done={2}))
-        self.assertAt("4 Step 1, c1-skills: the inventory entries (0 of 4 components of configs/c1-skills/ with Purpose and Review written)", builder, f"{page}#inventory")
-        teach = component_md("teach", todo=True).replace("- Kind: TODO", "- Kind: skill").replace("- Purpose: TODO", "- Purpose: It writes the lesson.")
-        write(self.root / reviews.COMPONENTS_PATH, components_md(teach, *(component_md(s) for s in ("tutor", "quiz", "grade"))))
+        write(self.root / "DECISIONS.md", decisions_md(done={1}))
+        self.assertAt("4 Step 1, c1-skills: the inventory entries (0 of 4 components of configs/c1-skills/ with an entry)", builder, f"{page}#inventory")
+        write(self.root / reviews.COMPONENTS_PATH, components_md(component_md("teach", todo=True), *(component_md(s, todo=True) for s in ("tutor", "quiz"))))
         self.assertAt(
-            "4 Step 1, c1-skills: the inventory entries (3 of 4 components of configs/c1-skills/ with Purpose and Review written)",
-            "Write Purpose and Review for teach in reviews/components.md; they are yours to write, and reviews/README.md says what each holds.",
+            "4 Step 1, c1-skills: the inventory entries (3 of 4 components of configs/c1-skills/ with an entry)",
+            "In the Builder window, say: Add an entry to reviews/components.md for each component of configs/c1-skills/ that has none (grade), with Kind, Step added, and With and without.",
         )
-        write(self.root / reviews.COMPONENTS_PATH, components_md(*(component_md(s, kept="TODO") for s in check.SKILLS)))
+        write(self.root / reviews.COMPONENTS_PATH, components_md(*(component_md(s, todo=True) for s in check.SKILLS)))
         r = self.assertAt("5 Step 2, c2-review: quick rounds (0 of at least 2 complete)", LIVE_TRY.format(k=1, step="c2-review"), "guide/09-step2-review-loops.html#rounds")
-        self.assertEqual(r.done, ["1 Set up", "2 The baseline", "3 Your preferences", "4 Step 1, c1-skills"], "Kept in final waits for final")
+        self.assertEqual(r.done, ["1 Set up", "2 The baseline", "3 Your preferences", "4 Step 1, c1-skills"], "an entry with every field still TODO counts at a step: Kept in final waits for final, and Purpose and Review are optional")
 
-    def test_eval_md_sections_are_found_by_their_headings(self):
+    def test_prompts_of_decisions_md_are_found_by_their_headings(self):
         self.step("c1-skills")
-        write(self.root / "EVAL.md", eval_md(done={2}).replace("## 2. Step 1:", "## Two. Step one:"))
+        write(self.root / "DECISIONS.md", decisions_md().replace("## 1. ", "## One. "))
         self.assertAt(
-            "4 Step 1, c1-skills: section 2 of EVAL.md (its heading is not there)",
-            "Put back the heading of section 2 of EVAL.md, which starts with ## 2. Step 1, as the template has it; p3 next finds the section by it.",
+            "4 Step 1, c1-skills: prompt 1 of DECISIONS.md (its heading is not there)",
+            "Put back the heading of prompt 1 of DECISIONS.md, which starts with ## 1. as the template has it; p3 next finds the prompt by it.",
         )
-        write(self.root / "EVAL.md", eval_md(done="all").replace("## 2. Step 1:", "## Two. Step one:"))
-        self.assertTrue(self.where().now.startswith("5 Step 2, c2-review"), "with no TODO anywhere, the section is written wherever it is")
-        (self.root / "EVAL.md").unlink()
-        self.assertAt("4 Step 1, c1-skills: section 2 of EVAL.md (EVAL.md is missing)", "Copy EVAL.md back from the template; your write-up goes in it.")
+        write(self.root / "DECISIONS.md", decisions_md(done="all").replace("## 1. ", "## One. "))
+        self.assertTrue(self.where().now.startswith("5 Step 2, c2-review"), "with no TODO anywhere, the prompt is answered wherever it is")
+        (self.root / "DECISIONS.md").unlink()
+        self.assertAt(
+            "4 Step 1, c1-skills: prompt 1 of DECISIONS.md (DECISIONS.md is missing)",
+            "DECISIONS.md is new in version 0.2 of the project, and your decision log goes in it: copy it from the template, as the guide's start page says under the update.",
+        )
+
+    def test_a_prompt_is_answered_when_its_own_marker_is_gone(self):
+        self.step("c1-skills")
+        write(self.root / "DECISIONS.md", decisions_md())
+        self.assertEqual(self.where().now, "4 Step 1, c1-skills: prompt 1 of DECISIONS.md (not answered yet)")
+        write(self.root / "DECISIONS.md", decisions_md(done={1}))
+        self.assertTrue(self.where().now.startswith("5 Step 2, c2-review"), "the other eight markers do not hold step 1 back")
+        write(self.root / "DECISIONS.md", decisions_md(done={2, 3}))
+        self.assertEqual(self.where().now, "4 Step 1, c1-skills: prompt 1 of DECISIONS.md (not answered yet)", "only its own prompt counts")
+
+    def test_a_section_of_eval_md_written_under_version_0_1_answers_the_prompt(self):
+        """Nobody who wrote EVAL.md is sent back to write a step again."""
+        self.step("c1-skills")
+        write(self.root / "DECISIONS.md", decisions_md())
+        write(self.root / "EVAL.md", eval_md(done={2}))
+        self.assertTrue(self.where().now.startswith("5 Step 2, c2-review"), self.where().text())
+        write(self.root / "EVAL.md", eval_md(done={3, 4, 5}))
+        self.assertEqual(self.where().now, "4 Step 1, c1-skills: prompt 1 of DECISIONS.md (not answered yet)", "section 2 is the one that covers step 1, and it is still TODO")
+        write(self.root / "EVAL.md", eval_md(done={2}).replace("## 2. Step 1:", "## Two. Step one:"))
+        self.assertEqual(self.where().now, "4 Step 1, c1-skills: prompt 1 of DECISIONS.md (not answered yet)", "a section of EVAL.md is found by its number")
 
     def test_steps_2_and_3(self):
         self.step("c1-skills")
@@ -570,9 +620,9 @@ class StepTests(NextTestCase):
         add_config(self.root, "c3-split", skills=check.SKILLS)
         self.run_of("c3-split", "c3-split-r1")
         write(self.root / reviews.step_file("c3-split"), step_md("c3-split", round_md(1, kind="new subagent"), round_md(2, kind="new subagent"), major="bench/runs/c3-split/c3-split-r1"))
-        write(self.root / "EVAL.md", eval_md(done={2, 3, 4}))
+        write(self.root / "DECISIONS.md", decisions_md(done={1, 2, 3}))
         self.assertAt(
-            "7 Step 3, c3-split: the inventory entries (4 of 6 components of configs/c3-split/ with Purpose and Review written)",
+            "7 Step 3, c3-split: the inventory entries (4 of 6 components of configs/c3-split/ with an entry)",
             "In the Builder window, say: Add an entry to reviews/components.md for each component of configs/c3-split/ that has none (figure-designer and lesson-planner), with Kind, Step added, and With and without.",
             "guide/10-step3-split.html#inventory",
         )
@@ -592,34 +642,39 @@ class LengthStudyTests(NextTestCase):
         write(self.root / "PREREG.md", PREREG.format(h="The single agent loses more at 60 minutes.", o="TODO: the outcome."))
         self.assertAt(f"{name} (not committed yet)", "Commit and push PREREG.md before the first length-study run.")
         self.prereg()
-        runs = "6 The length study, part 1: 3 teach-only runs of c1-skills at each of 10, 30 and 60 minutes ({})"
+        runs = "6 The length study, part 1: 2 teach-only runs of c1-skills at each of 10 and 60 minutes ({})"
         r = self.assertAt(
-            runs.format("0 at 10, 0 at 30, 0 at 60"),
-            START.format(what="the 10-minute runs", cmd="uv run p3 bench --config c1-skills --only teach --minutes 10 --repeats 3"),
+            runs.format("0 at 10, 0 at 60"),
+            START.format(what="the 10-minute runs", cmd="uv run p3 bench --config c1-skills --only teach --minutes 10 --repeats 2"),
             f"{page}#length-runs",
         )
         self.assertEqual(r.also, [f"While it runs: {LIVE_TRY.format(k=1, step='c3-split')} See guide/10-step3-split.html#rounds."])
-        for k in range(3):
+        for k in range(2):
             self.run_of("c1-skills", f"m10-r{k}", minutes=10, scenarios=["teach"], only=["teach"])
         self.run_of("c1-skills", "m30-r0", minutes=30, scenarios=["teach"], only=["teach"])
         self.assertAt(
-            runs.format("3 at 10, 1 at 30, 0 at 60"),
-            START.format(what="the last two 30-minute runs", cmd="uv run p3 bench --config c1-skills --only teach --minutes 30 --repeats 2"),
+            runs.format("2 at 10, 0 at 60"),
+            START.format(what="the 60-minute runs", cmd="uv run p3 bench --config c1-skills --only teach --minutes 60 --repeats 2"),
         )
-        self.run_of("c1-skills", "m30-r1", minutes=30, scenarios=["teach"], only=["teach"], scored=False)
+        self.run_of("c1-skills", "m60-r0", minutes=60, scenarios=["teach"], only=["teach"])
         self.assertAt(
-            runs.format("3 at 10, 1 at 30, 0 at 60"),
-            "bench/runs/c1-skills/m30-r1 finished but is not scored; in a plain terminal at the repo root, score it: uv run p3 score bench/runs/c1-skills/m30-r1",
+            runs.format("2 at 10, 1 at 60"),
+            START.format(what="the last 60-minute run", cmd="uv run p3 bench --config c1-skills --only teach --minutes 60"),
         )
-        util.remove_tree(util.runs_dir("c1-skills", self.root) / "m30-r1")
+        self.run_of("c1-skills", "m60-r1", minutes=60, scenarios=["teach"], only=["teach"], scored=False)
+        self.assertAt(
+            runs.format("2 at 10, 1 at 60"),
+            "bench/runs/c1-skills/m60-r1 finished but is not scored; in a plain terminal at the repo root, score it: uv run p3 score bench/runs/c1-skills/m60-r1",
+        )
+        util.remove_tree(util.runs_dir("c1-skills", self.root) / "m60-r1")
         # step 3's rounds while the study's runs go on: its stage is passed, and they are left behind
         write(self.root / reviews.step_file("c3-split"), step_md("c3-split", round_md(1, kind="new subagent"), round_md(2, kind="new subagent")))
         r = self.assertAt("7 Step 3, c3-split: snapshot c3-split (not made yet)")
-        self.assertEqual(r.also, ["the length study's runs of c1-skills: 3 at 10, 1 at 30, 0 at 60 minutes, of 3 each (start the rest in a plain terminal)"])
+        self.assertEqual(r.also, ["the length study's runs of c1-skills: 2 at 10, 1 at 60 minutes, 2 needed at each (start the rest in a plain terminal)"])
         self.assertIn("6 The length study, part 1", r.done)
 
     def test_a_plan_committed_after_the_runs(self):
-        for k in range(3):
+        for k in range(2):
             make_run(self.root, "c1-skills", f"early-r{k}", "2020-01-01T00:00:00Z", minutes=10, scenarios=["teach"], only=["teach"])
         self.prereg()
         r = self.assertAt("6 The length study, part 1: PREREG.md, sections 1 to 4 written and committed (committed after a run)")
@@ -637,22 +692,14 @@ class LaterStageTests(NextTestCase):
         self.build(7)
         page = "guide/11-test-topics.html"
         start = "Start a test topic with uv run p3 new-topic <id> (lowercase letters, digits and hyphens), then write its items yourself, as bench/own/README.md says."
-        self.assertAt("8 Test topics: two test topics in bench/own/ (0 so far)", start, page)
+        self.assertAt("8 Test topic: a test topic in bench/own/ (none yet)", start, page)
         write_topic(self.root / "bench" / "own" / "cooking")
         write(self.root / "bench" / "own" / "cooking" / "workspace" / "NOTES.md", "# Notes\n\nTODO: what the learner knows.\n")
-        self.assertAt("8 Test topics: two test topics in bench/own/ (1 so far)", start)
-        write_topic(self.root / "bench" / "own" / "statics")
-        self.assertAt("8 Test topics: each valid, with no TODO left (bench/own/cooking/ is not yet)", "Finish bench/own/cooking/: workspace/NOTES.md: 1 TODO marker to fill in.", page)
+        self.assertAt("8 Test topic: valid, with no TODO left (bench/own/cooking/ is not yet)", "Finish bench/own/cooking/: workspace/NOTES.md: 1 TODO marker to fill in.", page)
         write_topic(self.root / "bench" / "own" / "cooking")
-        self.assertAt("8 Test topics: each committed, with no change since (bench/own/cooking/ is not)", "Commit and push bench/own/cooking/ before any run on it, so the runs show its items were written first.")
-        write_topic(self.root / "bench" / "own" / "knots")
-        self.assertAt(
-            "8 Test topics: two test topics in bench/own/ (3: cooking, knots and statics)",
-            "Keep exactly two test topics in bench/own/: the hand-in needs two, so delete the others (cooking, knots and statics are there now).",
-        )
-        util.remove_tree(self.root / "bench" / "own" / "knots")
+        self.assertAt("8 Test topic: committed, with no change since (bench/own/cooking/ is not)", "Commit and push bench/own/cooking/ before any run on it, so the runs show its items were written first.")
         git(self.root, "add", "bench/own")
-        git(self.root, "commit", "-q", "-m", "the test topics", when=BEFORE)
+        git(self.root, "commit", "-q", "-m", "the test topic", when=BEFORE)
         self.assertAt(
             "9 final: the guard, a PreToolUse hook in tutor/.claude/settings.json (not there yet)",
             "In the Builder window, say: Add the guard to tutor/.claude/settings.json, a PreToolUse hook that keeps the answer keys in keys/ away from the main conversation while the grader can still read them.",
@@ -661,8 +708,21 @@ class LaterStageTests(NextTestCase):
         meta = util.read_json(self.root / "bench" / "own" / "cooking" / "topic.json")
         self.run_of("c0-baseline", "c0-cooking", topic_id="cooking", topic_commit=util.rev_parse_head(self.root))
         write(self.root / "bench" / "own" / "cooking" / "topic.json", {**meta, "title": "Cooking, edited after its runs"})
-        r = self.assertAt("8 Test topics: each committed, with no change since (bench/own/cooking/ is not)")
+        r = self.assertAt("8 Test topic: committed, with no change since (bench/own/cooking/ is not)")
         self.assertIn("it has runs, so restore it from git (git restore bench/own/cooking)", r.action)
+
+    def test_one_test_topic_is_enough_and_more_never_hold_the_map_back(self):
+        self.build(7)
+        write_topic(self.root / "bench" / "own" / "cooking")
+        git(self.root, "add", "bench/own")
+        git(self.root, "commit", "-q", "-m", "the test topic", when=BEFORE)
+        r = self.assertAt("9 final: the guard, a PreToolUse hook in tutor/.claude/settings.json (not there yet)")
+        self.assertIn("8 Test topic", r.done)
+        write_topic(self.root / "bench" / "own" / "statics")  # a second topic, not committed
+        write(self.root / "bench" / "own" / "statics" / "workspace" / "NOTES.md", "# Notes\n\nTODO: what the learner knows.\n")
+        write_topic(self.root / "bench" / "own" / "knots")
+        r = self.assertAt("9 final: the guard, a PreToolUse hook in tutor/.claude/settings.json (not there yet)")
+        self.assertIn("8 Test topic", r.done, "an unfinished or uncommitted extra topic is no one's business here")
 
     def test_final_item_by_item(self):
         self.build(8)
@@ -680,39 +740,49 @@ class LaterStageTests(NextTestCase):
         self.assertAt("9 final: snapshot final (no PreToolUse hook in it)", "configs/final/ has no PreToolUse hook; put it in tutor/ and snapshot again: uv run p3 snapshot final --force.")
         add_config(self.root, "final", skills=check.SKILLS, hook=True)
         ablation = "Make the ablation: take one component out of tutor/, snapshot it as final-minus-<the component> (uv run p3 snapshot final-minus-<x>), then bring tutor/ back with git restore tutor/."
-        r = self.assertAt("9 final: 3 scored full runs of final (none yet)", START.format(what="the three full runs", cmd="uv run p3 bench --config final --repeats 3"), f"{page}#runs")
+        r = self.assertAt("9 final: 2 scored full runs of final (none yet)", START.format(what="the two full runs", cmd="uv run p3 bench --config final --repeats 2"), f"{page}#runs")
         self.assertEqual(r.also, [f"While it runs: {ablation} See {page}#ablation."])
-        for k in range(3):
-            self.run_of("final", f"final-r{k + 1}")
+        self.run_of("final", "final-r1")
+        self.assertAt("9 final: 2 scored full runs of final (1 so far)", START.format(what="the last full run", cmd="uv run p3 bench --config final"))
+        self.run_of("final", "final-r2")
         self.assertAt("9 final: an ablation snapshot, final-minus-<x> (none yet)", ablation, f"{page}#ablation")
         add_agents(self.root, *REVIEWERS)
         add_config(self.root, "final-minus-split", skills=check.SKILLS, hook=True)
-        r = self.assertAt("9 final: 1 scored full run of final-minus-split (none yet)", START.format(what="the full run", cmd="uv run p3 bench --config final-minus-split"), f"{page}#ablation")
+        run_it = (
+            "In a plain terminal at the repo root, run the ablation on the scenarios the component you removed touches, and leave it running: "
+            "uv run p3 bench --config final-minus-split --only <scenarios>, such as --only teach or --only quiz (leave --only out for a full run)."
+        )
+        r = self.assertAt("9 final: a scored run of final-minus-split (none yet)", run_it, f"{page}#ablation")
         self.assertEqual(r.also, [f"While it runs: {SESSION_1} See {page}#learning-sessions."])
-        self.run_of("final-minus-split", "final-minus-split-r1")
+        self.run_of("final-minus-split", "final-minus-split-quick", quick=True)
+        self.assertAt("9 final: a scored run of final-minus-split (none yet)", run_it)  # a quick run is not one
+        self.run_of("final-minus-split", "final-minus-split-r1", scenarios=["teach"], only=["teach"], scored=False)
+        self.assertAt(
+            "9 final: a scored run of final-minus-split (none yet)",
+            "bench/runs/final-minus-split/final-minus-split-r1 finished but is not scored; in a plain terminal at the repo root, score it: uv run p3 score bench/runs/final-minus-split/final-minus-split-r1",
+        )
+        util.remove_tree(util.runs_dir("final-minus-split", self.root) / "final-minus-split-r1")
+        self.run_of("final-minus-split", "final-minus-split-r1", scenarios=["teach"], only=["teach"])  # made with --only: enough
         head = util.rev_parse_head(self.root)
         self.run_of("c0-baseline", "c0-cooking", topic_id="cooking", topic_commit=head)
         self.assertAt(
-            "9 final: runs of c0-baseline and final on both test topics (1 of 4 so far)",
+            "9 final: runs of c0-baseline and final on a test topic (1 of 2 so far)",
             START.format(what="the run of final on cooking", cmd="uv run p3 bench --config final --topic cooking"),
             f"{page}#test-topic-runs",
         )
-        for tid, name in (("cooking", "final"), ("statics", "c0-baseline"), ("statics", "final")):
-            self.run_of(name, f"{name}-{tid}", topic_id=tid, topic_commit=head)
-        self.assertAt("9 final: three learning sessions (0 of 3 complete)", SESSION_1, f"{page}#learning-sessions")
-        write(self.root / reviews.step_file("final"), final_md(session_md(1), session_md(2, topic="TODO")))
-        self.assertAt("9 final: three learning sessions (1 of 3 complete)", "Finish Session 2 in reviews/final.md: Topic is still TODO.")
-        write(self.root / reviews.step_file("final"), final_md(session_md(1)))
-        self.assertAt("9 final: three learning sessions (1 of 3 complete)", "Add Session 2 to reviews/final.md by copying the last session with its Date and Topic lines.")
-        write(self.root / reviews.step_file("final"), final_md(session_md(1), session_md(2, untouched=True), session_md(3)))
-        self.assertAt(
-            "9 final: three learning sessions (2 of 3 complete)",
-            "Hold learning session 2: open a terminal in tutor/, start claude there with tutor/ as you snapshotted final, and learn something on cooking, as your other sessions were; then write it up under Session 2 in reviews/final.md.",
-        )
-        write(self.root / reviews.step_file("final"), final_md(session_md(1), session_md(2), session_md(3)))
+        self.run_of("final", "final-cooking", topic_id="cooking", topic_commit=head)
+        self.assertAt("9 final: a learning session (0 of 1 complete)", SESSION_1, f"{page}#learning-sessions")
+        write(self.root / reviews.step_file("final"), final_md(session_md(1, topic="TODO")))
+        self.assertAt("9 final: a learning session (0 of 1 complete)", "Finish Session 1 in reviews/final.md: Topic is still TODO.")
+        write(self.root / reviews.step_file("final"), final_md())
+        self.assertAt("9 final: a learning session (0 of 1 complete)", "Add Session 1 to reviews/final.md by copying the last session with its Date and Topic lines.")
+        write(self.root / reviews.step_file("final"), final_md(session_md(1, untouched=True)))
+        self.assertAt("9 final: a learning session (0 of 1 complete)", SESSION_1)
+        write(self.root / reviews.step_file("final"), final_md(session_md(1), session_md(2, untouched=True), session_md(3, untouched=True)))
         self.assertAt(
             "9 final: the major review, complete and committed (not written yet)",
-            "Write the major review of bench/runs/final/final-r3 in reviews/final.md, under ## Major review: its Run line, your live tries of the tutor, then each criterion rated from 1 to 5 with feedback.",
+            "Write the major review of bench/runs/final/final-r2 in reviews/final.md, under ## Major review: its Run line, a rating from 1 to 5 for every criterion, "
+            "and what the next step should fix, in a few sentences with one quote or item id.",
             f"{page}#major-review",
         )
         write(self.root / reviews.step_file("final"), review_md("final", "bench/runs/final/final-r1", topics=TOPICS))
@@ -725,13 +795,26 @@ class LaterStageTests(NextTestCase):
             "guide/13-blind-comparison.html",
         )
 
-    def test_learning_sessions_on_two_topics(self):
+    def test_a_learning_session_started_and_not_finished(self):
+        self.build(8)
+        self.final()
+        write(self.root / reviews.step_file("final"), final_md(session_md(1), session_md(2, topic="TODO")))
+        self.assertAt("9 final: a learning session (1 complete)", "Finish Session 2 in reviews/final.md: Topic is still TODO.")
+
+    def test_learning_sessions_on_two_topics_are_fine(self):
         self.build(9)
         write(self.root / reviews.step_file("final"), review_md("final", "bench/runs/final/final-r1", topics=TOPICS).replace("**Topic:** cooking", "**Topic:** statics", 1))
-        self.assertAt(
-            "9 final: three learning sessions (3 of 3 complete)",
-            "Fix reviews/final.md: the sessions are on cooking and statics; hold all three on one of your test topics, because together they are the live tries of one major review.",
-        )
+        self.assertTrue(self.where().now.startswith("10 The blind comparison"), self.where().text())
+
+    def test_the_minimal_version_0_2_final_map_has_no_open_item(self):
+        """One session written and the others untouched, one topic reviewed and the template's second heading left."""
+        self.build(9)
+        write(self.root / reviews.step_file("final"), review_md("final", "bench/runs/final/final-r1", minimal=True, sessions=1, topics=("cooking",)))
+        git(self.root, "add", "-A")
+        git(self.root, "commit", "-q", "-m", "final, minimal", when=REVIEWED)
+        r = self.where()
+        self.assertTrue(r.now.startswith("10 The blind comparison"), r.text())
+        self.assertIn("9 final", r.done)
 
     def test_the_blind_comparison(self):
         self.build(9)
@@ -746,46 +829,60 @@ class LaterStageTests(NextTestCase):
         for pair in s.pairs:
             s.record(pair["pair_id"], "left", "It fit me better.", False)
         self.compares(jobs=("grade", "tutor"))
-        self.assertAt("11 The write-up: EVAL.md with no TODO left", "Write the rest of EVAL.md: 2 TODO markers left (lines 49, 53).", "guide/14-write-up.html")
+        self.assertAt(
+            "11 The write-up: DECISIONS.md with no TODO left, and REPORT.md written",
+            f"Write the rest of DECISIONS.md: 6 TODO markers left (lines {', '.join(str(marker(n)) for n in range(4, 10))}).",
+            "guide/14-write-up.html",
+        )
 
     def test_the_length_study_comparisons(self):
         self.build(10, study=True)
         r = self.assertAt(
-            "9 final: 3 teach-only runs of final at each of 10, 30 and 60 minutes (0 at 10, 0 at 30, 0 at 60)",
-            START.format(what="the 10-minute runs", cmd="uv run p3 bench --config final --only teach --minutes 10 --repeats 3"),
+            "9 final: 2 teach-only runs of final at each of 10 and 60 minutes (0 at 10, 0 at 60)",
+            START.format(what="the 10-minute runs", cmd="uv run p3 bench --config final --only teach --minutes 10 --repeats 2"),
             "guide/16-stretch-and-598e.html#length-runs",
         )
         self.assertEqual(r.also, [], "everything after it is done or waits for a run")
         self.study(name="final")
         a, b = check.STUDY_CONFIGS
-        now = "10 The blind comparison: the length study's teach-only sessions of c1-skills against final at 10, 30 and 60 minutes ({} of 3)"
+        now = "10 The blind comparison: the length study's teach-only sessions of c1-skills against final at 10 and 60 minutes ({} of 2)"
         self.assertAt(now.format(0), "In your own terminal at the repo root, start the teach-only comparison at 10 minutes: uv run p3 compare c1-skills final --job teach --teach-only --minutes 10")
         sids = {}
         for i, m in enumerate(check.STUDY_MINUTES):
             record = compare.new_session(a, b, "teach", minutes=m, teach_only=True, root=self.root, when=T0 + timedelta(minutes=5, seconds=i))
             s = compare.Session(record["session"], self.root)
-            for pair in s.pairs[:-1] if m == 30 else s.pairs:
+            for pair in s.pairs[:-1] if m == 60 else s.pairs:
                 s.record(pair["pair_id"], "left", "Shorter and clearer.", True)
             sids[m] = record["session"]
-        self.assertAt(now.format(2), f"Finish the teach-only comparison at 30 minutes you started, in your own terminal at the repo root: uv run p3 compare --resume {sids[30]}")
+        self.assertAt(now.format(1), f"Finish the teach-only comparison at 60 minutes you started, in your own terminal at the repo root: uv run p3 compare --resume {sids[60]}")
 
 
 class HandInTests(NextTestCase):
     def test_the_write_up_then_the_done_state(self):
         self.build(10)
         page = "guide/14-write-up.html"
-        write(self.root / reviews.step_file("final"), review_md("final", "bench/runs/final/final-r1", topics=("cooking",)))
+        write(self.root / reviews.step_file("final"), review_md("final", "bench/runs/final/final-r1", minimal=True, sessions=3, topics=()))
         self.assertAt(
-            "11 The write-up: your open review of each test topic in reviews/final.md",
-            "Finish ## Test topics in reviews/final.md: statics: missing; add ### statics, comparing c0-baseline and final on it.",
+            "11 The write-up: your open review of a test topic in reviews/final.md",
+            "Finish ## Test topics in reviews/final.md: TODO: your second test topic's id: make this heading the topic's id, ### cooking, and compare c0-baseline and final on it there.",
             page,
         )
-        write(self.root / reviews.step_file("final"), review_md("final", "bench/runs/final/final-r1", topics=TOPICS))
+        write(self.root / reviews.step_file("final"), review_md("final", "bench/runs/final/final-r1", topics=("cooking",)))
         tried = component_md("summarizer", "subagent", "c2-review", "TODO")  # one tried in a round and taken out: only stage 11 reads it
         write(self.root / reviews.COMPONENTS_PATH, components_md(*self.entries, tried))
         self.assertAt("11 The write-up: reviews/components.md complete, with the minimum of components built", "Finish reviews/components.md: summarizer: Kept in final is still TODO.", page)
         write(self.root / reviews.COMPONENTS_PATH, components_md(*self.entries))
-        self.assertAt("11 The write-up: EVAL.md with no TODO left", "Write the rest of EVAL.md: 2 TODO markers left (lines 49, 53).", page)
+        self.assertAt(
+            "11 The write-up: DECISIONS.md with no TODO left, and REPORT.md written",
+            f"Write the rest of DECISIONS.md: 6 TODO markers left (lines {', '.join(str(marker(n)) for n in range(4, 10))}).",
+            page,
+        )
+        write(self.root / "DECISIONS.md", decisions_md(done="all"))
+        self.assertAt(
+            "11 The write-up: DECISIONS.md with no TODO left, and REPORT.md written",
+            "Write REPORT.md, the tables of your runs, in a terminal at the repo root: uv run p3 report --write",
+            page,
+        )
         self.write_up()
         r = self.assertAt(
             "12 Hand in: everything p3 check --final checks is done",
@@ -794,13 +891,41 @@ class HandInTests(NextTestCase):
         )
         self.assertEqual(r.done, [
             "1 Set up", "2 The baseline", "3 Your preferences", "4 Step 1, c1-skills", "5 Step 2, c2-review", "7 Step 3, c3-split",
-            "8 Test topics", "9 final", "10 The blind comparison", "11 The write-up",
+            "8 Test topic", "9 final", "10 The blind comparison", "11 The write-up",
         ])  # fmt: skip
         self.assertEqual(r.also, [])
         self.assertEqual(check.run_checks(self.root, final=True).exit_code(), 0)
         code, out, _err = self.p3("next")
         self.assertEqual(code, 0)
         self.assertIn("\nNow:   12 Hand in: everything p3 check --final checks is done\n", out)
+
+    def test_a_missing_decisions_md_at_the_write_up(self):
+        self.build(10)
+        (self.root / "DECISIONS.md").unlink()
+        r = self.where()
+        self.assertTrue(r.now.startswith("4 Step 1, c1-skills: prompt 1 of DECISIONS.md (DECISIONS.md is missing)"), r.text())
+        self.assertEqual(r.read, "guide/08-step1-skills.html#decision")
+
+    def test_a_student_of_version_0_1_with_eval_md_is_not_sent_back(self):
+        """The steps were written up in EVAL.md; DECISIONS.md is new, and only the write-up asks for it."""
+        self.via_eval = True
+        self.build(10)
+        self.assertEqual(self.where().now.split(":")[0], "11 The write-up", self.where().text())
+        r = self.assertAt("11 The write-up: DECISIONS.md with no TODO left, and REPORT.md written")
+        self.assertEqual(
+            r.action,
+            f"Write the rest of DECISIONS.md: 9 TODO markers left (lines {', '.join(str(marker(n)) for n in range(1, 10))}). "
+            "Where a section of EVAL.md you already wrote answers a prompt, one sentence that gives the answer and points to that section is enough.",
+        )
+        for step in ("4 Step 1, c1-skills", "5 Step 2, c2-review", "7 Step 3, c3-split"):
+            self.assertIn(step, r.done)
+
+    def test_a_missing_report_md_names_the_command(self):
+        self.build(10)
+        write(self.root / "DECISIONS.md", decisions_md(done="all"))
+        r = self.assertAt("11 The write-up: DECISIONS.md with no TODO left, and REPORT.md written")
+        self.assertEqual(r.action, "Write REPORT.md, the tables of your runs, in a terminal at the repo root: uv run p3 report --write")
+        self.assertEqual(r.read, "guide/14-write-up.html")
 
     def test_what_only_p3_check_final_still_fails(self):
         self.build(11)

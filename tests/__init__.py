@@ -194,15 +194,24 @@ def make_repo(root: Path, snapshot: bool = True) -> Path:
 def review_md(
     step: str, run: str = "TODO", *, rounds: int | None = None, optional: int = 0, kinds: dict[int, str] | None = None,
     ratings: dict[tuple[str, str], object] | None = None, sessions: int = 3, topics: tuple[str, ...] = ("<topic-id>",), todo: bool = False,
+    minimal: bool = False,
 ) -> str:
-    """A reviews/<step>.md in the format p3/reviews.py reads: complete by default (with `run` as the
-    major review's Run), or with every text TODO (`todo`), as the template ships it. `rounds` complete
-    quick rounds (default: the step's minimum), then `optional` untouched optional rounds; `kinds`
-    sets a round's Kind by number and `ratings` a criterion's rating by (job, criterion)."""
+    """A reviews/<step>.md in the format p3/reviews.py reads: complete by default, written to the
+    version 0.1 standard (with `run` as the major review's Run), or with every text TODO (`todo`), as
+    the template ships it. `rounds` complete quick rounds (default: the step's minimum), then
+    `optional` untouched optional rounds; `kinds` sets a round's Kind by number and `ratings` a
+    criterion's rating by (job, criterion). With `minimal` it is complete by the version 0.2
+    standard only: the Run, a rating on every criterion and the last closing section are written,
+    and the template's TODO lines stay under every criterion, under Live tries and under Compared
+    with the previous step; in final, `sessions` sessions are written, the rest of the three slots
+    stay untouched, and the test topics are followed by the template's placeholder heading."""
     from p3 import reviews
 
     def fill(text: str) -> str:
         return "TODO" if todo else text
+
+    def optional_text(text: str) -> str:
+        return "TODO" if todo or minimal else text
 
     rounds = reviews.MIN_ROUNDS[step] if rounds is None else rounds
     out = [f"# Reviews: {step}", "", "My notes on this step, written as I went.", "", f"## {reviews.QUICK_ROUNDS}", ""]
@@ -218,34 +227,42 @@ def review_md(
             "**What changed:**", "", f"- Kind: {text((kinds or {}).get(n, 'new skill'))}", f"- Files: {text('tutor/.claude/skills/quiz/SKILL.md')}",
             f"- Why: {text('So that each stem asks without telling.')}", "",
         ]  # fmt: skip
-    out += [f"## {reviews.MAJOR_REVIEW}", "", f"**Run:** {run}", "", "**Live tries:**", "", fill("I asked the tutor for q3's answer twice; it gave a hint."), ""]
+    out += [f"## {reviews.MAJOR_REVIEW}", "", f"**Run:** {run}", "", "**Live tries:**", "", optional_text("I asked the tutor for q3's answer twice; it gave a hint."), ""]
     for job in reviews.STEP_JOBS[step]:
         out += [f"### {job}", ""]
         for name in reviews.CRITERIA[job]:
             rating = "TODO" if todo else (ratings or {}).get((job, name), 4)
-            out += [f"#### {name}", "", f"Rating: {rating}", "", fill(f"{name}: section 2 of lesson 0001 says \"the program runs the tool\", which is right."), ""]
-    out += [f"### {reviews.COMPARED}", "", fill("Better than the step before on quiz 0002 q2."), ""]
+            out += [f"#### {name}", "", f"Rating: {rating}", "", optional_text(f"{name}: section 2 of lesson 0001 says \"the program runs the tool\", which is right."), ""]
+    out += [f"### {reviews.COMPARED}", "", optional_text("Better than the step before on quiz 0002 q2."), ""]
     out += [f"### {reviews.closing_sections(step)[1]}", "", fill("Split the teach job so the figures get their own pass."), ""]
     if step == "final":
         out += [f"## {reviews.LEARNING_SESSIONS}", ""]
-        for n in range(1, sessions + 1):
-            out += [f"### Session {n}", "", f"**Date:** {fill(f'2026-11-2{n}')}", f"**Topic:** {fill('cooking')}", "", fill(f"Session {n}: forty minutes on knife skills; quiz 0003 q2 was fair."), ""]
+        for n in range(1, max(sessions, 3 if minimal else 0) + 1):
+            blank = todo or n > sessions
+            out += [f"### Session {n}", "", f"**Date:** {'TODO' if blank else f'2026-11-2{n}'}", f"**Topic:** {'TODO' if blank else 'cooking'}", "", "TODO" if blank else f"Session {n}: forty minutes on knife skills; quiz 0003 q2 was fair.", ""]
         out += [f"## {reviews.TEST_TOPICS}", ""]
         for tid in topics:
             out += [f"### {tid}", "", fill(f"On {tid}, final's lesson had a worked example where c0-baseline's had none."), ""]
+        if minimal:
+            out += ["### TODO: your second test topic's id", "", "TODO", ""]
     return "\n".join(out)
 
 
-def component_md(name: str, kind: str = "skill", step: str = "c1-skills", kept: str = "yes", todo: bool = False) -> str:
-    """One entry of reviews/components.md, complete unless `todo`."""
+def component_md(name: str, kind: str = "skill", step: str = "c1-skills", kept: str = "yes", todo: bool = False, minimal: bool = False) -> str:
+    """One entry of reviews/components.md, written to the version 0.1 standard (all six fields)
+    unless `todo` (every field TODO) or `minimal` (only Kind and Kept in final, as version 0.2 asks;
+    the other four fields keep the template's TODO)."""
 
     def fill(text: str) -> str:
         return "TODO" if todo else text
 
+    def extra(text: str) -> str:
+        return "TODO" if todo or minimal else text
+
     return "\n".join([
-        f"### {name}", "", f"- Kind: {fill(kind)}", f"- Step added: {fill(step)}", f"- Purpose: {fill(f'The tutor needs {name} to keep quiz stems from giving answers away.')}",
-        f"- With and without: {fill(f'reviews/{step}.md, Round 1 (without) and Round 2 (with)')}",
-        f"- Review: {fill('Without it quiz 0002 q3 gave its answer away; with it, no stem did.')}", f"- Kept in final: {fill(kept)}", "", "",
+        f"### {name}", "", f"- Kind: {fill(kind)}", f"- Step added: {extra(step)}", f"- Purpose: {extra(f'The tutor needs {name} to keep quiz stems from giving answers away.')}",
+        f"- With and without: {extra(f'reviews/{step}.md, Round 1 (without) and Round 2 (with)')}",
+        f"- Review: {extra('Without it quiz 0002 q3 gave its answer away; with it, no stem did.')}", f"- Kept in final: {fill(kept)}", "", "",
     ])  # fmt: skip
 
 

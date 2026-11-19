@@ -174,6 +174,40 @@ class TemplateTests(unittest.TestCase):
         self.assertIn("compare c0-baseline / final, tutor on agent-architecture: no complete session yet", strict.text())
         self.assertNotIn("compare c0-baseline / c1-skills", strict.text(), "the only required blind comparison is c0-baseline against final")
 
+    def test_the_template_as_it_ships_passes_and_names_its_version(self):
+        """p3 check on the template: no failure, the version in its first line, nothing in Extra work, and
+        --final fails only on the work still to do."""
+        import p3
+
+        loose, strict = check.run_checks(self.root), check.run_checks(self.root, final=True)
+        self.assertEqual(loose.failures(), [], loose.text())
+        self.assertEqual(loose.exit_code(), 0)
+        self.assertTrue(loose.text().startswith(f"p3 {p3.__version__} check: 498E ("), loose.text()[:60])
+        self.assertTrue(strict.text().startswith(f"p3 {p3.__version__} check --final: 498E ("))
+        self.assertEqual(loose.items(check.EXTRAS), [], "a template has no extra work")
+        self.assertNotIn("Extra work", loose.text())
+        self.assertEqual(strict.exit_code(), 1)
+        self.assertEqual([i.text for i in strict.items() if i.status == check.WARN], [])
+        (decisions,) = [i for i in strict.items(check.HANDIN) if i.text.startswith("DECISIONS.md")]
+        self.assertEqual((decisions.status, decisions.text), (check.FAIL, "DECISIONS.md: 9 TODO markers left (lines 29, 39, 49, 58, 67, 77, 87, 97, 107)"))
+        (report,) = [i for i in strict.items(check.HANDIN) if i.text.startswith("REPORT.md")]
+        self.assertEqual(report.status, check.FAIL, "REPORT.md is made by p3 report --write, so the template has none")
+        self.assertFalse((REPO / "REPORT.md").exists())
+        self.assertFalse([i for i in loose.items() if "EVAL.md" in i.text], "EVAL.md is not read")
+
+    def test_decisions_md_ships_with_nine_prompts_and_nine_markers(self):
+        text = util.read_text(self.root / "DECISIONS.md")
+        headings = re.findall(r"(?m)^## (\d+)\. ", text)
+        self.assertEqual(headings, [str(n) for n in range(1, 10)], "nine prompts, numbered in order")
+        self.assertEqual(re.findall(r"(?m)^TODO: your answer to prompt (\d+)\.$", text), headings, "each prompt ends with its own marker line")
+        self.assertEqual(len(check._todo_lines(text)), 9, "nine markers and no other TODO in the file")
+        from p3 import next as p3next
+
+        self.assertEqual(p3next.DECISIONS, "DECISIONS.md")
+        self.assertEqual(check.DOCS, ("DECISIONS.md",))
+        for n in range(1, 4):
+            self.assertIsNotNone(re.search(rf"(?m)^## {n}\. ", text), "prompts 1 to 3 are the three steps p3 next reads")
+
     @unittest.skipUnless((REPO / reviews.REVIEWS_DIR).is_dir(), "the template's reviews/ is not in this checkout yet")
     def test_the_shipped_review_files(self):
         """reviews/ as it ships: every file p3 check reads is there and parses, every item it makes is
@@ -191,7 +225,8 @@ class TemplateTests(unittest.TestCase):
             if step == "final":
                 self.assertEqual([(r.optional, r.touched) for r in review.rounds], [(True, False)], "one optional round, untouched")
                 self.assertIsNone(review.sessions_problem)
-                self.assertEqual(len(review.sessions), reviews.SESSIONS)
+                self.assertEqual(len(review.sessions), 3, "the file has room for three sessions, though one is needed")
+                self.assertGreaterEqual(len(review.sessions), reviews.SESSIONS)
                 self.assertFalse(any(s.touched for s in review.sessions))
                 self.assertIsNone(review.topics_problem)
                 self.assertTrue(review.topics and all(t.problems for t in review.topics), "the test-topic sections ship as TODO placeholders")

@@ -37,6 +37,34 @@ class CompleteFileTests(unittest.TestCase):
             else:
                 self.assertEqual((r.sessions, r.topics), ([], []))
 
+    def test_the_minimal_form_of_version_0_2_is_complete(self):
+        for step in reviews.STEPS:
+            r = parse(review_md(step, f"bench/runs/{step}/r1", minimal=True, sessions=1, topics=("cooking",)), step)
+            self.assertTrue(r.major.complete, (step, r.major.problems))
+            self.assertEqual(r.major.problems, [])
+            self.assertEqual(len(r.major.ratings()), sum(len(reviews.CRITERIA[j]) for j in reviews.STEP_JOBS[step]))
+            self.assertTrue(all(c.rating is not None and c.feedback.strip() == "TODO" for c in r.major.criteria.values()), "the template's TODO lines stay under every criterion")
+            self.assertEqual(r.major.live_tries.strip(), "TODO")
+            self.assertEqual(r.major.closing[reviews.COMPARED].strip(), "TODO")
+            self.assertTrue(reviews.written(r.major.closing[reviews.required_closing(step)]))
+            if step == "final":
+                self.assertEqual([(s.touched, s.complete) for s in r.sessions], [(True, True), (False, False), (False, False)], "one session written, the two others untouched")
+                self.assertEqual([(t.topic, t.complete) for t in r.topics][0], ("cooking", True))
+
+    def test_a_major_review_written_to_the_version_0_1_standard_is_complete(self):
+        for step in reviews.STEPS:
+            r = parse(review_md(step, f"bench/runs/{step}/r1"), step)
+            self.assertTrue(r.major.complete, (step, r.major.problems))
+            self.assertTrue(all(reviews.written(c.feedback) for c in r.major.criteria.values()), "the feedback under every rating is read too")
+            self.assertTrue(reviews.written(r.major.live_tries))
+            self.assertTrue(reviews.written(r.major.closing[reviews.COMPARED]))
+
+    def test_the_last_closing_section_is_the_required_one(self):
+        self.assertEqual(reviews.required_closing("c1-skills"), reviews.NEXT_FIX)
+        self.assertEqual(reviews.required_closing("c3-split"), reviews.NEXT_FIX)
+        self.assertEqual(reviews.required_closing("final"), reviews.NEXT_DO)
+        self.assertEqual(reviews.SESSIONS, 1)
+
     def test_round_fields(self):
         (first, _second) = parse(review_md("c1-skills", RUN, kinds={1: "modified skill (quiz)"})).rounds
         self.assertEqual(first.title, "Round 1")
@@ -227,7 +255,8 @@ class FieldLayoutTests(unittest.TestCase):
         self.assertIn("A short lesson on memory.", r.major.live_tries)
         self.assertNotIn("Pedagogy", r.major.live_tries, "Live tries ends at the first job")
         empty = text.replace("I asked for q3's answer; it gave a hint.", "").replace("A short lesson on memory.", "")
-        self.assertIn("Major review: Live tries is empty", parse(empty).major.problems)
+        self.assertTrue(parse(empty).major.complete, "Live tries is optional, empty or not")
+        self.assertEqual(parse(empty).major.problems, [])
 
 
 class RatingTests(unittest.TestCase):
@@ -341,7 +370,31 @@ class MissingTests(unittest.TestCase):
         text = review_md("c1-skills", RUN).replace("I asked the tutor for q3's answer twice; it gave a hint.", "")
         text = text.replace("Split the teach job so the figures get their own pass.", "")
         problems = parse(text).major.problems
-        self.assertEqual(problems, ["Major review: Live tries is empty", "Major review > What the next step should fix: the text is empty"])
+        self.assertEqual(problems, ["Major review > What the next step should fix: the text is empty"], "an empty Live tries is no problem any more")
+        text = review_md("c1-skills", RUN).replace("Better than the step before on quiz 0002 q2.", "")
+        self.assertEqual(parse(text).major.problems, [], "an empty Compared with the previous step is no problem either")
+
+    def test_what_the_next_step_should_fix_must_be_written(self):
+        todo = review_md("c1-skills", RUN).replace("Split the teach job so the figures get their own pass.", "TODO")
+        self.assertEqual(parse(todo).major.problems, ["Major review > What the next step should fix: the text is still TODO"])
+        for step, name in (("c2-review", reviews.NEXT_FIX), ("final", reviews.NEXT_DO)):
+            gone = review_md(step, f"bench/runs/{step}/r1", topics=("cooking",)).replace(f"### {name}", "### Next")
+            self.assertEqual(parse(gone, step).major.problems, [f"Major review > {name}: missing; add ### {name}"])
+
+    def test_the_optional_closing_section_may_be_missing_or_todo(self):
+        text = review_md("c1-skills", RUN, minimal=True)
+        self.assertTrue(parse(text).major.complete)
+        gone = text.replace(f"### {reviews.COMPARED}\n\nTODO\n\n", "")
+        self.assertNotIn(reviews.COMPARED, gone)
+        r = parse(gone)
+        self.assertTrue(r.major.complete, r.major.problems)
+        self.assertIsNone(r.major.closing[reviews.COMPARED])
+
+    def test_a_rating_is_still_needed_when_the_feedback_is_not(self):
+        text = review_md("c1-skills", RUN, minimal=True, ratings={("Quiz", "Difficulty"): "TODO"})
+        self.assertEqual(parse(text).major.problems, ["Major review > Quiz > Difficulty: Rating is still TODO; write a whole number from 1 to 5"])
+        text = review_md("c1-skills", RUN, minimal=True).replace("#### Useful\n\nRating: 4\n\n", "#### Useful\n\n")
+        self.assertEqual(parse(text).major.problems, ["Major review > Feedback > Useful: no Rating line (write Rating: N, N a whole number from 1 to 5)"])
 
     def test_sessions_and_topics(self):
         text = review_md("final", "bench/runs/final/r1", sessions=2, topics=("cooking",))
@@ -372,9 +425,32 @@ class ComponentsTests(unittest.TestCase):
         (entry,) = reviews.parse_components(components_md(component_md("<name>", todo=True)))
         self.assertEqual(entry.problems, [
             "<name>: give the entry its component's name (the skill's folder name, or the subagent's name)",
-            "<name>: Kind is still TODO", "<name>: Step added is still TODO", "<name>: Purpose is still TODO",
-            "<name>: With and without is still TODO", "<name>: Review is still TODO", "<name>: Kept in final is still TODO",
-        ])  # fmt: skip
+            "<name>: Kind is still TODO", "<name>: Kept in final is still TODO",
+        ], "only Kind and Kept in final are required; the other four fields may stay TODO")  # fmt: skip
+
+    def test_the_minimal_entry_is_complete(self):
+        text = components_md(component_md("teach", minimal=True), component_md("lesson-reviewer", "subagent", kept="no, because it found nothing", minimal=True))
+        teach, reviewer = reviews.parse_components(text)
+        self.assertEqual((teach.problems, teach.kind, teach.kept), ([], "skill", True))
+        self.assertEqual((reviewer.problems, reviewer.kind, reviewer.kept), ([], "subagent", False))
+        self.assertEqual(reviews.REQUIRED_FIELDS, ("Kind", "Kept in final"))
+        self.assertFalse(any(reviews.written(teach.values.get(f)) for f in ("Step added", "Purpose", "With and without", "Review")))
+
+    def test_an_entry_written_to_the_version_0_1_standard_is_complete(self):
+        (entry,) = reviews.parse_components(components_md(component_md("teach")))
+        self.assertEqual(entry.problems, [])
+        self.assertTrue(all(reviews.written(entry.values.get(f)) for f in reviews.COMPONENT_FIELDS))
+
+    def test_an_entry_still_needs_kind_and_kept_in_final(self):
+        no_kept = component_md("teach", minimal=True).replace("- Kept in final: yes", "- Kept in final: TODO")
+        no_kind = component_md("quiz", minimal=True).replace("- Kind: skill", "- Kind:")
+        no_reason = component_md("grade", minimal=True, kept="no")
+        missing_line = component_md("tutor", minimal=True).replace("- Kept in final: yes\n", "")
+        teach, quiz, grade, tutor = reviews.parse_components(components_md(no_kept, no_kind, no_reason, missing_line))
+        self.assertEqual(teach.problems, ["teach: Kept in final is still TODO"])
+        self.assertEqual(quiz.problems, ["quiz: Kind is empty"])
+        self.assertEqual(grade.problems, ["grade: Kept in final is no, with no reason; write no, because ..."])
+        self.assertEqual(tutor.problems, ['tutor: no "- Kept in final:" line'])
 
     def test_bad_values(self):
         text = components_md(
@@ -385,7 +461,7 @@ class ComponentsTests(unittest.TestCase):
         quiz, grade, tutor = reviews.parse_components(text.replace("\n", "\r\n"))
         self.assertEqual(quiz.problems, ["quiz: Kind is 'tool'; write skill or subagent"])
         self.assertEqual(grade.key, "grade")
-        self.assertEqual(grade.problems, ["`grade`: no \"- Purpose:\" line", "`grade`: Kept in final is 'maybe'; start it with yes or no (no, because ...)"])
+        self.assertEqual(grade.problems, ["`grade`: Kept in final is 'maybe'; start it with yes or no (no, because ...)"], "a missing Purpose line is no problem now")
         self.assertEqual(tutor.problems, ["tutor: Kept in final is no, with no reason; write no, because ..."])
         self.assertFalse(tutor.kept)
 
