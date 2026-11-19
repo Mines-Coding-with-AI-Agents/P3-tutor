@@ -1,12 +1,15 @@
 # Reviews: final
 
-Your review of `final`: optional quick rounds, its major review, your three learning sessions, and your review of the two test topics.
+Your review of `final`: optional quick rounds, its major review, your learning session, and your review of your test topic.
 Quick rounds are optional here; use one for each component that `final` adds, such as a grader subagent, so its inventory entry has its with and without.
 `p3 check` ignores an optional round you leave untouched.
-The major review covers all four jobs on one of the three runs of `final`, and its previous step is `c3-split`; for the quiz and the feedback, which `c3-split` did not review, compare with `c2-review`, and for the tutor with `c1-skills`.
-Its live tries are your three learning sessions, all on one of your two test topics, written up under Learning sessions below, so its Live tries line points at them.
-Hold the sessions on `tutor/` as you snapshotted `final`, and note what they make you want to change instead of changing it.
+The major review covers all four jobs on one of the runs of `final`, and its previous step is `c3-split`; for the quiz and the feedback, which `c3-split` did not review, compare with `c2-review`, and for the tutor with `c1-skills`.
+Its live try is your learning session on your test topic, written up under Learning sessions below.
+One session is needed, so write it under Session 1 and leave the two other session sections as they are, or delete them.
+Hold the session on `tutor/` as you snapshotted `final`, and note what it makes you want to change instead of changing it.
+Under Test topics, make one heading your test topic's id and review it there; the other heading may stay as it is, or hold a second topic if you made one.
 `reviews/README.md` says how to write each part.
+A rating on every criterion and What I would do next make the major review complete; the lines under each rating, Live tries and Compared with the previous step are optional, and you may leave their markers as they are.
 You write your thoughts, ratings and feedback; Claude Code writes only the What changed part of each round.
 Keep every heading as it is, because `p3 check` reads them, and add a round by copying the last one with its marker lines.
 

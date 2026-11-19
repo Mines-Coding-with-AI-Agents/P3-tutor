@@ -3,7 +3,8 @@
 One entry for every skill and every subagent you built, from `c1-skills` to `final`, including the ones you dropped, even one you took out again before any snapshot.
 The heading is the skill's folder name or the subagent's `name` from its frontmatter, and `reviews/README.md` says what each field holds.
 Replace the empty entry at the bottom with your first component, and copy it for each one after that.
-Claude Code may fill in Kind, Step added, and With and without; Purpose, Review and Kept in final are yours.
+Claude Code may fill in Kind, Step added, and With and without; Kept in final is yours, and with Kind it is all an entry needs.
+Purpose and Review are yours too, and optional.
 
 <!--
 An example of a finished entry:

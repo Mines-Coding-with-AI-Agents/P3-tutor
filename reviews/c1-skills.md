@@ -6,6 +6,7 @@ Your first round can start from the tutor as it ships, so the baseline is the ou
 The major review covers all four jobs, and its previous step is `c0-baseline`, so compare with your baseline runs.
 What it finds becomes the checklists of your reviewer subagents in `c2-review`, so be specific.
 `reviews/README.md` says how to write each part.
+A rating on every criterion and What the next step should fix make the major review complete; the lines under each rating, Live tries and Compared with the previous step are optional, and you may leave their markers as they are.
 You write your thoughts, ratings and feedback; Claude Code writes only the What changed part of each round.
 Keep every heading as it is, because `p3 check` reads them, and add a round by copying the last one with its marker lines.
 

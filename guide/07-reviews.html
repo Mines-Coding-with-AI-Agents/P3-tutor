@@ -38,10 +38,10 @@
 <li><a href="08-step1-skills.html">Step 1: four skills <span class="nw">(c1-skills)</span></a></li>
 <li><a href="09-step2-review-loops.html">Step 2: review loops <span class="nw">(c2-review)</span></a></li>
 <li><a href="10-step3-split.html">Step 3: split the teach job <span class="nw">(c3-split)</span></a></li>
-<li><a href="11-test-topics.html">Your two test topics</a></li>
+<li><a href="11-test-topics.html">Your test topic</a></li>
 <li><a href="12-final.html">final: the guard, repeats and the ablation</a></li>
 <li><a href="13-blind-comparison.html">The blind comparison</a></li>
-<li><a href="14-write-up.html">The inventory and EVAL.md</a></li>
+<li><a href="14-write-up.html">The inventory and DECISIONS.md</a></li>
 <li><a href="15-hand-in.html">Hand in</a></li>
 <li class="toc-part">Part IV · Reference</li>
 <li><a href="16-stretch-and-598e.html">Stretch options and the 598E length study</a></li>
@@ -119,14 +119,14 @@ A step that made your tutor worse is a fine result to report, as long as the tra
 <p>All your reviews live in the <code>reviews/</code> folder of your repo, and every file there is part of what you hand in.</p>
 <div class="table-wrap">
 <table>
-  <caption>The review files, from reviews/README.md, with the week each one falls in on the pace I would keep (<a href="17-pace.html">A pace that works</a>).</caption>
+  <caption>The review files, from reviews/README.md, with when each one falls on the pace I would keep (<a href="17-pace.html">A pace that works</a>).</caption>
   <thead><tr><th>File</th><th>What it holds</th><th>When you write in it</th></tr></thead>
   <tbody>
-    <tr><td><code>reviews/c1-skills.md</code></td><td>the quick rounds while you build <code>c1-skills</code>, then its major review</td><td>week 1</td></tr>
-    <tr><td><code>reviews/c2-review.md</code></td><td>the quick rounds while you build the review loops, then the major review of <code>c2-review</code></td><td>week 2</td></tr>
-    <tr><td><code>reviews/c3-split.md</code></td><td>the quick rounds while you split up the teach job, then the major review of <code>c3-split</code></td><td>week 2</td></tr>
-    <tr><td><code>reviews/final.md</code></td><td>optional quick rounds, the major review of <code>final</code>, your learning session, and your open review of the test topic</td><td>week 3</td></tr>
-    <tr><td><code>reviews/components.md</code></td><td>the component inventory: one entry for every skill and every subagent you built</td><td>at the end of each step, finished in week 3</td></tr>
+    <tr><td><code>reviews/c1-skills.md</code></td><td>the quick rounds while you build <code>c1-skills</code>, then its major review</td><td>by Nov 24</td></tr>
+    <tr><td><code>reviews/c2-review.md</code></td><td>the quick rounds while you build the review loops, then the major review of <code>c2-review</code></td><td>by Nov 24</td></tr>
+    <tr><td><code>reviews/c3-split.md</code></td><td>the quick rounds while you split up the teach job, then the major review of <code>c3-split</code></td><td>by Nov 29</td></tr>
+    <tr><td><code>reviews/final.md</code></td><td>optional quick rounds, the major review of <code>final</code>, your learning session, and your open review of the test topic</td><td>by Dec 9</td></tr>
+    <tr><td><code>reviews/components.md</code></td><td>the component inventory: one entry for every skill and every subagent you built</td><td>at the end of each step, finished by Dec 9</td></tr>
   </tbody>
 </table>
 </div>
@@ -134,7 +134,7 @@ A step that made your tutor worse is a fine result to report, as long as the tra
 You replace each marker with your own writing, and you keep every heading exactly as it is, because <code>p3 check</code> finds your reviews by their headings.
 <code>reviews/README.md</code> holds the same rules in short, with an example of each part; this page explains them and why they exist.</p>
 <p>This page covers the quick rounds and the major reviews.
-The learning session and the open review of the test topic, both in <code>reviews/final.md</code>, are explained on <a href="12-final.html#learning-sessions">final: the guard, repeats and the ablation</a> and <a href="11-test-topics.html">the test topics page</a>, and the inventory on <a href="14-write-up.html#inventory">the write-up page</a>.
+The learning session and the open review of the test topic, both in <code>reviews/final.md</code>, are explained on <a href="12-final.html#learning-sessions">final: the guard, repeats and the ablation</a> and <a href="11-test-topics.html">the test topic page</a>, and the inventory on <a href="14-write-up.html#inventory">the write-up page</a>.
 Under version 0.2 they ask for little:</p>
 <ul>
   <li><strong>One learning session</strong>, written up in three or four sentences, with its Date and its Topic, which starts with the id of your test topic. Any one of the three session sections will do, and the others are optional.</li>
@@ -652,7 +652,7 @@ Your ratings from 1 to 5 in the major reviews (reviews/&lt;step&gt;.md), which r
 ...
 | Tutor | Personalization | 2 | - | - | - |</pre>
 </div>
-<p>This example is from early in week 2, with only the <code>c1-skills</code> review written.
+<p>This example is from early in step 2, with only the <code>c1-skills</code> review written.
 A dash means one of three things: no rating there yet, a rating <code>p3 check</code> does not accept (such as 4.5), or a job that step does not review.
 There is no column for <code>c0-baseline</code>, because the baseline has no major review of its own; your <code>c1-skills</code> review is where you compare with it.</p>
 <p>Without <code>--reviews</code>, <code>uv run p3 report</code> prints the objective checks and the cost of the shared topic's full runs, and then the same "Your ratings" table at the end.

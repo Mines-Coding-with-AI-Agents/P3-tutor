@@ -5,6 +5,7 @@ Add one reviewer subagent per round, so the run before it shows the output witho
 The major review covers the lesson, the quiz and the feedback, and its previous step is `c1-skills`.
 Say in it whether the problems your `c1-skills` review found are gone.
 `reviews/README.md` says how to write each part.
+A rating on every criterion and What the next step should fix make the major review complete; the lines under each rating, Live tries and Compared with the previous step are optional, and you may leave their markers as they are.
 You write your thoughts, ratings and feedback; Claude Code writes only the What changed part of each round.
 Keep every heading as it is, because `p3 check` reads them, and add a round by copying the last one with its marker lines.
 

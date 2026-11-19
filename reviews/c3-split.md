@@ -4,6 +4,7 @@ Your quick rounds while you split up the teach job, and then the major review of
 Add one subagent of the teach pipeline per round, so the run before it shows the lesson without it and the run after it shows the lesson with it.
 The major review covers the lesson only, and its previous step is `c2-review`.
 `reviews/README.md` says how to write each part.
+A rating on every criterion and What the next step should fix make the major review complete; the lines under each rating, Live tries and Compared with the previous step are optional, and you may leave their markers as they are.
 You write your thoughts, ratings and feedback; Claude Code writes only the What changed part of each round.
 Keep every heading as it is, because `p3 check` reads them, and add a round by copying the last one with its marker lines.
 
