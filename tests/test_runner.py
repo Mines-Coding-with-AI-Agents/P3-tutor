@@ -561,7 +561,8 @@ class InfraTests(RepoTestCase):
         self.assertTrue((kept / "run.json").is_file() and (kept / "score.json").is_file(), "the complete repeat before the limit is kept")
         (aside,) = list((self.root / "bench" / "runs" / "_live" / "_aborted" / "c0-baseline").iterdir())
         self.assertFalse((aside / "run.json").exists())
-        self.assertTrue((aside / "grade-s2" / "result.json").is_file(), "its files are kept for a look, out of git's way")
+        self.assertTrue((aside / "grade-s1" / "result.json").is_file(), "the finished scenarios are kept, out of git's way")
+        self.assertTrue((aside / "partial.json").is_file() and not (aside / "grade-s2").exists())
         self.assertIn(util.posix(aside, self.root), err)
         bench_calls = [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines() if '"mode": "bench"' in line]
         self.assertEqual([c["job"] for c in bench_calls][10:], ["teach", "quiz", "grade", "limit"], "nothing starts after the scenario that hit the limit")
@@ -777,6 +778,291 @@ class MoreBenchTests(RepoTestCase):
             code, out, err = self.p3("check")
         self.assertEqual(code, 1)
         self.assertEqual(err.strip(), "p3 check: Permission denied: bench/compare/x.json")
+
+
+class ResumeTests(RepoTestCase):
+    """A limit that stops a repeat keeps what finished, and p3 bench --resume finishes the rest."""
+
+    ALL = ["teach", "quiz", "grade-s1", "grade-s2", "tutor-p01", "tutor-p02", "tutor-p03", "tutor-p04", "tutor-p05", "tutor-p06"]
+
+    def setUp(self):
+        super().setUp()
+        self.calls = Path(self._tmp) / "calls.jsonl"
+        os.environ["P3_FAKE_LOG"] = str(self.calls)
+
+    def stop_after(self, n: int, *argv: str, config="c0-baseline", fresh_log=True) -> tuple[int, str, str]:
+        """Run the bench so the limit comes at scenario n + 1 (the fake counts every scenario ever logged)."""
+        if fresh_log:
+            self.calls.unlink(missing_ok=True)
+        os.environ["P3_FAKE_LIMIT_AFTER"] = str(n)
+        return self.p3("bench", "--config", config, "--offline", *argv)
+
+    def aside_dirs(self, config="c0-baseline") -> list[Path]:
+        base = self.root / "bench" / "runs" / "_live" / "_aborted" / config
+        return sorted(p for p in base.iterdir() if p.is_dir()) if base.is_dir() else []
+
+    def partial(self, config="c0-baseline") -> tuple[Path, dict]:
+        (folder,) = self.aside_dirs(config)
+        return folder, json.loads((folder / "partial.json").read_text(encoding="utf-8"))
+
+    def runs(self, name="c0-baseline"):
+        folder = util.runs_dir(name, self.root)
+        return sorted(p for p in folder.iterdir() if p.is_dir() and not p.name.startswith("_")) if folder.is_dir() else []
+
+    def no_limit(self):
+        os.environ.pop("P3_FAKE_LIMIT_AFTER", None)
+
+    def test_a_stop_in_the_middle_keeps_the_finished_scenarios(self):
+        code, out, err = self.stop_after(4)
+        self.assertEqual(code, 1, out + err)
+        folder, doc = self.partial()
+        self.assertEqual(self.runs(), [])
+        self.assertEqual(doc["scenario_ids"], self.ALL)
+        self.assertEqual([s["id"] for s in doc["record"]["scenarios"]], self.ALL[:4])
+        for key in ("run_id", "config", "config_hash", "topic", "topic_hash", "topic_commit", "minutes", "quick", "only", "repeat", "started_at"):
+            self.assertIn(key, doc["record"])
+        self.assertIsNone(doc["record"]["finished_at"])
+        for sid in self.ALL[:4]:
+            self.assertTrue((folder / sid / "result.json").is_file())
+        self.assertFalse((folder / "tutor-p01").exists(), "the scenario the limit stopped is not kept")
+        self.assertFalse((folder / "run.json").exists())
+        rel = util.posix(folder, self.root)
+        self.assertIn("Claude stopped working in scenario tutor-p01: 5-hour limit reached", err)
+        self.assertIn(f"4 of 10 scenarios in repeat 1 had finished. They are kept in {rel}", err)
+        self.assertIn("Scenario tutor-p01 was the one Claude stopped, and it will run again from the start, together with the 5 scenarios that had not started.", err)
+        self.assertIn("/usage", err)
+        self.assertIn("uv run p3 bench --resume", err)
+        self.assertEqual(runner.pending_resumes(self.root), [{"config": "c0-baseline", "run_id": folder.name, "done": 4, "missing": 6, "path": folder}])
+
+    def test_a_resume_completes_the_repeat(self):
+        self.stop_after(4)
+        folder, doc = self.partial()
+        kept = {s["id"]: s for s in doc["record"]["scenarios"]}
+        self.no_limit()
+        code, out, err = self.p3("bench", "--resume", "--offline")
+        self.assertEqual(code, 0, out + err)
+        self.assertIn("4 scenarios done and kept, 6 to run: tutor-p01", out)
+        self.assertEqual(self.aside_dirs(), [])
+        (run_dir,) = self.runs()
+        self.assertEqual(run_dir.name, doc["record"]["run_id"])
+        run = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+        self.assertEqual([s["id"] for s in run["scenarios"]], self.ALL)
+        for sid, entry in kept.items():
+            self.assertEqual(next(s for s in run["scenarios"] if s["id"] == sid), entry)
+        self.assertEqual(run["started_at"], doc["record"]["started_at"])
+        self.assertIsNotNone(run["finished_at"])
+        self.assertEqual(len(run["resumed"]), 1)
+        self.assertEqual(set(run["resumed"][0]), {"at", "claude_version"})
+        self.assertIn("claude_versions", run)
+        self.assertFalse((run_dir / "partial.json").exists())
+        self.assertTrue((run_dir / "score.json").is_file(), "the resumed run is scored")
+        self.assertTrue((run_dir / "tutor-p06" / "result.json").is_file())
+        self.assertEqual(len(util.list_runs("c0-baseline", scored=True, root=self.root)), 1)
+        self.assertEqual(set(run) - {"claude_versions", "resumed", "only", "ancestor_memory", "entries"} - RUN_KEYS, set())
+        self.assertIn("Repeat 1 is finished: the 4 scenarios kept from before the stop and the 6 run now", out)
+        calls = [json.loads(line) for line in self.calls.read_text(encoding="utf-8").splitlines() if '"mode": "bench"' in line]
+        self.assertEqual(len(calls), 5 + 6, "only the missing scenarios ran again")
+
+    def test_a_resume_with_no_score_does_not_score(self):
+        self.stop_after(4)
+        self.no_limit()
+        code, out, err = self.p3("bench", "--resume", "--no-score")
+        self.assertEqual(code, 0, out + err)
+        (run_dir,) = self.runs()
+        self.assertFalse((run_dir / "score.json").exists())
+        self.assertIn(f"not scored; score with: p3 score {util.posix(run_dir, self.root)}", out)
+
+    def test_a_second_stop_can_be_resumed_again(self):
+        self.stop_after(2)
+        _, first = self.partial()
+        self.assertEqual([s["id"] for s in first["record"]["scenarios"]], self.ALL[:2])
+        os.environ["P3_FAKE_LIMIT_AFTER"] = "6"  # three more scenarios run (calls 4 to 6), then the limit
+        code, out, err = self.p3("bench", "--resume", "--offline")
+        self.assertEqual(code, 1, out + err)
+        folder, second = self.partial()
+        self.assertEqual([s["id"] for s in second["record"]["scenarios"]], self.ALL[:5])
+        self.assertEqual(len(second["record"]["resumed"]), 1)
+        self.assertEqual(second["record"]["started_at"], first["record"]["started_at"])
+        self.assertIn("5 of 10 scenarios in repeat 1 had finished", err)
+        self.assertEqual(self.runs(), [])
+        self.no_limit()
+        code, out, err = self.p3("bench", "--resume", "--offline")
+        self.assertEqual(code, 0, out + err)
+        (run_dir,) = self.runs()
+        run = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+        self.assertEqual([s["id"] for s in run["scenarios"]], self.ALL)
+        self.assertEqual(len(run["resumed"]), 2)
+        self.assertEqual(run["scenarios"][:5], second["record"]["scenarios"])
+
+    def test_a_changed_tutor_is_refused(self):
+        self.stop_after(4, config="live")
+        folder, doc = self.partial("live")
+        self.no_limit()
+        (self.root / "tutor" / "CLAUDE.md").write_text("# Tutor\n\nA different tutor now.\n", encoding="utf-8")
+        code, out, err = self.p3("bench", "--resume")
+        self.assertEqual(code, 1)
+        self.assertIn("tutor/ has changed since this repeat started", err)
+        self.assertIn(f"Delete {util.posix(folder, self.root)}/ and run the bench again", err)
+        self.assertTrue((folder / "partial.json").is_file(), "a refused resume changes nothing")
+
+    def test_a_resume_of_live_goes_where_live_runs_go(self):
+        self.stop_after(4, config="live")
+        self.no_limit()
+        code, out, err = self.p3("bench", "--resume", "--offline")
+        self.assertEqual(code, 0, out + err)
+        (run_dir,) = self.runs("live")
+        self.assertEqual(run_dir.parent, self.root / "bench" / "runs" / "_live")
+        self.assertTrue((run_dir / "score.json").is_file())
+
+    def test_a_changed_snapshot_is_refused(self):
+        self.stop_after(4)
+        folder, doc = self.partial()
+        self.no_limit()
+        real = config.resolve
+
+        def other(name, root=None):
+            cfg = real(name, root)
+            cfg.hash = "sha256:" + "0" * 64
+            return cfg
+
+        with mock.patch.object(config, "resolve", other):
+            code, out, err = self.p3("bench", "--resume")
+        self.assertEqual(code, 1)
+        self.assertIn("configs/c0-baseline/ has changed since this repeat started", err)
+        self.assertIn("Delete", err)
+
+    def test_a_changed_topic_is_refused(self):
+        self.stop_after(4)
+        folder, _ = self.partial()
+        self.no_limit()
+        notes = self.root / "bench" / "topics" / "agent-architecture" / "workspace" / "NOTES.md"
+        notes.write_text(notes.read_text(encoding="utf-8") + "\nOne more line.\n", encoding="utf-8")
+        code, out, err = self.p3("bench", "--resume")
+        self.assertEqual(code, 1)
+        self.assertIn("The topic agent-architecture has changed since this repeat started", err)
+        self.assertIn(f"Delete {util.posix(folder, self.root)}/ and run the bench again", err)
+
+    def test_a_different_p3_version_is_refused(self):
+        import p3
+
+        self.stop_after(4)
+        self.no_limit()
+        with mock.patch.object(p3, "__version__", "9.9.9"):
+            code, out, err = self.p3("bench", "--resume")
+        self.assertEqual(code, 1)
+        self.assertIn("was made by p3 0.1.0, and this is p3 9.9.9", err)
+        self.assertIn("Delete", err)
+
+    def test_several_partials_are_listed_and_need_an_id(self):
+        self.stop_after(4)
+        self.stop_after(2, config="live")
+        self.no_limit()
+        (a,) = self.aside_dirs("c0-baseline")
+        (b,) = self.aside_dirs("live")
+        code, out, err = self.p3("bench", "--resume")
+        self.assertEqual(code, 1)
+        self.assertIn("2 stopped repeats are waiting", err)
+        self.assertIn(f"{a.name}  config c0-baseline, 4 scenarios done, 6 missing", err)
+        self.assertIn(f"{b.name}  config live, 2 scenarios done, 8 missing", err)
+        self.assertEqual(self.runs("live"), [])
+        code, out, err = self.p3("bench", "--resume", "no-such-id")
+        self.assertEqual(code, 1)
+        self.assertIn("there is no stopped repeat no-such-id", err)
+        code, out, err = self.p3("bench", "--resume", b.name, "--offline")
+        self.assertEqual(code, 0, out + err)
+        self.assertEqual(len(self.runs("live")), 1)
+        self.assertEqual(len(self.aside_dirs("c0-baseline")), 1, "the other partial waits")
+        self.assertEqual([p["run_id"] for p in runner.pending_resumes(self.root)], [a.name])
+
+    def test_resume_refuses_what_comes_from_the_partial(self):
+        self.stop_after(4)
+        for flags in (["--quick"], ["--only", "teach"], ["--minutes", "20"], ["--topic", "agent-architecture"], ["--repeats", "2"], ["--quick", "--only", "teach"]):
+            code, out, err = self.p3("bench", "--resume", *flags)
+            self.assertEqual(code, 1, flags)
+            self.assertIn("--resume takes " + ", ".join(f for f in flags if f.startswith("--")), err)
+        self.assertEqual(len(self.aside_dirs()), 1)
+
+    def test_bench_needs_a_config_without_resume(self):
+        code, out, err = self.p3("bench", "--quick")
+        self.assertEqual(code, 1)
+        self.assertIn("the following arguments are required: --config", err)
+
+    def test_nothing_to_resume(self):
+        code, out, err = self.p3("bench", "--resume")
+        self.assertEqual(code, 1)
+        self.assertIn("there is no stopped repeat to resume", err)
+
+    def test_a_version_0_1_partial_folder_is_ignored(self):
+        old = self.root / "bench" / "runs" / "_live" / "_aborted" / "c0-baseline" / "20260101-000000-agent-architecture-m30-r1"
+        write(old / "teach" / "result.json", {"type": "result"})
+        self.assertEqual(runner.pending_resumes(self.root), [])
+        code, out, err = self.p3("bench", "--resume")
+        self.assertEqual(code, 1)
+        self.assertIn("there is no stopped repeat to resume", err)
+        self.assertTrue(old.is_dir())
+
+    def test_a_partial_made_with_only_resumes_the_same_scenarios(self):
+        self.stop_after(1, "--only", "teach,grade-s1,tutor-p01")
+        _, doc = self.partial()
+        self.assertEqual(doc["scenario_ids"], ["teach", "grade-s1", "tutor-p01"])
+        self.assertEqual(doc["record"]["only"], ["teach", "grade-s1", "tutor-p01"])
+        self.no_limit()
+        code, out, err = self.p3("bench", "--resume", "--offline")
+        self.assertEqual(code, 0, out + err)
+        (run_dir,) = self.runs()
+        run = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+        self.assertEqual([s["id"] for s in run["scenarios"]], ["teach", "grade-s1", "tutor-p01"])
+        self.assertEqual(run["only"], ["teach", "grade-s1", "tutor-p01"])
+
+    def test_a_partial_made_with_quick_resumes_the_same_scenarios(self):
+        self.stop_after(2, "--quick")
+        _, doc = self.partial()
+        quick = ["teach", "quiz", "grade-s1", "tutor-p01", "tutor-p02"]
+        self.assertEqual(doc["scenario_ids"], quick)
+        self.assertTrue(doc["record"]["quick"])
+        self.no_limit()
+        code, out, err = self.p3("bench", "--resume", "--offline")
+        self.assertEqual(code, 0, out + err)
+        (run_dir,) = self.runs()
+        run = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+        self.assertEqual([s["id"] for s in run["scenarios"]], quick)
+        self.assertTrue(run["quick"] and run["only"] is None)
+
+    def test_repeats_say_what_is_kept_and_what_to_type(self):
+        code, out, err = self.stop_after(13, "--repeats", "3")
+        self.assertEqual(code, 1, out + err)
+        (kept,) = self.runs()
+        self.assertIn("The repeats before it are complete and kept: " + util.posix(kept, self.root), err)
+        self.assertIn("Repeat 3 did not run. To run it once repeat 2 is finished, type: uv run p3 bench --config c0-baseline --repeats 1", err)
+        self.assertIn("uv run p3 bench --resume", err)
+        folder, doc = self.partial()
+        self.assertEqual(doc["record"]["repeat"], 2)
+        self.no_limit()
+        code, out, err = self.p3("bench", "--resume", "--offline")
+        self.assertEqual(code, 0, out + err)
+        self.assertEqual(len(self.runs()), 2)
+        self.assertIn("Repeat 3 did not run. To run it, type: uv run p3 bench --config c0-baseline --repeats 1", out)
+        code, out, err = self.stop_after(9, "--repeats", "4")
+        self.assertIn("Repeats 2 to 4 did not run", err)
+        self.assertIn("--repeats 3", err)
+
+    def test_jobs_keep_what_finished(self):
+        code, out, err = self.stop_after(3, "--jobs", "2")
+        self.assertEqual(code, 1, out + err)
+        folder, doc = self.partial()
+        done = [s["id"] for s in doc["record"]["scenarios"]]
+        self.assertTrue(done, "something finished before the limit")
+        self.assertEqual(done, [i for i in self.ALL if i in done], "in canonical order")
+        for s in doc["record"]["scenarios"]:
+            self.assertIn(s["status"], ("ok", "timeout", "error"))
+        self.assertEqual(sorted(p.name for p in folder.iterdir() if p.is_dir()), sorted(done), "unfinished scenarios leave no folder")
+        self.no_limit()
+        code, out, err = self.p3("bench", "--resume", "--offline", "--jobs", "2")
+        self.assertEqual(code, 0, out + err)
+        (run_dir,) = self.runs()
+        run = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+        self.assertEqual([s["id"] for s in run["scenarios"]], self.ALL)
+        self.assertEqual(run["scenarios"][: len(done)] if done == self.ALL[: len(done)] else [s for s in run["scenarios"] if s["id"] in done], doc["record"]["scenarios"])
 
 
 class CommandPathTests(unittest.TestCase):
