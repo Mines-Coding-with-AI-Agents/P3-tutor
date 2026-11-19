@@ -19,9 +19,11 @@
 - Server mode (the default) serves one page per pair on 127.0.0.1 and opens it in the browser:
   lessons in sandboxed frames served from the run's outputs, the other jobs as escaped HTML.
   --terminal writes each pair as an HTML file and asks the three questions in the terminal.
+- A pick needs a reason (one typed sentence) for the teach and quiz jobs (REASON_REQUIRED_JOBS) and
+  may leave it empty for grade and tutor, which have many pairs; the page and the terminal say so.
 - --reveal prints the tally, the exact two-sided sign test, how often you could tell, your reasons
-  grouped by the config that won, the objective checks, and only then the cost per scenario; it
-  also writes the reveal into the session file.
+  grouped by the config that won (picks without a reason are left out and counted), the objective
+  checks, and only then the cost per scenario; it also writes the reveal into the session file.
 """
 
 from __future__ import annotations
@@ -52,6 +54,7 @@ from p3.score import SUMMARY_LABELS, option_choice
 from p3.util import P3Error
 
 JOBS = ("teach", "quiz", "grade", "tutor")
+REASON_REQUIRED_JOBS = ("teach", "quiz")  # the jobs whose picks need a typed reason; for the others (grade, tutor) it is optional
 CHOICES = ("left", "right", "tie")
 SIDES = ("left", "right")
 SESSION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$")
@@ -96,6 +99,11 @@ def session_path(sid: str, root: Path) -> Path:
 
 def key_path(sid: str, root: Path) -> Path:
     return compare_dir(root) / f"{sid}.key.json"
+
+
+def reason_required(job: str) -> bool:
+    """Whether a pick in a session of this job needs a reason (teach and quiz do; grade and tutor do not)."""
+    return job in REASON_REQUIRED_JOBS
 
 
 def session_files(root: Path) -> list[Path]:
@@ -354,7 +362,8 @@ class Session:
         return cached
 
     def record(self, pair_id: str, choice: str, reason: str, could_tell: bool) -> dict:
-        """Save one pick (replacing an earlier pick for the same pair) and return it."""
+        """Save one pick (replacing an earlier pick for the same pair) and return it. The reason may be
+        empty for a grade or tutor session; for teach and quiz it is required."""
         with self.lock:
             if self.data.get("revealed"):
                 raise P3Error(f"session {self.id} has been revealed, so its picks are final")
@@ -363,7 +372,7 @@ class Session:
             if choice not in CHOICES:
                 raise P3Error("the choice must be left, right or tie")
             reason = " ".join(str(reason or "").split())
-            if not reason:
+            if not reason and reason_required(self.job):
                 raise P3Error("say why, in one sentence")
             if not isinstance(could_tell, bool):
                 raise P3Error("could you tell must be yes or no")
@@ -407,6 +416,8 @@ def record_problems(record, key) -> list[str]:
     for pick in record.get("picks") or []:
         if not isinstance(pick, dict) or pick.get("pair_id") not in ids or pick.get("choice") not in CHOICES:
             problems.append(f"a pick does not fit the pairs: {pick!r}"[:200])
+        elif reason_required(record["job"]) and not str(pick.get("reason") or "").strip():
+            problems.append(f"the pick for pair {pick['pair_id']} has no reason, and a {record['job']} pick needs one")
     return problems
 
 
@@ -950,6 +961,7 @@ def form_html(s: Session, k: int, token: str, values: dict | None = None, error:
     picked = s.pick_for(pair["pair_id"]) or {}
     choice = values.get("choice", picked.get("choice"))
     reason = values.get("reason", picked.get("reason", ""))
+    needed = reason_required(s.job)
     tell = values.get("could_tell", {True: "yes", False: "no"}.get(picked.get("could_tell")))
 
     def radio(name: str, value: str, label: str, current) -> str:
@@ -969,7 +981,7 @@ def form_html(s: Session, k: int, token: str, values: dict | None = None, error:
         + '<fieldset><legend>Which fits you better?</legend><div class="seg">'
         + radio("choice", "left", "Left", choice) + radio("choice", "tie", "Tie", choice) + radio("choice", "right", "Right", choice)
         + "</div></fieldset>"
-        + f'<label class="why"><span class="q">Why, in one sentence</span><input type="text" name="reason" required maxlength="{MAX_REASON}" autocomplete="off" value="{esc(reason)}"></label>'
+        + f'<label class="why"><span class="q">{"Why, in one sentence" if needed else "Why, in one sentence (optional)"}</span><input type="text" name="reason"{" required" if needed else ""} maxlength="{MAX_REASON}" autocomplete="off" value="{esc(reason)}"></label>'
         + '<fieldset><legend>Could you tell which config made which?</legend><div class="seg">'
         + radio("could_tell", "yes", "Yes", tell) + radio("could_tell", "no", "No", tell)
         + "</div></fieldset>"
@@ -1106,7 +1118,7 @@ class CompareApp:
         error = None
         if values["choice"] not in CHOICES:
             error = "Pick left, right or tie."
-        elif not " ".join(values["reason"].split()):
+        elif reason_required(self.s.job) and not " ".join(values["reason"].split()):
             error = "Say why, in one sentence."
         elif values["could_tell"] not in ("yes", "no"):
             error = "Say whether you could tell which config made which."
@@ -1312,8 +1324,11 @@ def terminal(s: Session, ask: Callable[[str], str] | None = None, folder: Path |
             print(f"\nPair {k} of {len(s.pairs)}: {path}")
             choice = _ask("  Which fits you better? left, right or tie [l/r/t]: ", ask, choices, "Type l, r or t.")
             while True:
-                reason = " ".join(ask("  Why, in one sentence: ").split())
-                if reason:
+                if reason_required(s.job):
+                    reason = " ".join(ask("  Why, in one sentence: ").split())
+                else:
+                    reason = " ".join(ask("  Why, in one sentence (optional, press Enter to skip): ").split())
+                if reason or not reason_required(s.job):
                     break
                 print("  A reason is required.")
             could_tell = _ask("  Could you tell which config made which? [y/n]: ", ask, yes_no, "Type y or n.")
@@ -1399,16 +1414,22 @@ def reveal(sid: str, root: Path | None = None) -> tuple[str, dict]:
     wins = {a: 0, b: 0}
     ties = 0
     reasons: dict[str, list[dict]] = {a: [], b: [], "tie": []}
+    picked = {a: 0, b: 0, "tie": 0}
+    no_reason = 0
     items = {p["pair_id"]: p["item"] for p in s.pairs}
     for pick in s.picks:
-        entry = {"pair_id": pick["pair_id"], "item": items.get(pick["pair_id"]), "reason": pick.get("reason", "")}
+        entry = {"pair_id": pick["pair_id"], "item": items.get(pick["pair_id"]), "reason": pick.get("reason") or ""}
         if pick["choice"] == "tie":
             ties += 1
-            reasons["tie"].append(entry)
+            group = "tie"
         else:
-            winner = s.key["pairs"][pick["pair_id"]][pick["choice"]]
-            wins[winner] += 1
-            reasons[winner].append(entry)
+            group = s.key["pairs"][pick["pair_id"]][pick["choice"]]
+            wins[group] += 1
+        picked[group] += 1
+        if entry["reason"]:
+            reasons[group].append(entry)
+        else:
+            no_reason += 1
     non_tie = wins[a] + wins[b]
     p = sign_test(wins[a], wins[b])
     told = sum(1 for pick in s.picks if pick.get("could_tell") is True)
@@ -1437,10 +1458,12 @@ def reveal(sid: str, root: Path | None = None) -> tuple[str, dict]:
     lines.append(f"You could tell which config made which in {told} of {n} pairs ({round(100 * told / n) if n else 0}%).")
     lines += ["", "### Reasons, by the config that won", ""]
     for group, title in ((a, f"`{a}` won"), (b, f"`{b}` won"), ("tie", "Ties")):
-        lines.append(f"{title} ({len(reasons[group])}):")
+        lines.append(f"{title} ({picked[group]}):")
         lines.append("")
         lines += [f"- pair {r['pair_id']}, {r['item']}: {r['reason']}" for r in reasons[group]] or ["- none"]
         lines.append("")
+    if no_reason:
+        lines += [f"{no_reason} pick{'s' if no_reason != 1 else ''} gave no reason, so {'it is' if no_reason == 1 else 'they are'} not listed here.", ""]
     lines += [f"### Objective checks ({s.job})", "", "Mean over the runs in this session, with the range in brackets; from score.json.", ""]
     head = ["check", f"`{a}`", f"`{b}`"]
     rows = [[label] + [_mean_cell(checks[name][key], kind) for name in (a, b)] for key, label, kind in CHECKS[s.job]]
@@ -1467,6 +1490,7 @@ def reveal(sid: str, root: Path | None = None) -> tuple[str, dict]:
         "p_value": round(p, 6),
         "could_tell": {"yes": told, "pairs": n, "share": round(told / n, 4) if n else None},
         "reasons": reasons,
+        "no_reason": no_reason,
         "objective": {name: {key: [v for v in vals if v is not None] for key, vals in checks[name].items()} for name in (a, b)},
         "cost": {name: {k: v for k, v in cost[name].items()} for name in (a, b)},
     }

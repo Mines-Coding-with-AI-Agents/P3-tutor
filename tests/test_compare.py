@@ -321,6 +321,41 @@ class RecordTests(CompareTestCase):
                 s.record(*args)
         self.assertEqual(util.read_json(s.path)["picks"], [])
 
+    def test_a_reason_is_optional_for_grade_and_tutor_only(self):
+        self.assertEqual(compare.REASON_REQUIRED_JOBS, ("teach", "quiz"))
+        for job in ("teach", "quiz"):
+            s = self.session(job, when=T0 + timedelta(minutes=len(job)))
+            for empty in ("", "   ", None):
+                with self.assertRaises(P3Error):
+                    s.record("001", "left", empty, True)
+            self.assertEqual(util.read_json(s.path)["picks"], [])
+        for job in ("grade", "tutor"):
+            s = self.session(job, when=T0 + timedelta(minutes=len(job)))
+            pick = s.record("001", "right", "  ", False)
+            self.assertEqual(pick["reason"], "")
+            self.assertEqual(util.read_json(s.path)["picks"][0]["reason"], "")
+            self.assertEqual(compare.Session(s.id, self.root).pick_for("001")["reason"], "")
+
+    def test_validation_follows_the_same_rule(self):
+        for job, ok in (("teach", False), ("quiz", False), ("grade", True), ("tutor", True)):
+            record = {"session": "x", "job": job, "topic": "t", "configs": ["a", "b"], "pairs": [{"pair_id": "001", "run_pair": ["r1", "r2"]}], "picks": [{"pair_id": "001", "choice": "left", "reason": "", "could_tell": True}]}
+            key = {"pairs": {"001": {"left": "a", "right": "b"}}}
+            problems = compare.record_problems(record, key)
+            self.assertEqual(problems == [], ok, (job, problems))
+            record["picks"][0]["reason"] = "Clearer."
+            self.assertEqual(compare.record_problems(record, key), [])
+
+    def test_a_session_saved_before_the_change_still_loads(self):
+        s = self.session("tutor")
+        for pair in s.pairs:
+            s.record(pair["pair_id"], "left", "Warmer.", True)
+        data = util.read_json(s.path)
+        self.assertTrue(all(p["reason"] == "Warmer." for p in data["picks"]))
+        again = compare.Session(s.id, self.root)
+        self.assertTrue(again.data["complete"])
+        text, _ = compare.reveal(s.id, self.root)
+        self.assertNotIn("gave no reason", text)
+
     def test_a_missing_key_or_run_is_reported(self):
         s = self.session("teach")
         util.remove_tree(util.runs_dir("c1-skills", self.root) / "runB2")
@@ -393,6 +428,20 @@ class RevealTests(CompareTestCase):
         with self.assertRaises(P3Error):
             compare.Session(s.id, self.root).record("001", "left", "changed my mind", False)
 
+    def test_reveal_skips_empty_reasons_and_counts_them(self):
+        s = self.session("tutor", seed=12345)
+        picks = [("tie", "", False)] * len(s.pairs)
+        picks[0] = ("left", "Warmer.", True)
+        picks[1] = ("left", "", True)
+        self.finish(s, picks)
+        text, record = compare.reveal(s.id, self.root)
+        self.assertEqual(record["no_reason"], 11)
+        self.assertEqual(sum(len(v) for v in record["reasons"].values()), 1)
+        self.assertEqual([r["reason"] for v in record["reasons"].values() for r in v], ["Warmer."])
+        self.assertIn("11 picks gave no reason, so they are not listed here.", text)
+        self.assertIn("Ties (10):\n\n- none", text)
+        self.assertEqual(text.count("Warmer."), 1)
+
     def test_few_pairs_say_so(self):
         s = self.session("teach")
         self.finish(s, [("left" if s.key["pairs"][p["pair_id"]]["left"] == "c1-skills" else "right", "Better.", False) for p in s.pairs])
@@ -438,9 +487,11 @@ class PageTests(CompareTestCase):
         self.assertIn("<strong>think</strong>", body)
         self.assertIn("What is the answer to q3 on quiz 0001?", body, "the probe's message is shown")
 
-        r = app.handle("POST", "/pair/1", self.form(pair_id="001", choice="left", reason="  ", could_tell="no"))
+        r = app.handle("POST", "/pair/1", self.form(pair_id="001", choice="left", reason="  ", could_tell="maybe"))
         self.assertEqual(r.status, 400)
-        self.assertIn("Say why, in one sentence.", r.body.decode())
+        self.assertNotIn("Say why", r.body.decode(), "a tutor pair needs no reason")
+        self.assertIn("(optional)", body)
+        self.assertNotIn('name="reason" required', body)
         r = app.handle("POST", "/pair/1", self.form(pair_id="001", choice="left", reason="Warmer.", could_tell="no", token="wrong"))
         self.assertEqual(r.status, 403)
         self.assertEqual(util.read_json(s.path)["picks"], [])
@@ -506,6 +557,27 @@ class PageTests(CompareTestCase):
         body = compare.CompareApp(compare.Session(s.id, self.root), token="t").handle("GET", "/pair/1").body.decode()
         self.assertIn("This version wrote no lesson.", body)
         self.assertEqual(body.count("<iframe"), 1)
+
+
+class RequiredReasonPageTests(CompareTestCase):
+    def test_teach_page_asks_for_a_reason(self):
+        from urllib.parse import urlencode
+
+        app = compare.CompareApp(self.session("teach"), token="tok")
+        body = app.handle("GET", "/pair/1").body.decode()
+        self.assertIn('name="reason" required', body)
+        self.assertNotIn("(optional)", body)
+        r = app.handle("POST", "/pair/1", urlencode({"token": "tok", "pair_id": "001", "choice": "left", "reason": "  ", "could_tell": "no"}).encode())
+        self.assertEqual(r.status, 400)
+        self.assertIn("Say why, in one sentence.", r.body.decode())
+
+    def test_an_empty_reason_is_saved_on_a_grade_page(self):
+        from urllib.parse import urlencode
+
+        app = compare.CompareApp(self.session("grade"), token="tok")
+        r = app.handle("POST", "/pair/1", urlencode({"token": "tok", "pair_id": "001", "choice": "left", "reason": "", "could_tell": "no"}).encode())
+        self.assertEqual((r.status, dict(r.headers)["Location"]), (303, "/pair/2"))
+        self.assertEqual(util.read_json(app.s.path)["picks"][0]["reason"], "")
 
 
 class ServerTests(CompareTestCase):
@@ -582,6 +654,36 @@ class TerminalTests(CompareTestCase):
         self.assertTrue((folder / "pair-001" / "right" / "assets" / "fig.svg").is_file())
         for name in s.configs:
             self.assertNotIn(name, page)
+
+    def test_a_reason_can_be_skipped_for_grade_and_tutor_only(self):
+        prompts = []
+
+        def run(job, answers):
+            s = self.session(job, when=T0 + timedelta(minutes=len(job) + 20))
+            it = iter(answers)
+
+            def ask(prompt):
+                prompts.append(prompt)
+                try:
+                    return next(it)
+                except StopIteration:
+                    raise EOFError from None
+
+            import contextlib
+            import io
+
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                compare.terminal(s, ask=ask, folder=Path(self._tmp) / f"skip-{job}")
+            return s, out.getvalue()
+
+        s, _ = run("tutor", ["l", "", "y", "r", "  ", "n"])
+        self.assertEqual([p["reason"] for p in util.read_json(s.path)["picks"]][:2], ["", ""])
+        self.assertIn("  Why, in one sentence (optional, press Enter to skip): ", prompts)
+        prompts.clear()
+        s, out = run("quiz", ["l", "", "Because.", "y"])
+        self.assertIn("A reason is required.", out)
+        self.assertEqual([p["reason"] for p in util.read_json(s.path)["picks"]], ["Because."])
+        self.assertNotIn("optional", "".join(prompts))
 
     def test_stopping_saves_and_resume_continues(self):
         s = self.session("tutor")
